@@ -1,0 +1,12 @@
+#	Nextflow-related hidden/ log/ temp files
+.nextflow*
+work/*
+run_jhpce_qsub.log
+
+#	Personal data- related
+in/*
+out/*
+
+#	Large files that should be built
+ref/*
+Arioc/encoded_ref/*
