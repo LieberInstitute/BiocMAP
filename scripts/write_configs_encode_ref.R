@@ -1,6 +1,7 @@
 library('getopt')
 
-spec <- matrix(c('ref', 'r', 1, 'character', 'reference genome'),
+spec <- matrix(c('ref', 'r', 1, 'character', 'reference genome',
+                 'dir', 'd', 1, 'character', 'output directory'),
                byrow=TRUE, ncol=5)
 opt <- getopt(spec)
 
@@ -23,7 +24,7 @@ for (seed in c("hsi25_0_32_CT", "ssi84_2_30_CT")) {
     config_lines = c(config_lines, seq_lines,
                      '  </dataIn>',
                      '  <dataOut>',
-                     paste0('    <path>', getwd(), '/encoded_ref</path>'),
+                     paste0('    <path>', opt$dir, '</path>'),
                      '  </dataOut>',
                      '</AriocE>')
     

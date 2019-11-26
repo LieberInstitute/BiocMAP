@@ -14,7 +14,7 @@ if (opt$paired == "paired") {
 
 #  The processed manifest outputted from the "Manifest" process will be in
 #  the working directory. Use this to assign this particular sample an integer ID
-man = read.table('samples.manifest', sep = ' ', header = FALSE, stringsAsFactors = FALSE)
+man = read.table('arioc_samples.manifest', sep = ' ', header = FALSE, stringsAsFactors = FALSE)
 idRowNum = match(id, man[,ncol(man)])
 idNum = as.integer(idRowNum / 2) + 1
 
