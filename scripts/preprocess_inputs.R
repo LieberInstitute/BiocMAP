@@ -101,6 +101,24 @@ if (paired) {
     }
 }
 
+#  Rewrite a manifest given all of the changes made
+print("Rewriting a manifest for use later in the pipeline...")
+if (paired) {
+    # for now, later probably change to use user-specified id in 5th column
+    first_read = system('ls *_1.fastq', intern=TRUE)
+    man_lines = paste(first_read,
+                      0,
+                      system('ls *_2.fastq', intern=TRUE),
+                      0,
+                      ss(first_read, '_1.fastq', fixed=TRUE))
+} else {
+    filenames = system('ls *.fastq', intern=TRUE)
+    man_lines = paste(filenames,
+                      0,
+                      ss(filenames, '.fastq', fixed=TRUE))
+}
+writeLines(man_lines, con = "arioc_samples.manifest")
+
 #  A sloppy workaround for nextflow not recognizing input files as valid
 #  output files (appears to be based on filename- touching the inputs doesn't
 #  work as a solution)
