@@ -94,11 +94,11 @@ if (params.reference == "hg38") {
 // ------------------------------------------------------------
 
 def get_prefix(f) {
-    //  Remove these regardless of position in the string
-    String blackListAny = "_summary|_fastqc_data|_trimmed|_reverse_paired|_reverse_unpaired|_forward_paired|_forward_unpaired|\$a21|\$raw|\$sqm|\$sqq"
+    //  Remove these regardless of position in the string (note blackListAny is a regular expression)
+    blackListAny = ~/_summary|_fastqc_data|_trimmed|_(reverse|forward)_(paired|unpaired)|_R[12]\$(a21|raw|sqm|sqq)|CH[GH]_*O[BT]_|CpG_*O[BT]_/
     
     //  Remove these if at the end of the file (before the file extension)
-    String blackListEnd = "_1.|_2.|_encode_reads.|_align_reads.|.c.|.cfu.|.txt.gz"
+    String blackListEnd = "_[12].|_R[12].|_(encode|align)_reads.|.c.|.cfu.|.txt.gz"
 
     f.name.toString()
         .replaceAll(blackListAny, "")
@@ -110,6 +110,7 @@ def get_chromosome_name(f) {
     f.name.toString()
         .tokenize('.')[1]
 }
+
 
 // ######################################################
 //    Pre-processing steps 
@@ -126,8 +127,7 @@ process PrepareReference {
         file encode_ref_script from file("${workflow.projectDir}/scripts/write_configs_encode_ref.R")
     
     output:
-        file "Bisulfite_Genome"
-        file "$basename"    // the original reference fasta
+        file "$baseName"    // the original reference fasta
         file "encode_ref_gap.cfg" into encode_ref_gap_cfg
         file "encode_ref_nongap.cfg" into encode_ref_nongap_cfg
         
@@ -138,14 +138,18 @@ process PrepareReference {
         wget !{params.ref_fasta_link}
         gunzip !{baseName}.gz
         
-        #  Build the bisulfite genome, needed for bismark
+        #  Build the bisulfite genome, needed for bismark (and copy it to publishDir,
+        #  circumventing Nextflow's inability to recursively copy)
         !{params.bismark_genome_preparation} --hisat2 --path_to_aligner !{params.hisat2} ./
+        cp -R Bisulfite_Genome !{workflow.projectDir}/ref/!{params.reference}/
         
         #  Split by sequence, to prepare for encoding reference with Arioc
         bash !{split_fasta_script} !{baseName}
         
-        #  Write the Arioc config for encoding the reference
-        Rscript !{encode_ref_script} -r !{params.reference}
+        #  Write the Arioc configs for encoding the reference
+        out_dir=!{workflow.projectDir}/ref/!{params.reference}/encoded_ref
+        mkdir $out_dir
+        Rscript !{encode_ref_script} -r !{params.reference} -d $out_dir
         '''
 }
 
@@ -153,38 +157,20 @@ process PrepareReference {
 // Arioc requires an encoded reference sequence. This process builds that within the repo,
 // if the encoded sequence hasn't been built before.
 process EncodeReference {
-    storeDir "${workflow.projectDir}/Arioc/encoded_ref/${params.reference}"
+    storeDir "${workflow.projectDir}/ref/${params.reference}"
     
     input:
         file encode_ref_gap_cfg
         file encode_ref_nongap_cfg
         
     output:
-        file "./encoded_ref/*"
-        file "./encoded_ref/*" into encoded_ref_seqs
+        file ".success" into success_token
         
     shell:
         '''
         !{params.AriocE} !{encode_ref_gap_cfg}
         !{params.AriocE} !{encode_ref_nongap_cfg}
-        '''
-}
-
-
-samples_manifest = file("${params.input}/samples.manifest")
-process Manifest {
-	  tag "Validating manifest and accounting for merged files"
-
-    input:
-        file original_manifest from samples_manifest
-        file man_info_script from file("${workflow.projectDir}/scripts/find_sample_info.R")
-
-    output:
-        file "samples.manifest" into arioc_manifest
-
-    shell:
-        '''
-        Rscript !{man_info_script} -s !{original_manifest} -o "."
+        touch .success
         '''
 }
 
@@ -193,12 +179,13 @@ process Merging {
     tag "Performing merging if/where necessary"
 
     input:
-        file original_manifest from samples_manifest
+        file original_manifest from file("${params.input}/samples.manifest")
         file merge_script from file("${workflow.projectDir}/scripts/preprocess_inputs.R")
         file fastqs from Channel.fromPath("${params.input}/*.f*q*").collect()
         
     output:
         file "*.fastq_temp" into merged_inputs_flat
+        file "arioc_samples.manifest" into arioc_manifest
 
     shell:
         '''
@@ -426,7 +413,7 @@ process WriteAriocConfigs {
     shell:
         '''
         Rscript !{encode_reads_script} -p !{params.sample} -d !{params.work} -x !{fq_prefix}
-        Rscript !{align_reads_script} -p !{params.sample} -r !{workflow.projectDir}/Arioc/encoded_ref/!{params.reference} -b !{params.AriocBatchSize} -a !{params.all_alignments}
+        Rscript !{align_reads_script} -p !{params.sample} -r !{workflow.projectDir}/Arioc/encoded_ref/!{params.reference} -b !{params.AriocBatchSize} -a !{params.all_alignments} -x !{fq_prefix}
         '''
 }
 
@@ -459,7 +446,9 @@ process EncodeReads {
 }
 
 encoded_read_dirs_out
+    .flatten()
     .map{ file -> tuple(get_prefix(file), file) }
+    .groupTuple()
     .ifEmpty{ error "Encoded reads missing from input to 'AlignReads' process." }
     .set{ encoded_read_dirs_in }
 
@@ -472,13 +461,13 @@ process AlignReads {
         // The ref seqs themselves are actually not needed here- this line simply
         // ensures the reference is built before attempting to align. The large
         // files are not copied- symlinks are constructed (performance not hurt).
-        file encoded_ref_seqs
+        file success_token
         
         set val(prefix), file(encoded_dir) from encoded_read_dirs_in
         
     output:
-        file "$prefix.[dru].sam"
-        file "$prefix.c.sam" into concordant_sams_out
+        file "${prefix}.[dru].sam"
+        file "${prefix}.c.sam" into concordant_sams_out
         file "${prefix}_alignment.log" into arioc_logs
         
     shell:
@@ -591,7 +580,9 @@ process BME {
 
 
 BME_outputs
+    .flatten()
     .map{ file -> tuple(get_prefix(file), file) }
+    .groupTuple()
     .ifEmpty{ error "BME outputs missing from input to 'Bismark2Bedgraph' process." }
     .set{ bedgraph_in }
 
@@ -648,6 +639,7 @@ process Coverage2Cytosine {
 
 //  Group reports for each chromosome into one channel (each)
 cytosine_reports
+    .flatten()
     .map{ file -> tuple(get_chromosome_name(file), file) }
     .groupTuple()
     .set{ cytosine_reports_by_chr }
