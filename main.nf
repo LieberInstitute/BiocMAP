@@ -479,7 +479,7 @@ process AlignReads {
     output:
         file "${prefix}.[dru].sam" optional true
         file "${prefix}.c.sam" into concordant_sams_out
-        file "${prefix}_alignment.log" into arioc_logs
+        file "${prefix}_alignment.log" into arioc_logs_out
         
     shell:
         if (params.sample == "paired") {
@@ -513,7 +513,7 @@ process ParseAriocLogs {
     
     input:
         file parse_script from file("${workflow.projectDir}/scripts/parse_arioc_logs.R")
-        file arioc_logs
+        file arioc_logs_in from arioc_logs_out.collect()
         
     output:
         file "alignment_results.rda"
