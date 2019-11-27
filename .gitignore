@@ -2,6 +2,7 @@
 .nextflow*
 work/*
 run_jhpce_qsub.log
+Arioc/temp_encoded_reads*
 
 #	Personal data- related
 in/*
