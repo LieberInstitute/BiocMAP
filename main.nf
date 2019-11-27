@@ -489,7 +489,8 @@ process AlignReads {
         }
         '''
         #  Run alignment
-        !{exec_name} !{prefix}_align_reads.cfg > !{prefix}_alignment.log
+        !{exec_name} !{prefix}_align_reads.cfg
+        cp .command.log !{prefix}_alignment.log
         
         #  Rename sams to be [sampleName].[alignment_type].sam
         for sam in $(ls Arioc*.sam); do
@@ -566,7 +567,7 @@ process BME {
     shell:
         // BME needs path to samtools if samtools isn't on the PATH
         if (params.samtools != "samtools") {
-            flags = "--samtools-path=${params.samtools}"
+            flags = "--samtools_path=${params.samtools}"
         } else {
             flags = ""
         }
@@ -581,7 +582,7 @@ process BME {
         // on multiple cores? BME runs N *additional* threads with the flag
         // "--multicore N", hence the subtraction by 1
         if (task.cpus > 1) {
-            flags += " --multicore " + toString(task.cpus - 1)
+            flags += " --multicore " + (task.cpus - 1)
         }
         '''
         mkdir !{prefix}

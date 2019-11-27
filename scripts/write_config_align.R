@@ -37,7 +37,7 @@ if (opt$allAlign) {
 
 #  Lines related to alignment settings
 config_lines = c('<?xml version="1.0" encoding="utf-8"?>',
-                 paste0('<', exec_name, ' gpuMask="0x00000001" batchSize="', opt$batchSize, '" verboseMask="0x00000007">'),
+                 paste0('<', exec_name, ' gpuMask="0x00000001" batchSize="', opt$batchSize, '" verboseMask="0xE0000007">'),
                  paste0('  <R>', opt$repoDir, '/ref/', opt$ref, '/encoded_ref</R>'), '',
                  '  <nongapped seed="ssi84_2_30_CT" maxJ="200" maxMismatches="5"/>',
                  '  <gapped seed="hsi25_0_32_CT" Wmxgs="2,6,5,3" Vt="L,0,1" maxJ="20" seedDepth="4"/>',
