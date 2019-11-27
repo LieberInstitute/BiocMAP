@@ -25,7 +25,8 @@ idNum = as.integer(idRowNum / 2) + 1
 #  Starting lines
 config_lines = c('<?xml version="1.0" encoding="utf-8"?>', '',
                  '<AriocE>',
-                 '  <dataIn sequenceType="Q">')
+                 '  <dataIn sequenceType="Q" QNAME="*:*:*:(*:*:*:*) ">',
+                 '    <rg ID="*:*:(*:*):" PL="ILLUMINA" />')
                  
 #  Lines related to the particular reads used for this alignment
 if (opt$paired == "paired") {
