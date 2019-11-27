@@ -41,7 +41,7 @@ config_lines = c(config_lines, '  </dataIn>')
 #  Output
 config_lines = c(config_lines,
                  '  <dataOut>',
-                 paste0('    <path>./', opt$prefix, '_encoded_in/</path>'),
+                 paste0('    <path>', opt$writeDir, '</path>'),
                  '  </dataOut>',
                  '</AriocE>')
 

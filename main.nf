@@ -95,7 +95,7 @@ if (params.reference == "hg38") {
 
 def get_prefix(f) {
     //  Remove these regardless of position in the string (note blackListAny is a regular expression)
-    blackListAny = ~/_summary|_fastqc_data|_trimmed|_(reverse|forward)_(paired|unpaired)|_R[12]\$(a21|raw|sqm|sqq)|CH[GH]_*O[BT]_|CpG_*O[BT]_/
+    blackListAny = ~/_summary|_fastqc_data|_success_token|_trimmed|_(reverse|forward)_(paired|unpaired)|_R[12]\$(a21|raw|sqm|sqq)|CH[GH]_*O[BT]_|CpG_*O[BT]_/
     
     //  Remove these if at the end of the file (before the file extension)
     String blackListEnd = "_[12].|_R[12].|_(encode|align)_reads.|.c.|.cfu.|.txt.gz"
@@ -164,7 +164,7 @@ process EncodeReference {
         file encode_ref_nongap_cfg
         
     output:
-        file ".success" into success_token
+        file ".success" into success_token_ref
         
     shell:
         '''
@@ -412,8 +412,19 @@ process WriteAriocConfigs {
         
     shell:
         '''
-        Rscript !{encode_reads_script} -p !{params.sample} -d !{params.work} -x !{fq_prefix}
-        Rscript !{align_reads_script} -p !{params.sample} -r !{workflow.projectDir}/Arioc/encoded_ref/!{params.reference} -b !{params.AriocBatchSize} -a !{params.all_alignments} -x !{fq_prefix}
+        refDir=!{workflow.projectDir}/Arioc/encoded_ref/!{params.reference}
+        mkdir -p $refDir/temp_encoded_reads
+        Rscript !{encode_reads_script} \
+            -p !{params.sample} \
+            -d !{workflow.projectDir}/Arioc/temp_encoded_reads \
+            -x !{fq_prefix}
+        Rscript !{align_reads_script} \
+            -p !{params.sample} \
+            -d !{workflow.projectDir} \
+            -r !{params.reference} \
+            -b !{params.AriocBatchSize} \
+            -a !{params.all_alignments} \
+            -x !{fq_prefix}
         '''
 }
 
@@ -436,37 +447,37 @@ process EncodeReads {
         set val(fq_prefix), file(config), file(fq_file) from ariocE_merged_inputs
         
     output:
-        file "*_encoded_in/*" into encoded_read_dirs_out
+        file "${fq_prefix}_success_token" into success_tokens_reads
         
     shell:
         '''
-        mkdir !{fq_prefix}_encoded_in
         !{params.AriocE} !{fq_prefix}_encode_reads.cfg
+        touch !{fq_prefix}_success_token
         '''
 }
 
-encoded_read_dirs_out
+//  This channel includes encoded reads and their associated Arioc alignment config
+success_tokens_reads
+    .mix(align_reads_cfgs)
     .flatten()
     .map{ file -> tuple(get_prefix(file), file) }
     .groupTuple()
     .ifEmpty{ error "Encoded reads missing from input to 'AlignReads' process." }
-    .set{ encoded_read_dirs_in }
+    .set{ align_in }
 
 process AlignReads {   
     
-    publishDir "${params.output}/Arioc/nonconcordant_sams/"
+    publishDir "${params.output}/Arioc/sams/"
     tag "$prefix"
     
     input:
-        // The ref seqs themselves are actually not needed here- this line simply
-        // ensures the reference is built before attempting to align. The large
-        // files are not copied- symlinks are constructed (performance not hurt).
-        file success_token
+        // This indicates the reference exists/ was properly built
+        file success_token_ref
         
-        set val(prefix), file(encoded_dir) from encoded_read_dirs_in
+        set val(prefix), file(cfg_and_token) from align_in
         
     output:
-        file "${prefix}.[dru].sam"
+        file "${prefix}.[dru].sam" optional true
         file "${prefix}.c.sam" into concordant_sams_out
         file "${prefix}_alignment.log" into arioc_logs
         
