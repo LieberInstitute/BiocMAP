@@ -23,7 +23,7 @@ processes:
     6. Bismark methylation extraction
     7. bismark2bedgraph on BME outputs
     8. coverage2cytosine on bismark2bedgraph outputs
-    9. HDF5-backed bsseq object creation   
+    9. HDF5-backed bsseq object creation 
 */
 
 def helpMessage() {
@@ -660,7 +660,6 @@ cytosine_reports
 
 process FormBsseqObjects {
 
-    publishDir "${params.output}/BSobjects"
     tag "$chr"
         
     input:
@@ -668,11 +667,38 @@ process FormBsseqObjects {
         file bs_creation_script from file("${workflow.projectDir}/scripts/bs_create.R")
         
     output:
-        file "assays_$chr.h5"
-        file "bs_obj_$chr_*.rda"
+        file "assays_$chr.h5" into assays
+        file "bs_obj_$chr_*.rda" into bs_objs
         
     shell:
         '''
         Rscript !{bs_creation_script} -s !{chr} -c !{task.cpus}
+        '''
+}
+
+process MergeBsseqObjects {
+
+    publishDir "${params.output}/BSobjects", mode: 'move'
+    
+    input:
+        file assays
+        file bs_objs
+        file combine_script from file("${workflow.projectDir}/scripts/bs_merge.R")
+        file pointer_script from file("${workflow.projectDir}/scripts/point_assays.R")
+        
+    output:
+        file "bs_Cp*.rda"
+        
+    shell:
+        '''
+        #  Combine Bsseq objects and their HDF5-backed assays into two .rda files
+        #  (one for CpG context, the other for CpH) and a single .h5 file
+        Rscript !{combine_script}
+        
+        #  Manually move assays.h5 to output directory, then point each .rda file
+        #  to its assays (otherwise when assays.h5 would be copied to the destination
+        #  directory, the link would be broken).
+        mv assays.h5 !{params.output}/BSobjects/
+        Rscript !{pointer_script}
         '''
 }
