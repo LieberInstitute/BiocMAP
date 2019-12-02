@@ -95,7 +95,7 @@ if (params.reference == "hg38") {
 
 def get_prefix(f) {
     //  Remove these regardless of position in the string (note blackListAny is a regular expression)
-    blackListAny = ~/_summary|_fastqc_data|_success_token|_trimmed|_(reverse|forward)_(paired|unpaired)|_R[12]\$(a21|raw|sqm|sqq)|CH[GH]_*O[BT]_|CpG_*O[BT]_/
+    blackListAny = ~/_summary|_fastqc_data|_success_token|_trimmed|_(reverse|forward)_(paired|unpaired)|_R[12]\$(a21|raw|sqm|sqq)|CH[GH]_*O[BT]_|CpG_*O[BT]_|_bedgraph_merged/
     
     //  Remove these if at the end of the file (before the file extension)
     String blackListEnd = "_[12].|_R[12].|_(encode|align)_reads.|.c.|.cfu.|.txt.gz"
@@ -612,7 +612,7 @@ process Bismark2Bedgraph {
         
     output:
         file "*_bedgraph_merged*"
-        file "{prefix}_bedgraph_merged.gz.bismark.cov.gz" into bedgraph_outputs
+        file "${prefix}_bedgraph_merged.gz.bismark.cov.gz" into bedgraph_outputs
         
     shell:
         '''
@@ -653,6 +653,7 @@ process Coverage2Cytosine {
 //  Group reports for each chromosome into one channel (each)
 cytosine_reports
     .flatten()
+    .filter { it.toString().contains("chr") } // take only canonical seqs
     .map{ file -> tuple(get_chromosome_name(file), file) }
     .groupTuple()
     .set{ cytosine_reports_by_chr }
@@ -667,8 +668,8 @@ process FormBsseqObjects {
         file bs_creation_script from file("${workflow.projectDir}/scripts/bs_create.R")
         
     output:
-        file "assays_$chr.h5" into assays
-        file "bs_obj_$chr_*.rda" into bs_objs
+        file "assays_${chr}.h5" into assays
+        file "bs_obj_${chr}_*.rda" into bs_objs
         
     shell:
         '''
