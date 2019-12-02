@@ -612,17 +612,17 @@ process Bismark2Bedgraph {
         
     output:
         file "*_bedgraph_merged*"
-        file "$prefix/" into bedgraph_outputs
+        file "{prefix}_bedgraph_merged.gz.bismark.cov.gz" into bedgraph_outputs
         
     shell:
         '''
-        mkdir !{prefix}
-        !{params.bismark2bedGraph} -o ./!{prefix}/!{prefix}_bedgraph_merged ./!{BME_dir}/*_!{prefix}.cfu.txt.gz
+        !{params.bismark2bedGraph} -o !{prefix}_bedgraph_merged ./!{BME_dir}/*_!{prefix}.cfu.txt.gz
         '''
 }
 
 
 bedgraph_outputs
+    .flatten()
     .map{ file -> tuple(get_prefix(file), file) }
     .ifEmpty{ error "Bedgraphs missing from input to 'Coverage2Cytosine' process." }
     .set{ c2c_in }
@@ -633,7 +633,7 @@ process Coverage2Cytosine {
     tag "$prefix"
     
     input:
-        set val(prefix), file(bedgraph_dir) from c2c_in
+        set val(prefix), file(bedgraph_file) from c2c_in
         
     output:
         file "*.CX_report.txt"
@@ -644,8 +644,9 @@ process Coverage2Cytosine {
         !{params.coverage2cytosine} \
             --split_by_chromosome \
             --CX \
-            --genome-folder !{workflow.projectDir}/ref/!{params.reference}/ \
-            !{bedgraph_dir}/*.bismark.cov.gz
+            --genome_folder !{workflow.projectDir}/ref/!{params.reference}/ \
+            -o !{prefix} \
+            !{bedgraph_file}
         '''
 }
 
