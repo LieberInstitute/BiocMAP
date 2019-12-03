@@ -13,7 +13,7 @@ library('jaffelab')
 
 spec <- matrix(c(
     'chr', 's', 1, 'character', 'chromosome to subset',
-    'region', 'r', 1, 'character', 'brain region'
+    'region', 'r', 1, 'character', 'brain region',
     'cores', 'c', 1, 'integer', 'number of cores to utilize'
 ), byrow=TRUE, ncol=5)
 opt <- getopt(spec)
@@ -64,28 +64,28 @@ print('Done.')
 #    Write the filtered bsseq objects (the GRanges being the primary attribute written)
 print('Splitting BSobj by cytosine context...')
 BS_CpG = BSobj[which(rowRanges(BSobj)$c_context == 'CG'),]
-BS_nonCpG = BSobj[which(rowRanges(BSobj)$c_context != 'CG'),]
+BS_CpH = BSobj[which(rowRanges(BSobj)$c_context != 'CG'),]
 
 #    Write the methylation and coverage assays (realized into memory in chunks)
 print('Realizing the CpG assays and writing to .h5 file...')
 M_CpG = writeHDF5Array(assays(BS_CpG)$M, assayPath, 'M_CpG', verbose=TRUE)
 Cov_CpG = writeHDF5Array(assays(BS_CpG)$Cov, assayPath, 'Cov_CpG', verbose=TRUE)
-print('Realizing the nonCpG assays and writing to .h5 file...')
-M_nonCpG = writeHDF5Array(assays(BS_nonCpG)$M, assayPath, 'M_nonCpG', verbose=TRUE)
-Cov_nonCpG = writeHDF5Array(assays(BS_nonCpG)$Cov, assayPath, 'Cov_nonCpG', verbose=TRUE)
+print('Realizing the CpH assays and writing to .h5 file...')
+M_CpH = writeHDF5Array(assays(BS_CpH)$M, assayPath, 'M_CpH', verbose=TRUE)
+Cov_CpH = writeHDF5Array(assays(BS_CpH)$Cov, assayPath, 'Cov_CpH', verbose=TRUE)
 rm(BSobj)
 gc()
 
 #    Point split objects to their new assays on disk
 assays(BS_CpG)$M = M_CpG
 assays(BS_CpG)$Cov = Cov_CpG
-assays(BS_nonCpG)$M = M_nonCpG
-assays(BS_nonCpG)$Cov = Cov_nonCpG
+assays(BS_CpH)$M = M_CpH
+assays(BS_CpH)$Cov = Cov_CpH
 
 #    Save the BSobjs (minus their assays)
 print('Writing the remaining components of the BSobjs...')
 save(BS_CpG, file=paste0('/bs_', opt$chr, '_CpG.rda'))
-save(BS_nonCpG, file=paste0('/bs_', opt$chr, '_nonCpG.rda'))
+save(BS_CpH, file=paste0('/bs_', opt$chr, '_CpH.rda'))
 print('Done with all tasks.')
 
 #    Ensure R doesn't save a .RData file, potentially on the order of 10s of GBs
