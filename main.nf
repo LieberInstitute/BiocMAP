@@ -244,7 +244,7 @@ process FastQC_Untrimmed {
             base_name=$(echo $f | cut -d "." -f 1)
             mv $f ${base_name}.fastq
         done
-        !{params.fastqc} *.fastq --extract
+        !{params.fastqc} -t !{task.cpus} *.fastq --extract
         !{copy_command}
         !{data_command}
         '''
@@ -385,7 +385,7 @@ process FastQC_Trimmed {
     shell:
         fastq_name = get_prefix(trimmed_input[0])
         '''
-        !{params.fastqc} !{trimmed_input} --extract
+        !{params.fastqc} -t !{task.cpus} !{trimmed_input} --extract
         '''
 }
 
