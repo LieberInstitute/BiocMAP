@@ -109,6 +109,7 @@ def get_prefix(f) {
 def get_chromosome_name(f) {
     f.name.toString()
         .tokenize('.')[1]
+        .replaceAll("chrchr", "chr")
 }
 
 
@@ -636,7 +637,6 @@ process Coverage2Cytosine {
         set val(prefix), file(bedgraph_file) from c2c_in
         
     output:
-        file "*.CX_report.txt"
         file "*.CX_report.txt" into cytosine_reports
         
     shell:
@@ -653,7 +653,7 @@ process Coverage2Cytosine {
 //  Group reports for each chromosome into one channel (each)
 cytosine_reports
     .flatten()
-    .filter { it.toString().contains("chr") } // take only canonical seqs
+    .filter{ get_chromosome_name(it).contains("chr") } // take only canonical seqs
     .map{ file -> tuple(get_chromosome_name(file), file) }
     .groupTuple()
     .set{ cytosine_reports_by_chr }
@@ -677,29 +677,26 @@ process FormBsseqObjects {
         '''
 }
 
+
+//  Combine Bsseq objects and their HDF5-backed assays into two .rda files
+//  (one for CpG context, the other for CpH) and a single .h5 file
 process MergeBsseqObjects {
 
-    publishDir "${params.output}/BSobjects", mode: 'move'
+    publishDir "${params.output}/BSobjects"
     
     input:
         file assays
         file bs_objs
         file combine_script from file("${workflow.projectDir}/scripts/bs_merge.R")
-        file pointer_script from file("${workflow.projectDir}/scripts/point_assays.R")
         
     output:
-        file "bs_Cp*.rda"
+        file "merge_objects.log"
         
     shell:
         '''
-        #  Combine Bsseq objects and their HDF5-backed assays into two .rda files
-        #  (one for CpG context, the other for CpH) and a single .h5 file
-        Rscript !{combine_script}
+        #  This script actually writes result files directly to publishDir
+        Rscript !{combine_script} -d !{params.output}/BSobjects
         
-        #  Manually move assays.h5 to output directory, then point each .rda file
-        #  to its assays (otherwise when assays.h5 would be copied to the destination
-        #  directory, the link would be broken).
-        mv assays.h5 !{params.output}/BSobjects/
-        Rscript !{pointer_script}
+        cp .command.log merge_objects.log
         '''
 }
