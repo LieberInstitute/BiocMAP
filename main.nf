@@ -578,7 +578,7 @@ process BME {
         
     output:
         file "${prefix}/" into BME_outputs
-        file "${prefix}.log"// into BME_logs_out
+        file "${prefix}.log" into BME_logs_out
         
     shell:
         // BME needs path to samtools if samtools isn't on the PATH
@@ -605,6 +605,25 @@ process BME {
         !{params.BME} !{flags} --gzip -o !{prefix}/ !{sam_file}
         
         cp .command.log BME_!{prefix}.log
+        '''
+}
+
+
+//  Aggregate methylation info from BME logs for all samples, into a single .rda file
+process ParseBMELogs {
+
+    publishDir "${params.output}/", mode:'copy'
+    
+    input:
+        file BME_logs_in from BME_logs_out.collect()
+        file parse_BME_script from file("${workflow.projectDir}/scripts/parse_bme_logs.R")
+        
+    output:
+        file "BME_metrics.rda"
+        
+    shell:
+        '''
+        Rscript !{parse_BME_script}
         '''
 }
 
