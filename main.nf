@@ -177,6 +177,8 @@ process EncodeReference {
 
 
 process Merging {
+
+    publishDir "${params.output}", mode:'copy', pattern:'*.log'
     tag "Performing merging if/where necessary"
 
     input:
@@ -187,10 +189,13 @@ process Merging {
     output:
         file "*.fastq_temp" into merged_inputs_flat
         file "arioc_samples.manifest" into arioc_manifest
+        file "preprocess_inputs.log"
 
     shell:
         '''
         Rscript !{merge_script}
+        
+        cp .command.log preprocess_inputs.log
         '''
 }
 
@@ -222,7 +227,7 @@ if (params.sample == "single") {
 
 process FastQC_Untrimmed {
     tag "$fq_prefix"
-    publishDir "${params.output}/FastQC/Untrimmed",mode:'copy'
+    publishDir "${params.output}/FastQC/Untrimmed", mode:'copy'
 
     input:
         set val(fq_prefix), file(fq_file) from fastqc_untrimmed_inputs 
@@ -442,6 +447,7 @@ encode_reads_cfgs
 //  FASTQs must be encoded with AriocE, before the alignment step
 process EncodeReads {
 
+    publishDir "${params.output}/Arioc/logs/", mode:'copy', pattern:'*.log'
     tag "$fq_prefix"
     
     input:
@@ -449,11 +455,14 @@ process EncodeReads {
         
     output:
         file "${fq_prefix}_success_token" into success_tokens_reads
+        file "encode_${fq_prefix}.log"
         
     shell:
         '''
         !{params.AriocE} !{fq_prefix}_encode_reads.cfg
         touch !{fq_prefix}_success_token
+        
+        cp .command.log encode_!{fq_prefix}.log
         '''
 }
 
@@ -468,7 +477,8 @@ success_tokens_reads
 
 process AlignReads {   
     
-    publishDir "${params.output}/Arioc/sams/"
+    publishDir "${params.output}/Arioc/sams/", mode:'copy', pattern:'*.sam'
+    publishDir "${params.output}/Arioc/logs/", mode:'copy', pattern:'*.log'
     tag "$prefix"
     
     input:
@@ -511,7 +521,7 @@ concordant_sams_out
 //  Extracting alignment information from the AriocP or AriocU logs
 process ParseAriocLogs {
 
-    publishDir "${params.output}/Arioc/"
+    publishDir "${params.output}/Arioc/", mode:'copy'
     
     input:
         file parse_script from file("${workflow.projectDir}/scripts/parse_arioc_logs.R")
@@ -531,6 +541,7 @@ process ParseAriocLogs {
 //  Arioc, filters by mapping quality, and removes duplicate mappings.
 process FilterSam {
 
+    publishDir "${params.output}/logs/", mode:'copy', pattern:'*.log'
     tag "$prefix"
     
     input:
@@ -538,11 +549,14 @@ process FilterSam {
         
     output:
         file "${prefix}.cfu.sam" into processed_sams_out
+        file "filter_sam_${prefix}.log"
         
     shell:
         '''
         !{params.samtools} view -q 5 -F 0x100 -h !{sam_file} \
             | !{params.samblaster} -r -o !{prefix}.cfu.sam
+            
+        cp .command.log filter_sam_!{prefix}.log
         '''
 }
 
@@ -556,7 +570,7 @@ processed_sams_out
 //  Bismark Methylation Extractor on the quality-filtered, deduplicated sams
 process BME {
 
-    publishDir "${params.output}/BME/"
+    publishDir "${params.output}/BME/", mode:'copy'
     tag "$prefix"
     
     input:
@@ -564,6 +578,7 @@ process BME {
         
     output:
         file "${prefix}/" into BME_outputs
+        file "${prefix}.log"// into BME_logs_out
         
     shell:
         // BME needs path to samtools if samtools isn't on the PATH
@@ -588,6 +603,8 @@ process BME {
         '''
         mkdir !{prefix}
         !{params.BME} !{flags} --gzip -o !{prefix}/ !{sam_file}
+        
+        cp .command.log BME_!{prefix}.log
         '''
 }
 
@@ -605,7 +622,7 @@ BME_outputs
 //  wasted resources, the 3 utilities should be separated.
 process Bismark2Bedgraph {
 
-    publishDir "${params.output}/Reports/$prefix"
+    publishDir "${params.output}/Reports/$prefix", mode:'copy'
     tag "$prefix"
     
     input:
@@ -614,10 +631,13 @@ process Bismark2Bedgraph {
     output:
         file "*_bedgraph_merged*"
         file "${prefix}_bedgraph_merged.gz.bismark.cov.gz" into bedgraph_outputs
+        file "bismark2bedgraph_${prefix}.log"
         
     shell:
         '''
         !{params.bismark2bedGraph} -o !{prefix}_bedgraph_merged ./!{BME_dir}/*_!{prefix}.cfu.txt.gz
+        
+        cp .command.log bismark2bedgraph_!{prefix}.log
         '''
 }
 
@@ -630,7 +650,7 @@ bedgraph_outputs
 
 process Coverage2Cytosine {
 
-    publishDir "${params.output}/Reports/$prefix"
+    publishDir "${params.output}/Reports/$prefix", mode:'copy'
     tag "$prefix"
     
     input:
@@ -638,6 +658,7 @@ process Coverage2Cytosine {
         
     output:
         file "*.CX_report.txt" into cytosine_reports
+        file "C2C_${prefix}.log"
         
     shell:
         '''
@@ -647,6 +668,8 @@ process Coverage2Cytosine {
             --genome_folder !{workflow.projectDir}/ref/!{params.reference}/ \
             -o !{prefix} \
             !{bedgraph_file}
+            
+        cp .command.log C2C_!{prefix}.log
         '''
 }
 
@@ -661,6 +684,7 @@ cytosine_reports
 
 process FormBsseqObjects {
 
+    publishDir "${params.output}/BSobjects/logs", mode:'copy', pattern:'*.log'
     tag "$chr"
         
     input:
@@ -670,10 +694,13 @@ process FormBsseqObjects {
     output:
         file "assays_${chr}.h5" into assays
         file "bs_obj_${chr}_*.rda" into bs_objs
+        file "create_bs_${chr}.log"
         
     shell:
         '''
         Rscript !{bs_creation_script} -s !{chr} -c !{task.cpus}
+        
+        cp .command.log create_bs_!{chr}.log
         '''
 }
 
@@ -682,7 +709,7 @@ process FormBsseqObjects {
 //  (one for CpG context, the other for CpH) and a single .h5 file
 process MergeBsseqObjects {
 
-    publishDir "${params.output}/BSobjects"
+    publishDir "${params.output}/BSobjects/logs", mode:'copy'
     
     input:
         file assays
