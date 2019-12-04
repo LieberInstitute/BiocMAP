@@ -653,7 +653,7 @@ process Coverage2Cytosine {
 //  Group reports for each chromosome into one channel (each)
 cytosine_reports
     .flatten()
-    .filter{ get_chromosome_name(it).contains("chr") } // take only canonical seqs
+    .filter{ get_chromosome_name(it).length() <= 5 } // take only canonical seqs
     .map{ file -> tuple(get_chromosome_name(file), file) }
     .groupTuple()
     .set{ cytosine_reports_by_chr }
