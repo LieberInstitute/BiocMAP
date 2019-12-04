@@ -578,7 +578,7 @@ process BME {
         
     output:
         file "${prefix}/" into BME_outputs
-        file "${prefix}.log" into BME_logs_out
+        file "BME_${prefix}.log" into BME_logs_out
         
     shell:
         // BME needs path to samtools if samtools isn't on the PATH
@@ -711,8 +711,8 @@ process FormBsseqObjects {
         file bs_creation_script from file("${workflow.projectDir}/scripts/bs_create.R")
         
     output:
-        file "assays_${chr}.h5" into assays
-        file "bs_obj_${chr}_*.rda" into bs_objs
+        file "assays_${chr}.h5" into assays_out
+        file "bs_${chr}_*.rda" into bs_objs_out
         file "create_bs_${chr}.log"
         
     shell:
@@ -731,8 +731,8 @@ process MergeBsseqObjects {
     publishDir "${params.output}/BSobjects/logs", mode:'copy'
     
     input:
-        file assays
-        file bs_objs
+        file assays_in from assays_out.collect()
+        file bs_objs_in from bs_objs_out.collect()
         file combine_script from file("${workflow.projectDir}/scripts/bs_merge.R")
         
     output:

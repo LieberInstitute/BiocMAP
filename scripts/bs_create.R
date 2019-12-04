@@ -20,6 +20,7 @@ opt <- getopt(spec)
 
 assayPath = paste0('assays_', opt$chr, '.h5')
 tempDir = paste0('temp_hd5/', opt$chr, '/')
+dir.create('temp_hd5')
 
 #  Ensure clusters like JHPCE don't improperly allocate resources
 BiocParallel::register(MulticoreParam(1))
@@ -47,7 +48,7 @@ gc()
 print('Constructing GRanges from first report and attaching to the BSobj...')
 context <- fread(reportFiles[1], colClasses = c('factor', 'numeric',
     'factor', 'integer', 'integer', 'factor', 'factor'))
-context_gr <- GRanges(seqnames = chrom, IRanges(start = context[[2]], width = 1), strand = context[[3]],
+context_gr <- GRanges(seqnames = opt$chr, IRanges(start = context[[2]], width = 1), strand = context[[3]],
                       c_context = Rle(context[[6]]), trinucleotide_context = Rle(context[[7]]))
   
 ## Re-order based on strand
@@ -84,8 +85,8 @@ assays(BS_CpH)$Cov = Cov_CpH
 
 #    Save the BSobjs (minus their assays)
 print('Writing the remaining components of the BSobjs...')
-save(BS_CpG, file=paste0('/bs_', opt$chr, '_CpG.rda'))
-save(BS_CpH, file=paste0('/bs_', opt$chr, '_CpH.rda'))
+save(BS_CpG, file=paste0('bs_', opt$chr, '_CpG.rda'))
+save(BS_CpH, file=paste0('bs_', opt$chr, '_CpH.rda'))
 print('Done with all tasks.')
 
 #    Ensure R doesn't save a .RData file, potentially on the order of 10s of GBs
