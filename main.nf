@@ -295,9 +295,13 @@ process Trimming {
         if (params.sample == "single") {
             output_option = "${fq_prefix}_trimmed.fastq"
             trim_mode = "SE"
+            adapter_fa_temp = params.adapter_fasta_single
+            trim_clip = params.trim_clip_single
         } else {
             output_option = "${fq_prefix}_trimmed_forward_paired.fastq ${fq_prefix}_trimmed_forward_unpaired.fastq ${fq_prefix}_trimmed_reverse_paired.fastq ${fq_prefix}_trimmed_reverse_unpaired.fastq"
             trim_mode = "PE"
+            adapter_fa_temp = params.adapter_fasta_paired
+            trim_clip = params.trim_clip_paired
         }
         '''
         for f in $(ls *.fastq_temp); do
@@ -328,13 +332,14 @@ process Trimming {
         
         #  Run trimming if required
         if [ "$do_trim" == true ]; then
-            #  Get long path for trimmomatic and adapter (these are needed even when on the PATH)
-            if [ !{params.trimmomatic} == "trimmomatic-0.36.jar" ]; then
-                trim_jar=$(which !{params.trimmomatic})
-                adapter_fa=$(which !{params.adapter_fasta})
-            else
+            #  This solves the problem of trimmomatic and the adapter fasta
+            #  needing hard paths, even when on the PATH.
+            if [ !{params.use_long_paths} == "true" ]; then
                 trim_jar=!{params.trimmomatic}
-                adapter_fa=!{params.adapter_fasta}
+                adapter_fa=!{adapter_fa_temp}
+            else
+                trim_jar=$(which !{params.trimmomatic})
+                adapter_fa=$(which !{adapter_fa_temp})
             fi
             
             #  Run trimmomatic
