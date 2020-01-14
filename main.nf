@@ -352,7 +352,7 @@ process Trimming {
                 -phred33 \
                 !{fq_file} \
                 !{output_option} \
-                ILLUMINACLIP:$adapter_fa:!{params.trim_clip} \
+                ILLUMINACLIP:$adapter_fa:!{trim_clip} \
                 LEADING:!{params.trim_lead} \
                 TRAILING:!{params.trim_trail} \
                 SLIDINGWINDOW:!{params.trim_slide_window} \
