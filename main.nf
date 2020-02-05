@@ -419,7 +419,7 @@ process WriteAriocConfigs {
         file arioc_manifest
         
     output:
-        file "*.cfg"
+        file "write_configs_${fq_prefix}.log"
         file "*_encode_reads.cfg" into encode_reads_cfgs
         file "*_align_reads.cfg" into align_reads_cfgs
         
@@ -438,6 +438,8 @@ process WriteAriocConfigs {
             -b !{params.AriocBatchSize} \
             -a !{params.all_alignments} \
             -x !{fq_prefix}
+            
+        cp .command.log write_configs_!{fq_prefix}.log
         '''
 }
 

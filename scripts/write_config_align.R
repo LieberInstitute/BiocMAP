@@ -9,6 +9,8 @@ spec <- matrix(c('paired', 'p', 1, 'character', '"single" or "paired"',
                byrow=TRUE, ncol=5)
 opt <- getopt(spec)
 
+print("Writing configs for AriocP...")
+
 if (opt$paired == "paired") {
   exec_name = 'AriocP'
   id = strsplit(system('ls *.fastq', intern=TRUE)[1], "_1.fastq", fixed=TRUE)[[1]]
@@ -74,3 +76,5 @@ config_lines = c(config_lines, '  </A>', paste0('</', exec_name, '>'))
 #############################################################
 
 writeLines(config_lines, paste0(opt$prefix, '_align_reads.cfg'))
+
+print("Done writing all configs for Arioc.")
