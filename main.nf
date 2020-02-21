@@ -40,17 +40,23 @@ def helpMessage() {
         
     Required flags:
         --sample:      "single" or "paired", depending on your FASTQ reads
-        --reference:   "hg38", "hg19", or "mm10". The reference genome to be used for alignment, methylation
-                       extraction, and coverage2cytosine
+        --reference:   "hg38", "hg19", or "mm10". The reference genome to be
+                       used for alignment and methylation extraction
     
     Optional flags:
-        --input:          the path to your FASTQ files and samples.manifest describing them. Defaults to ./in/
-        --output:         the directory into which to place pipeline results and outputs. Defaults to ./out/
-        --force_trim:     include this flag to perform trimming on all samples (by default, trimming is done on
-                          samples failing the FastQC "adapter content" metric)
-        --all_alignments: include this flag to signal Arioc to also write outputs for discondant, rejected, and
-                          unmapped reads. Sam files for each outcome are kept as pipeline outputs. As by default,
-                          only concordant reads are used for later processing (BME, ...)
+        --input [path]:   the path to your FASTQ files and samples.manifest 
+                          describing them. Defaults to "./in"
+        --output [path]:  the directory into which to place pipeline results and
+                          outputs. Defaults to "./out"
+        --force_trim:     include this flag to perform trimming on all samples
+                          (by default, trimming is done on samples failing the
+                          FastQC "adapter content" metric)
+        --all_alignments: include this flag to signal Arioc to also write
+                          outputs for discondant, rejected, and unmapped reads.
+                          Sam files for each outcome are kept as pipeline
+                          outputs. As by default, only concordant reads are used
+                          for later processing (methylation extraction and
+                          beyond)
     """.stripIndent()
 }
 
