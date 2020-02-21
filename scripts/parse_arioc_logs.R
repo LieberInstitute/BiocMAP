@@ -27,7 +27,7 @@ row_data = lapply(f, function(filename) {
     as.numeric(cleanseVec(ss(log_text,":", 2)))
 })
 
-arioc_results = as.data.frame(matrix(unlist(row_data), nrow=length(row_data)))
+arioc_results = as.data.frame(matrix(unlist(row_data), nrow=length(row_data), byrow=TRUE))
 colnames(arioc_results) = col_names
 rownames(ids)
 
