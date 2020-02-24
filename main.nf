@@ -752,7 +752,7 @@ if (params.use_bme) {
             '''
             #  Run methylation extraction
             echo "Running 'MethylDackel extract' on the sorted bam..."
-            bin/MethylDackel extract --cytosine_report !{MD_genome} !{bam_file}
+            !{params.MethylDackel} extract --cytosine_report !{MD_genome} !{bam_file}
             
             echo "Summary stats for !{prefix}:"
             !{params.Rscript} !{meth_count_script} -t !{params.data_table_threads}
