@@ -5,7 +5,7 @@ run_jhpce_qsub.log
 Arioc/temp_encoded_reads*
 
 #	Personal data- related
-in/*
+test/samples.manifest
 out/*
 
 #	Large files that should be built

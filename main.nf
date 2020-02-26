@@ -44,8 +44,8 @@ def helpMessage() {
                        used for alignment and methylation extraction
     
     Optional flags:
-        --input [path]:   the path to your FASTQ files and samples.manifest 
-                          describing them. Defaults to "./in"
+        --input [path]:   the path to the directory containing the 
+                          samples.manifest. Defaults to "./test"
         --output [path]:  the directory into which to place pipeline results and
                           outputs. Defaults to "./out"
         --force_trim:     include this flag to perform trimming on all samples
@@ -67,7 +67,7 @@ def helpMessage() {
 
 params.reference = ""
 params.sample = ""
-params.input = "${workflow.projectDir}/in"
+params.input = "${workflow.projectDir}/test"
 params.output = "${workflow.projectDir}/out"
 params.work = "${workflow.projectDir}/work"
 params.force_trim = false
@@ -755,7 +755,7 @@ if (params.use_bme) {
             !{params.MethylDackel} extract --cytosine_report !{MD_genome} !{bam_file}
             
             echo "Summary stats for !{prefix}:"
-            !{params.Rscript} !{meth_count_script} -t !{params.data_table_threads}
+            Rscript !{meth_count_script} -t !{params.data_table_threads}
             
             
             #  Split reports by sequence (pulled from BAM header)
