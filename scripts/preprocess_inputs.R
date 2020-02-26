@@ -1,8 +1,3 @@
-#  1. Unzip any gzipped files
-#  2. Rename any .fq files to .fastq
-#  3. Rename any paired-end suffices to "_1" and "_2"
-#  4. Merge any files with same ID
-
 ## Required libraries
 library('devtools')
 library('jaffelab')
@@ -13,7 +8,7 @@ run_command = function(command) {
     print("Done.")
 }
 
-manifest = read.table('samples.manifest', sep = ' ', header = FALSE, stringsAsFactors = FALSE)
+manifest = read.table('samples.manifest', header = FALSE, stringsAsFactors = FALSE)
 
 ## Is the data paired end?
 paired = ncol(manifest) > 3
@@ -30,36 +25,28 @@ exts = sapply(split_name, function(x) x[length(x)])
 #  the ".gz" ending (Arioc needs unzipped files)
 print("Unzipping any gzipped reads...")
 for (i in which(exts == ".gz")) {
-    command = paste0('gunzip ', filenames[i])
+    #  Remove ".gz" and make sure suffix is ".fastq"
+    new_name = sub("\\.fq", "\\.fastq", basename(ss(filenames[i], "\\.gz")))
+    
+    command = paste0('gunzip -c ', filenames[i], ' > ', new_name)
     run_command(command)
-    filenames[i] = ss(filenames[i], ".gz")
+    filenames[i] = new_name
 }
+
+print("Symbolically linking remaining FASTQs into the working directory...")
+for (i in which(exts != ".gz")) {
+    stopifnot(exts[i] %in% c(".fq", ".fastq"))
+    new_name = sub("\\.fq", "\\.fastq", basename(filenames[i]))
+    
+    command = paste('ln -s', filenames[i], new_name)
+    run_command(command)
+    filenames[i] = new_name
+} 
 
 #  Recompute last file extensions
 split_name = strsplit(filenames, ".", fixed=TRUE)
 exts = sapply(split_name, function(x) x[length(x)])
 
-#  Rename any .fq files to have extension ".fastq" (to simplify file handling
-#  in the pipeline)
-print("Renaming any '.fq' files to have extension '.fastq'...")
-for (i in which(exts == ".fq")) {
-    new_name = paste0(ss(filenames[i], '.fq'), '.fastq')
-    command = paste('mv', filenames[i], new_name)
-    run_command(command)
-}
-
-if (paired) {
-    print("Replacing any paired suffices with '_1' and '_2'...")
-    for (i in 1:nrow(manifest)) {
-        new_file1 = paste0(manifest[i, 5], '_1.fastq')
-        command = paste('mv', manifest[i, 1], new_file1)
-        run_command(command)
-        
-        new_file2 = paste0(manifest[i, 5], '_2.fastq')
-        command = paste('mv', manifest[i, 3], new_file2)
-        run_command(command)
-    }
-}
 
 #  This forms a list, where each element is a vector containing row numbers
 #  of the manifest to combine (and each element contains a unique set of rows)
@@ -70,63 +57,76 @@ for (i in 1:nrow(manifest)) {
         indicesToCombine[[i]] = idMatchRows
     }
 }
+indicesToCombine = indicesToCombine[!sapply(indicesToCombine, is.null)]
+
+if (length(unlist(indicesToCombine)) > 0) {
+    remaining_rows = (1:nrow(manifest))[-unlist(indicesToCombine)]
+} else {
+    remaining_rows = 1:nrow(manifest)
+}
 
 #  Merge any files that need to be merged (based on having the same ID in the
 #  last column of the manifest
 print("Merging any files that need to be merged...")
 if (paired) {
     for (indices in indicesToCombine) {
-        files_to_combine = do.call(paste, as.list(manifest[indices, 1]))
-        new_file = paste0(manifest[indices[1], 5], '_R1.fastq')
+        files_to_combine = do.call(paste, as.list(filenames[indices]))
+        new_file = paste0(manifest[indices[1], 5], '_1.fastq')
         command = paste0('cat ', files_to_combine, ' > ', new_file)
         run_command(command)
         command = paste0('rm ', files_to_combine)
         run_command(command)
         
-        files_to_combine = do.call(paste, as.list(manifest[indices, 3]))
-        new_file = paste0(manifest[indices[1], 5], '_R2.fastq')
+        files_to_combine = do.call(paste, as.list(filenames[indices + nrow(manifest)])
+        new_file = paste0(manifest[indices[1], 5], '_2.fastq')
         command = paste0('cat ', files_to_combine, ' > ', new_file)
         run_command(command)
         command = paste0('rm ', files_to_combine)
         run_command(command)
     }
+    
+    print("Renaming files for handling in the pipeline...")
+    for (index in remaining_rows) {
+        new_file = paste0(manifest[index, 5], '_1.fastq')
+        command = paste('mv', filenames[index], new_file)
+        run_command(command)
+        
+        new_file = paste0(manifest[index, 5], '_2.fastq')
+        command = paste('mv', filenames[index + nrow(manifest)], new_file)
+        run_command(command)
+    }
+    
+    #  Rewrite a manifest to reflect the file name changes and any merging
+    print("Constructing a new manifest to reflect these changes...")
+    first_reads = system('ls *_1.f*q*', intern=TRUE)
+    ids = ss(first_reads, '_1\\.')
+    new_man = paste(first_reads,
+                    0,
+                    system('ls *_2.f*q*', intern=TRUE),
+                    0,
+                    ids)
+    writeLines(new_man, con="arioc_samples.manifest")
 } else {
     for (indices in indicesToCombine) {
-        files_to_combine = do.call(paste, as.list(manifest[indices, 1]))
-        new_file = paste0(manifest[indices[1], 5], '.fastq')
+        files_to_combine = do.call(paste, as.list(filenames[indices])))
+        new_file = paste0(manifest[indices[1], 3], '.fastq')
         command = paste0('cat ', files_to_combine, ' > ', new_file)
         run_command(command)
         command = paste0('rm ', files_to_combine)
         run_command(command)
     }
+    
+    print("Renaming files for handling in the pipeline...")
+    for (index in remaining_rows) {
+        new_file = paste0(manifest[index, 3], '.fastq')
+        command = paste('mv', filenames[index], new_file)
+        run_command(command)
+    }
+    
+    #  Rewrite a manifest to reflect the file name changes and any merging
+    print("Constructing a new manifest to reflect these changes...")
+    reads = basename(system('ls *.f*q*', intern=TRUE))
+    ids = ss(reads, '.', fixed=TRUE)
+    new_man = paste(reads, 0, ids)
+    writeLines(new_man, con="arioc_samples.manifest")
 }
-
-#  Rewrite a manifest given all of the changes made
-print("Rewriting a manifest for use later in the pipeline...")
-if (paired) {
-    # for now, later probably change to use user-specified id in 5th column
-    first_read = system('ls *_1.fastq', intern=TRUE)
-    man_lines = paste(first_read,
-                      0,
-                      system('ls *_2.fastq', intern=TRUE),
-                      0,
-                      ss(first_read, '_1.fastq', fixed=TRUE))
-} else {
-    filenames = system('ls *.fastq', intern=TRUE)
-    man_lines = paste(filenames,
-                      0,
-                      ss(filenames, '.fastq', fixed=TRUE))
-}
-writeLines(man_lines, con = "arioc_samples.manifest")
-
-#  A sloppy workaround for nextflow not recognizing input files as valid
-#  output files (appears to be based on filename- touching the inputs doesn't
-#  work as a solution)
-print("Giving files temporary new name to ensure placement in channel...")
-result_fastqs = system('ls *.fastq', intern=TRUE)
-for (f in result_fastqs) {
-    file_base = ss(f, ".", fixed=TRUE)
-    system(paste0('mv ', f, ' ', file_base, '.fastq_temp'))
-}
-
-print("Done with all input preprocessing.")
