@@ -57,6 +57,9 @@ def helpMessage() {
                           outputs. As by default, only concordant reads are used
                           for later processing (methylation extraction and
                           beyond)
+        --use_bme:        include this flag to perform methylation extraction-
+                          related processes with Bismark utilities, rather than
+                          the default of MethylDackel
     """.stripIndent()
 }
 
@@ -72,6 +75,7 @@ params.output = "${workflow.projectDir}/out"
 params.work = "${workflow.projectDir}/work"
 params.force_trim = false
 params.all_alignments = false
+params.use_bme = false
 
 // -------------------------------------
 //   Validate Inputs
