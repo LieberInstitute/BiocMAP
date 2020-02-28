@@ -107,7 +107,7 @@ if (params.reference == "hg38") {
 
 def get_prefix(f) {
     //  Remove these regardless of position in the string (note blackListAny is a regular expression)
-    blackListAny = ~/_[12]_summary|_[12]_fastqc_data|_success_token|_trimmed|_(reverse|forward)_(paired|unpaired)|_R[12]\$(a21|raw|sqm|sqq)|CH[GH]_*O[BT]_|CpG_*O[BT]_|_bedgraph_merged/
+    blackListAny = ~/_[12]_summary|_[12]_fastqc_data|_success_token|_(trimmed|untrimmed)|_(reverse|forward)_(paired|unpaired)|_R[12]\$(a21|raw|sqm|sqq)|CH[GH]_*O[BT]_|CpG_*O[BT]_|_bedgraph_merged/
     
     //  Remove these if at the end of the file (before the file extension)
     String blackListEnd = "_[12]\\.|_R[12]\\.|_(encode|align)_reads\\.|\\.(c|cfu|txt|gz|sorted|)"
@@ -196,10 +196,9 @@ process Merging {
     input:
         file original_manifest from file("${params.input}/samples.manifest")
         file merge_script from file("${workflow.projectDir}/scripts/preprocess_inputs.R")
-        file fastqs from Channel.fromPath("${params.input}/*.f*q*").collect()
         
     output:
-        file "*.fastq_temp" into merged_inputs_flat
+        file "*.fastq" into merged_inputs_flat
         file "arioc_samples.manifest" into arioc_manifest
         file "preprocess_inputs.log"
 
@@ -257,10 +256,6 @@ process FastQC_Untrimmed {
             data_command = "cp ${fq_prefix}_1_fastqc/fastqc_data.txt ${fq_prefix}_1_fastqc_data.txt && cp ${fq_prefix}_2_fastqc/fastqc_data.txt ${fq_prefix}_2_fastqc_data.txt"
         }
         '''
-        for f in $(ls *.fastq_temp); do
-            base_name=$(echo $f | cut -d "." -f 1)
-            mv $f ${base_name}.fastq
-        done
         !{params.fastqc} -t !{task.cpus} *.fastq --extract
         !{copy_command}
         !{data_command}
@@ -301,7 +296,7 @@ process Trimming {
         set val(fq_prefix), file(fq_summary), file(fq_file) from trimming_inputs
 
     output:
-        file "*.fastq" optional true into trimmed_fastqc_inputs, trimming_outputs
+        file "*.fastq" into trimmed_fastqc_inputs, trimming_outputs
 
     shell:
         if (params.sample == "single") {
@@ -315,12 +310,7 @@ process Trimming {
             adapter_fa_temp = params.adapter_fasta_paired
             trim_clip = params.trim_clip_paired
         }
-        '''
-        for f in $(ls *.fastq_temp); do
-            base_name=$(echo $f | cut -d "." -f 1)
-            mv $f ${base_name}.fastq
-        done
-        
+        '''        
         #  Determine whether to trim the FASTQ file(s). This is done if the user
         #  adds the --force_trim flag, or if fastQC adapter content metrics fail
         #  for at least one FASTQ
@@ -367,6 +357,14 @@ process Trimming {
                 TRAILING:!{params.trim_trail} \
                 SLIDINGWINDOW:!{params.trim_slide_window} \
                 MINLEN:!{params.trim_min_len}
+        else
+            #  Otherwise rename files (signal to nextflow to output these files)
+            if [ "!{params.sample}" == "single" ]; then
+                mv !{fq_prefix}.fastq !{fq_prefix}_untrimmed.fastq
+            else
+                mv !{fq_prefix}_1.fastq !{fq_prefix}_untrimmed_1.fastq
+                mv !{fq_prefix}_2.fastq !{fq_prefix}_untrimmed_2.fastq
+            fi
         fi
         '''
 }
@@ -765,7 +763,7 @@ if (params.use_bme) {
             #  Split reports by sequence (pulled from BAM header)
             echo "Splitting cytosine report by sequence..."
             for SN in $(!{params.samtools} view -H !{bam_file} | cut -f 2 | grep "SN:" | cut -d ":" -f 2); do
-                awk "$1 == $SN" !{prefix}.cytosine_report.txt > !{prefix}.$SN.CX_report.txt
+                awk -v sn=$SN '$1 == sn' !{prefix}.cytosine_report.txt > !{prefix}.$SN.CX_report.txt
             done
             
             echo "Done."
