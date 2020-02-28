@@ -103,7 +103,7 @@ if (params.reference == "hg38") {
 
 def get_prefix(f) {
     //  Remove these regardless of position in the string (note blackListAny is a regular expression)
-    blackListAny = ~/_[12]_summary|_[12]_fastqc_data|_success_token|_trimmed|_(reverse|forward)_(paired|unpaired)|_R[12]\$(a21|raw|sqm|sqq)|CH[GH]_*O[BT]_|CpG_*O[BT]_|_bedgraph_merged/
+    blackListAny = ~/_[12]_summary|_[12]_fastqc_data|_success_token|_(trimmed|untrimmed)|_(reverse|forward)_(paired|unpaired)|_R[12]\$(a21|raw|sqm|sqq)|CH[GH]_*O[BT]_|CpG_*O[BT]_|_bedgraph_merged/
     
     //  Remove these if at the end of the file (before the file extension)
     String blackListEnd = "_[12]\\.|_R[12]\\.|_(encode|align)_reads\\.|\\.(c|cfu|txt|gz|sorted|)"
@@ -292,7 +292,7 @@ process Trimming {
         set val(fq_prefix), file(fq_summary), file(fq_file) from trimming_inputs
 
     output:
-        file "*.fastq" optional true into trimmed_fastqc_inputs, trimming_outputs
+        file "*.fastq" into trimmed_fastqc_inputs, trimming_outputs
 
     shell:
         if (params.sample == "single") {
@@ -353,6 +353,14 @@ process Trimming {
                 TRAILING:!{params.trim_trail} \
                 SLIDINGWINDOW:!{params.trim_slide_window} \
                 MINLEN:!{params.trim_min_len}
+        else
+            #  Otherwise rename files (signal to nextflow to output these files)
+            if [ "!{params.sample}" == "single" ]; then
+                mv !{fq_prefix}.fastq !{fq_prefix}_untrimmed.fastq
+            else
+                mv !{fq_prefix}_1.fastq !{fq_prefix}_untrimmed_1.fastq
+                mv !{fq_prefix}_2.fastq !{fq_prefix}_untrimmed_2.fastq
+            fi
         fi
         '''
 }
