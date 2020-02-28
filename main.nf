@@ -192,10 +192,9 @@ process Merging {
     input:
         file original_manifest from file("${params.input}/samples.manifest")
         file merge_script from file("${workflow.projectDir}/scripts/preprocess_inputs.R")
-        file fastqs from Channel.fromPath("${params.input}/*.f*q*").collect()
         
     output:
-        file "*.fastq_temp" into merged_inputs_flat
+        file "*.fastq" into merged_inputs_flat
         file "arioc_samples.manifest" into arioc_manifest
         file "preprocess_inputs.log"
 
@@ -253,10 +252,6 @@ process FastQC_Untrimmed {
             data_command = "cp ${fq_prefix}_1_fastqc/fastqc_data.txt ${fq_prefix}_1_fastqc_data.txt && cp ${fq_prefix}_2_fastqc/fastqc_data.txt ${fq_prefix}_2_fastqc_data.txt"
         }
         '''
-        for f in $(ls *.fastq_temp); do
-            base_name=$(echo $f | cut -d "." -f 1)
-            mv $f ${base_name}.fastq
-        done
         !{params.fastqc} -t !{task.cpus} *.fastq --extract
         !{copy_command}
         !{data_command}
@@ -311,12 +306,7 @@ process Trimming {
             adapter_fa_temp = params.adapter_fasta_paired
             trim_clip = params.trim_clip_paired
         }
-        '''
-        for f in $(ls *.fastq_temp); do
-            base_name=$(echo $f | cut -d "." -f 1)
-            mv $f ${base_name}.fastq
-        done
-        
+        '''        
         #  Determine whether to trim the FASTQ file(s). This is done if the user
         #  adds the --force_trim flag, or if fastQC adapter content metrics fail
         #  for at least one FASTQ

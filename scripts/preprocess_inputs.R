@@ -24,7 +24,7 @@ exts = sapply(split_name, function(x) x[length(x)])
 #  Decompress any gzipped files and adjust their filenames to not have
 #  the ".gz" ending (Arioc needs unzipped files)
 print("Unzipping any gzipped reads...")
-for (i in which(exts == ".gz")) {
+for (i in which(exts == "gz")) {
     #  Remove ".gz" and make sure suffix is ".fastq"
     new_name = sub("\\.fq", "\\.fastq", basename(ss(filenames[i], "\\.gz")))
     
@@ -34,14 +34,14 @@ for (i in which(exts == ".gz")) {
 }
 
 print("Symbolically linking remaining FASTQs into the working directory...")
-for (i in which(exts != ".gz")) {
-    stopifnot(exts[i] %in% c(".fq", ".fastq"))
+for (i in which(exts != "gz")) {
+    stopifnot(exts[i] %in% c("fq", "fastq"))
     new_name = sub("\\.fq", "\\.fastq", basename(filenames[i]))
     
     command = paste('ln -s', filenames[i], new_name)
     run_command(command)
     filenames[i] = new_name
-} 
+}
 
 #  Recompute last file extensions
 split_name = strsplit(filenames, ".", fixed=TRUE)
@@ -77,7 +77,7 @@ if (paired) {
         command = paste0('rm ', files_to_combine)
         run_command(command)
         
-        files_to_combine = do.call(paste, as.list(filenames[indices + nrow(manifest)])
+        files_to_combine = do.call(paste, as.list(filenames[indices + nrow(manifest)]))
         new_file = paste0(manifest[indices[1], 5], '_2.fastq')
         command = paste0('cat ', files_to_combine, ' > ', new_file)
         run_command(command)
@@ -108,7 +108,7 @@ if (paired) {
     writeLines(new_man, con="arioc_samples.manifest")
 } else {
     for (indices in indicesToCombine) {
-        files_to_combine = do.call(paste, as.list(filenames[indices])))
+        files_to_combine = do.call(paste, as.list(filenames[indices]))
         new_file = paste0(manifest[indices[1], 3], '.fastq')
         command = paste0('cat ', files_to_combine, ' > ', new_file)
         run_command(command)
