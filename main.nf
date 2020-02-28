@@ -761,7 +761,7 @@ if (params.use_bme) {
             #  Split reports by sequence (pulled from BAM header)
             echo "Splitting cytosine report by sequence..."
             for SN in $(!{params.samtools} view -H !{bam_file} | cut -f 2 | grep "SN:" | cut -d ":" -f 2); do
-                awk "$1 == $SN" !{prefix}.cytosine_report.txt > !{prefix}.$SN.CX_report.txt
+                awk -v sn=$SN '$1 == sn' !{prefix}.cytosine_report.txt > !{prefix}.$SN.CX_report.txt
             done
             
             echo "Done."
