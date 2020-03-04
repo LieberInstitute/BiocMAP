@@ -24,7 +24,7 @@ if (opt$paired == "paired") {
 #  the first sample in the manifest (thus the assumption is made: the manifest
 #  paths all match the input directory, params.input)
 man = read.table('arioc_samples.manifest', sep = ' ', header = FALSE, stringsAsFactors = FALSE)
-idRowNum = match(id, man[,ncol(man)])
+idRowNum = match(opt$prefix, man[,ncol(man)])
 idNum = as.integer(idRowNum / 2) + 1
 
 if (opt$allAlign) {
