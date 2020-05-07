@@ -154,6 +154,7 @@ process PrepareReference {
         #  Build the bisulfite genome, needed for bismark (and copy it to publishDir,
         #  circumventing Nextflow's inability to recursively copy)
         !{params.bismark_genome_preparation} --hisat2 --path_to_aligner !{params.hisat2} ./
+        mkdir -p !{workflow.projectDir}/ref/!{params.reference}
         cp -R Bisulfite_Genome !{workflow.projectDir}/ref/!{params.reference}/
         
         #  Split by sequence, to prepare for encoding reference with Arioc
