@@ -7,23 +7,13 @@ vim: syntax=groovy
     WGBS pipeline
 --------------------------------------------------------------------------
 
-input: fastq or fastq.gz files, which should be present in ./in/
-output: bsseq objects, separated by cytosine context, to be written to ./out/ by default
+input: SAM files, whose paths are specified in rules.txt
+output: bsseq objects, separated by cytosine context
 
 processes:
-    A. Pre-processing on input FASTQ files- this involves decompressing any gzipped
-       files, renaming file extensions or paired-end read suffices (if necessary),
-       and merging files with the same sample ID
-    
-    1. FastQC on FASTQ files
-    2. Trimming FASTQ files (by default based on adapter content FastQC metric)
-    3. FastQC on any trimmed files, to confirm trimming achieved its goal
-    4. Alignment with Arioc
-    5. Filter to high quality, unique reads, and convert sam to bam
-    6. Bismark methylation extraction
-    7. bismark2bedgraph on BME outputs
-    8. coverage2cytosine on bismark2bedgraph outputs
-    9. HDF5-backed bsseq object creation 
+    1. convert sam to bam
+    2. methylation extraction via MethylDackel
+    3. HDF5-backed bsseq object creation
 */
 
 def helpMessage() {
@@ -44,19 +34,7 @@ def helpMessage() {
                        used for alignment and methylation extraction
     
     Optional flags:
-        --input [path]:   the path to the directory containing the 
-                          samples.manifest. Defaults to "./test"
-        --output [path]:  the directory into which to place pipeline results and
-                          outputs. Defaults to "./out"
-        --force_trim:     include this flag to perform trimming on all samples
-                          (by default, trimming is done on samples failing the
-                          FastQC "adapter content" metric)
-        --all_alignments: include this flag to signal Arioc to also write
-                          outputs for discondant, rejected, and unmapped reads.
-                          Sam files for each outcome are kept as pipeline
-                          outputs. As by default, only concordant reads are used
-                          for later processing (methylation extraction and
-                          beyond)
+        --input [path]:   the path to the directory containing the rules.txt file
         --use_bme:        include this flag to perform methylation extraction-
                           related processes with Bismark utilities, rather than
                           the default of MethylDackel
@@ -73,8 +51,6 @@ params.sample = ""
 params.input = "${workflow.projectDir}/test"
 params.output = "${workflow.projectDir}/out"
 params.work = "${workflow.projectDir}/work"
-params.force_trim = false
-params.all_alignments = false
 params.use_bme = false
 
 // -------------------------------------
@@ -130,8 +106,7 @@ def get_chromosome_name(f) {
 // ######################################################
 
 // Pull the reference fasta for the given reference; build the bisulfite-converted
-// genome required by Bismark tools; split the fasta into individual files (1 per
-// canonical sequence) and write the configs for encoding the reference with AriocE
+// genome required by Bismark tools
 process PrepareReference {
     storeDir "${workflow.projectDir}/ref/${params.reference}"
     
@@ -141,8 +116,6 @@ process PrepareReference {
     
     output:
         file "$baseName" into BME_genome, MD_genome  // the original reference fasta
-        file "encode_ref_gap.cfg" into encode_ref_gap_cfg
-        file "encode_ref_nongap.cfg" into encode_ref_nongap_cfg
         
     shell:
         baseName = file("${params.ref_fasta_link}").getName() - ".gz"
@@ -156,378 +129,14 @@ process PrepareReference {
         !{params.bismark_genome_preparation} --hisat2 --path_to_aligner !{params.hisat2} ./
         mkdir -p !{workflow.projectDir}/ref/!{params.reference}
         cp -R Bisulfite_Genome !{workflow.projectDir}/ref/!{params.reference}/
-        
-        #  Split by sequence, to prepare for encoding reference with Arioc
-        bash !{split_fasta_script} !{baseName}
-        
-        #  Write the Arioc configs for encoding the reference
-        out_dir=!{workflow.projectDir}/ref/!{params.reference}/encoded_ref
-        mkdir $out_dir
-        Rscript !{encode_ref_script} -r !{params.reference} -d $out_dir
         '''
 }
 
-
-// Arioc requires an encoded reference sequence. This process builds that within the repo,
-// if the encoded sequence hasn't been built before.
-process EncodeReference {
-    storeDir "${workflow.projectDir}/ref/${params.reference}"
-    
-    input:
-        file encode_ref_gap_cfg
-        file encode_ref_nongap_cfg
-        
-    output:
-        file ".success" into success_token_ref
-        
-    shell:
-        '''
-        !{params.AriocE} !{encode_ref_gap_cfg}
-        !{params.AriocE} !{encode_ref_nongap_cfg}
-        touch .success
-        '''
-}
-
-
-process Merging {
-
-    publishDir "${params.output}", mode:'copy', pattern:'*.log'
-    tag "Performing merging if/where necessary"
-
-    input:
-        file original_manifest from file("${params.input}/samples.manifest")
-        file merge_script from file("${workflow.projectDir}/scripts/preprocess_inputs.R")
-        
-    output:
-        file "*.fastq" into merged_inputs_flat
-        file "arioc_samples.manifest" into arioc_manifest
-        file "preprocess_inputs.log"
-
-    shell:
-        '''
-        Rscript !{merge_script}
-        
-        cp .command.log preprocess_inputs.log
-        '''
-}
-
-
-//  Group both reads together for each sample, if paired-end, and assign each sample a prefix
-if (params.sample == "single") {
-    merged_inputs_flat
-        .flatten()
-        .map{file -> tuple(get_prefix(file), file) }
-        .ifEmpty{ error "Input fastq files (after any merging) are missing from the channel"}
-        .into{ fastqc_untrimmed_inputs; trimming_inputs }
-} else {
-    merged_inputs_flat
-        .flatten()
-        .map{file -> tuple(get_prefix(file), file) }
-        .groupTuple()
-        .ifEmpty{ error "Input fastq files (after any merging) are missing from the channel"}
-        .into{ fastqc_untrimmed_inputs; trimming_inputs }
-}
 
 // ######################################################
 //    Begin pipeline
 // ######################################################
 
-
-//  -----------------------------------------
-//   Step 1: Run FastQC on each sample
-//  -----------------------------------------
-
-process FastQC_Untrimmed {
-    tag "$fq_prefix"
-    publishDir "${params.output}/FastQC/Untrimmed", mode:'copy'
-
-    input:
-        set val(fq_prefix), file(fq_file) from fastqc_untrimmed_inputs 
-
-    output:
-        file "*"
-        file "*_summary.txt" into fastq_summaries_untrimmed
-
-    shell:
-        if (params.sample == "single") {
-            copy_command = "cp ${fq_prefix}_fastqc/summary.txt ${fq_prefix}_summary.txt"
-            data_command = "cp ${fq_prefix}_fastqc/fastqc_data.txt ${fq_prefix}_fastqc_data.txt"
-        } else {
-            copy_command = "cp ${fq_prefix}_1_fastqc/summary.txt ${fq_prefix}_1_summary.txt && cp ${fq_prefix}_2_fastqc/summary.txt ${fq_prefix}_2_summary.txt"
-            data_command = "cp ${fq_prefix}_1_fastqc/fastqc_data.txt ${fq_prefix}_1_fastqc_data.txt && cp ${fq_prefix}_2_fastqc/fastqc_data.txt ${fq_prefix}_2_fastqc_data.txt"
-        }
-        '''
-        !{params.fastqc} -t !{task.cpus} *.fastq --extract
-        !{copy_command}
-        !{data_command}
-        '''
-}
-
-//  Combine FASTQ files and FastQC result summaries for each sample, to form the input channel for Trimming
-if (params.sample == "single") {
-
-    fastq_summaries_untrimmed
-        .flatten()
-        .map{ file -> tuple(get_prefix(file), file) }
-        .join(trimming_inputs)
-        .ifEmpty{ error "All files (fastQC summaries on untrimmed inputs, and the FASTQs themselves) missing from input to trimming channel." }
-        .set{ trimming_inputs }
-        
-} else { // paired
-
-    fastq_summaries_untrimmed
-        .flatten()
-        .map{ file -> tuple(get_prefix(file), file) }
-        .groupTuple()
-        .join(trimming_inputs)
-        .ifEmpty{ error "All files (fastQC summaries on untrimmed inputs, and the FASTQs themselves) missing from input to trimming channel." }
-        .set{ trimming_inputs }
-}    
-
-//  -----------------------------------------------------------------------
-//   Step 2: Trim FASTQ files if required (or requested via --force_trim)
-//  -----------------------------------------------------------------------
-
-process Trimming {
-
-    tag "Prefix: $fq_prefix"
-    publishDir "${params.output}/Trimming",mode:'copy'
-
-    input:
-        set val(fq_prefix), file(fq_summary), file(fq_file) from trimming_inputs
-
-    output:
-        file "*.fastq" into trimmed_fastqc_inputs, trimming_outputs
-
-    shell:
-        if (params.sample == "single") {
-            output_option = "${fq_prefix}_trimmed.fastq"
-            trim_mode = "SE"
-            adapter_fa_temp = params.adapter_fasta_single
-            trim_clip = params.trim_clip_single
-        } else {
-            output_option = "${fq_prefix}_trimmed_forward_paired.fastq ${fq_prefix}_trimmed_forward_unpaired.fastq ${fq_prefix}_trimmed_reverse_paired.fastq ${fq_prefix}_trimmed_reverse_unpaired.fastq"
-            trim_mode = "PE"
-            adapter_fa_temp = params.adapter_fasta_paired
-            trim_clip = params.trim_clip_paired
-        }
-        '''        
-        #  Determine whether to trim the FASTQ file(s). This is done if the user
-        #  adds the --force_trim flag, or if fastQC adapter content metrics fail
-        #  for at least one FASTQ
-        if [ "!{params.force_trim}" == true ]; then
-            do_trim=true
-        elif [ "!{params.sample}" == "single" ]; then
-            if [ $(grep "Adapter Content" !{fq_summary} | cut -f 1)  == "FAIL" ]; then
-                do_trim=true
-            else
-                do_trim=false
-            fi
-        else
-            result1=$(grep "Adapter Content" !{fq_prefix}_1_summary.txt | cut -c1-4)
-            result2=$(grep "Adapter Content" !{fq_prefix}_2_summary.txt | cut -c1-4)
-            if [ $result1 == "FAIL" ] || [ $result2 == "FAIL" ]; then
-                do_trim=true
-            else
-                do_trim=false
-            fi
-        fi
-        
-        #  Run trimming if required
-        if [ "$do_trim" == true ]; then
-            #  This solves the problem of trimmomatic and the adapter fasta
-            #  needing hard paths, even when on the PATH.
-            if [ !{params.use_long_paths} == "true" ]; then
-                trim_jar=!{params.trimmomatic}
-                adapter_fa=!{adapter_fa_temp}
-            else
-                trim_jar=$(which !{params.trimmomatic})
-                adapter_fa=$(which !{adapter_fa_temp})
-            fi
-            
-            #  Run trimmomatic
-            java -Xmx512M \
-                -jar $trim_jar \
-                !{trim_mode} \
-                -threads !{task.cpus} \
-                -phred33 \
-                !{fq_file} \
-                !{output_option} \
-                ILLUMINACLIP:$adapter_fa:!{trim_clip} \
-                LEADING:!{params.trim_lead} \
-                TRAILING:!{params.trim_trail} \
-                SLIDINGWINDOW:!{params.trim_slide_window} \
-                MINLEN:!{params.trim_min_len}
-        else
-            #  Otherwise rename files (signal to nextflow to output these files)
-            if [ "!{params.sample}" == "single" ]; then
-                mv !{fq_prefix}.fastq !{fq_prefix}_untrimmed.fastq
-            else
-                mv !{fq_prefix}_1.fastq !{fq_prefix}_untrimmed_1.fastq
-                mv !{fq_prefix}_2.fastq !{fq_prefix}_untrimmed_2.fastq
-            fi
-        fi
-        '''
-}
-
-//  Pair trimming output FASTQs into a channel, grouped by sample name ("prefix")
-if (params.sample == "single") {
-
-    trimming_outputs
-        .flatten()
-        .map{ file -> tuple(get_prefix(file), file) }
-        .ifEmpty{ error "Single-end trimming output channel is empty" }
-        .into{ ariocE_inputs1; ariocE_inputs2 }
-} else {
-
-    trimming_outputs
-        .flatten()
-        .map{ file -> tuple(get_prefix(file), file) }
-        .groupTuple()
-        .ifEmpty{ error "Paired-end trimming output channel is empty" }
-        .into{ ariocE_inputs1; ariocE_inputs2 }
-}
-
-//  ------------------------------------------------------------------------------
-//   Step 3: Rerun FastQC on any trimmed files, to make sure trimming did its job
-//  ------------------------------------------------------------------------------
-
-process FastQC_Trimmed {
-
-    tag "$fastq_name"
-    publishDir "${params.output}/FastQC/Trimmed",'mode':'copy'
-
-    input:
-        file trimmed_input from trimmed_fastqc_inputs
-
-    output:
-        file "*"
-
-    shell:
-        fastq_name = get_prefix(trimmed_input[0])
-        '''
-        !{params.fastqc} -t !{task.cpus} !{trimmed_input} --extract
-        '''
-}
-
-//  -------------------------------------------------------------------------
-//   Step 4: Alignment with Arioc
-//  -------------------------------------------------------------------------
-
-//  This is done separately from the encode/ align steps, as writing the configs
-//  uses R (possibly not available on a GPU node, where encoding/alignment is done)
-process WriteAriocConfigs {
-
-    publishDir "${params.output}/Arioc/configs/",mode:'copy'
-    tag "$fq_prefix"
-    
-    input:
-        set val(fq_prefix), file(fq_file) from ariocE_inputs1
-        file encode_reads_script from file("${workflow.projectDir}/scripts/write_config_encode_reads.R")
-        file align_reads_script from file("${workflow.projectDir}/scripts/write_config_align.R")
-        file arioc_manifest
-        
-    output:
-        file "write_configs_${fq_prefix}.log"
-        file "*_encode_reads.cfg" into encode_reads_cfgs
-        file "*_align_reads.cfg" into align_reads_cfgs
-        
-    shell:
-        '''
-        refDir=!{workflow.projectDir}/Arioc/encoded_ref/!{params.reference}
-        mkdir -p $refDir/temp_encoded_reads
-        Rscript !{encode_reads_script} \
-            -p !{params.sample} \
-            -d !{workflow.projectDir}/Arioc/temp_encoded_reads \
-            -x !{fq_prefix}
-        Rscript !{align_reads_script} \
-            -p !{params.sample} \
-            -d !{workflow.projectDir} \
-            -r !{params.reference} \
-            -b !{params.AriocBatchSize} \
-            -a !{params.all_alignments} \
-            -x !{fq_prefix}
-            
-        cp .command.log write_configs_!{fq_prefix}.log
-        '''
-}
-
-//  Combine (possibly trimmed) FASTQ files into a channel with their associated
-//  AriocE.cfg file
-encode_reads_cfgs
-    .flatten()
-    .map{ file -> tuple(get_prefix(file), file) }
-    .join( ariocE_inputs2 )
-    .ifEmpty{ error "Input channel for AriocE is empty" }
-    .set{ ariocE_merged_inputs }
-
-
-//  FASTQs must be encoded with AriocE, before the alignment step
-process EncodeReads {
-
-    publishDir "${params.output}/Arioc/logs/", mode:'copy', pattern:'*.log'
-    tag "$fq_prefix"
-    
-    input:
-        set val(fq_prefix), file(config), file(fq_file) from ariocE_merged_inputs
-        
-    output:
-        file "${fq_prefix}_success_token" into success_tokens_reads
-        file "encode_${fq_prefix}.log"
-        
-    shell:
-        '''
-        !{params.AriocE} !{fq_prefix}_encode_reads.cfg
-        touch !{fq_prefix}_success_token
-        
-        cp .command.log encode_!{fq_prefix}.log
-        '''
-}
-
-//  This channel includes encoded reads and their associated Arioc alignment config
-success_tokens_reads
-    .mix(align_reads_cfgs)
-    .flatten()
-    .map{ file -> tuple(get_prefix(file), file) }
-    .groupTuple()
-    .ifEmpty{ error "Encoded reads missing from input to 'AlignReads' process." }
-    .set{ align_in }
-
-process AlignReads {   
-    
-    publishDir "${params.output}/Arioc/sams/", mode:'copy', pattern:'*.sam'
-    publishDir "${params.output}/Arioc/logs/", mode:'copy', pattern:'*.log'
-    tag "$prefix"
-    
-    input:
-        // This indicates the reference exists/ was properly built
-        file success_token_ref
-        
-        set val(prefix), file(cfg_and_token) from align_in
-        
-    output:
-        file "${prefix}.[dru].sam" optional true
-        file "${prefix}.c.sam" into concordant_sams_out
-        file "${prefix}_alignment.log" into arioc_logs_out
-        
-    shell:
-        if (params.sample == "paired") {
-            exec_name = "${params.AriocP}"
-        } else {
-            exec_name = "${params.AriocU}"
-        }
-        '''
-        #  Run alignment
-        !{exec_name} !{prefix}_align_reads.cfg
-        cp .command.log !{prefix}_alignment.log
-        
-        #  Rename sams to be [sampleName].[alignment_type].sam
-        for sam in $(ls Arioc*.sam); do
-            sam_type=$(echo $sam | cut -d "." -f 2)
-            mv $sam !{prefix}.$sam_type.sam
-        done
-        '''
-}
 
 concordant_sams_out
     .flatten()
