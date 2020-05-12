@@ -137,12 +137,29 @@ process PrepareReference {
 //    Begin pipeline
 // ######################################################
 
+process PreprocessInputs {
+    
+    publishDir "${params.output}/logs/", mode:'copy', pattern:'*.log'
+    
+    input:
+        file rules from file("${workflow.projectDir}/rules.txt")
+        file preprocess_script from file("${workflow.projectDir}/scripts/preprocess_inputs.R")
+        
+    output:
+        file "*.sam" into concordant_sams_out
+        
+    shell:
+        '''
+        Rscript !{preprocess_script}
+        cp .command.log preprocess_inputs.log
+        '''
+}
 
 concordant_sams_out
     .flatten()
     .map{ file -> tuple(get_prefix(file), file) }
-    .ifEmpty{ error "Concordant sams missing from input to 'FilterSam' process." }
-    .set{ concordant_sams_in }
+    .ifEmpty{ error "Concordant sams missing from input to 'SamToBam' and (if applicable) 'BME' processes." }
+    .set{ concordant_sams_in_stb; concordant_sams_in_bme }
     
 
 //  Extracting alignment information from the AriocP or AriocU logs
@@ -164,37 +181,28 @@ process ParseAriocLogs {
 }
     
 
-//  To be specific, this process takes the sam file of concordant reads from
-//  Arioc, filters by mapping quality, and removes duplicate mappings.
-process FilterAlignments {
+//  Sort and compress Arioc SAMs
+process SamToBam {
 
     publishDir "${params.output}/logs/", mode:'copy', pattern:'*.log'
     tag "$prefix"
     
     input:
-        set val(prefix), file(sam_file) from concordant_sams_in
+        set val(prefix), file(sam_file) from concordant_sams_in_stb
         
     output:
-        file "${prefix}.cfu.sam" optional true into processed_sams_out
-        file "${prefix}.cfu.sorted.bam*" optional true into processed_alignments_out
-        file "filter_sam_${prefix}.log"
+        file "${prefix}.cfu.sorted.bam*" into processed_alignments_out
+        file "sam_to_bam_${prefix}.log"
         
     shell:
         '''
-        if [ !{params.use_bme} == "true" ]; then
-            #  Quality-filter and deduplicate
-            !{params.samtools} view -q 5 -F 0x100 -h !{sam_file} \
-                | !{params.samblaster} -r -o !{prefix}.cfu.sam
-        else
-            #  Quality-filter, deduplicate, compress, and sort
-            !{params.samtools} view -q 5 -F 0x100 -h !{sam_file} \
-                | !{params.samblaster} -r \
-                | !{params.samtools} sort -@ !{task.cpus} -o !{prefix}.cfu.sorted.bam -
+        # Sort and compress
+        !{params.samtools} sort -@ !{task.cpus} -o !{prefix}.cfu.sorted.bam !{prefix}.sam
                 
-            #  Index the sorted BAM
-            !{params.samtools} index !{prefix}.cfu.sorted.bam
+        #  Index the sorted BAM
+        !{params.samtools} index !{prefix}.cfu.sorted.bam
             
-        cp .command.log filter_sam_!{prefix}.log
+        cp .command.log sam_to_bam_!{prefix}.log
         '''
 }
 
@@ -204,11 +212,6 @@ process FilterAlignments {
 // ############################################################################
 
 if (params.use_bme) {
-    processed_sams_out
-        .flatten()
-        .map{ file -> tuple(get_prefix(file), file) }
-        .ifEmpty{ error "Filtered/ deduplicated sams missing from input to 'BME' process." }
-        .set{ processed_sams_in }
     
     //  Bismark Methylation Extractor on the quality-filtered, deduplicated sams
     process BME {
@@ -217,7 +220,7 @@ if (params.use_bme) {
         tag "$prefix"
         
         input:
-            set val(prefix), file(sam_file) from processed_sams_in
+            set val(prefix), file(sam_file) from concordant_sams_in_bme
             
         output:
             file "${prefix}/" into BME_outputs
