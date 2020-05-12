@@ -137,6 +137,7 @@ process PrepareReference {
 //    Begin pipeline
 // ######################################################
 
+//  Place SAMs and any reports/logs into channels for use in the pipeline
 process PreprocessInputs {
     
     publishDir "${params.output}/logs/", mode:'copy', pattern:'*.log'
@@ -147,6 +148,9 @@ process PreprocessInputs {
         
     output:
         file "*.sam" into concordant_sams_out
+        file "*_trim_report_r*.txt" optional true into trim_reports
+        file "*_xmc.log" optional true into xmc_reports
+        file "*_bme.log" optional true into bme_reports
         
     shell:
         '''
