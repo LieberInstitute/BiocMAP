@@ -2,8 +2,7 @@ library('jaffelab')
 
 #  Get sample IDs
 rules = readLines('rules.txt')
-man_path = file.path(get_value(rules, 'base_dir'), get_value(rules, 'manifest'))
-manifest = read.table(man_path, header = FALSE, stringsAsFactors = FALSE)
+manifest = read.table(get_value(rules, 'manifest'), header = FALSE, stringsAsFactors = FALSE)
 ids = manifest[ncol(manifest)]
 
 ######################################################

@@ -35,6 +35,7 @@ def helpMessage() {
     
     Optional flags:
         --input [path]:   the path to the directory containing the rules.txt file
+        --output [path]:  the path to the directory to contain pipeline outputs
         --use_bme:        include this flag to perform methylation extraction-
                           related processes with Bismark utilities, rather than
                           the default of MethylDackel
@@ -317,7 +318,7 @@ if (params.use_bme) {
         .set{ processed_alignments_in }
         
     process MethylationExtraction {
-        publishDir "${params.output}/MethylDackel/", mode:'copy'
+        publishDir "${params.output}/Reports/$prefix", mode:'copy'
         tag "$prefix"
         
         input:
