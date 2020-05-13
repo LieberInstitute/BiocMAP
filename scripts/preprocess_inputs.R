@@ -52,13 +52,14 @@ man_path = file.path(get_value(rules, 'base_dir'), get_value(rules, 'manifest'))
 manifest = read.table(man_path, header = FALSE, stringsAsFactors = FALSE)
 ids = manifest[ncol(manifest)]
 
-#  Arioc SAMs
+#  Arioc SAMs and logs
 form_links(rules, 'sam', ids, '.sam')
+form_links(rules, 'arioc_log', ids, '_arioc.log')
 
 #  XMC logs
 form_links(rules, 'xmc_log', ids, '_xmc.log')
 
-#  XMC logs
+#  BME logs
 form_links(rules, 'bme_log', ids, '_bme.log')
 
 #  Trim Galore reports

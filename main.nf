@@ -148,9 +148,10 @@ process PreprocessInputs {
         
     output:
         file "*.sam" into concordant_sams_out
-        file "*_trim_report_r*.txt" optional true into trim_reports
-        file "*_xmc.log" optional true into xmc_reports
-        file "*_bme.log" optional true into bme_reports
+        file "*_arioc.log" into arioc_reports_out
+        file "*_trim_report_r*.txt" optional true into trim_reports_out
+        file "*_xmc.log" optional true into xmc_reports_out
+        file "*_bme.log" optional true into bme_reports_out
         
     shell:
         '''
@@ -164,25 +165,6 @@ concordant_sams_out
     .map{ file -> tuple(get_prefix(file), file) }
     .ifEmpty{ error "Concordant sams missing from input to 'SamToBam' and (if applicable) 'BME' processes." }
     .set{ concordant_sams_in_stb; concordant_sams_in_bme }
-    
-
-//  Extracting alignment information from the AriocP or AriocU logs
-process ParseAriocLogs {
-
-    publishDir "${params.output}/Arioc/", mode:'copy'
-    
-    input:
-        file parse_script from file("${workflow.projectDir}/scripts/parse_arioc_logs.R")
-        file arioc_logs_in from arioc_logs_out.collect()
-        
-    output:
-        file "alignment_results.rda"
-        
-    shell:
-        '''
-        Rscript !{parse_script}
-        '''
-}
     
 
 //  Sort and compress Arioc SAMs
@@ -228,7 +210,7 @@ if (params.use_bme) {
             
         output:
             file "${prefix}/" into BME_outputs
-            file "BME_${prefix}.log" into BME_logs_out
+            file "BME_${prefix}.log" into BME_reports
             
         shell:
             // BME needs path to samtools if samtools isn't on the PATH
@@ -257,26 +239,6 @@ if (params.use_bme) {
             cp .command.log BME_!{prefix}.log
             '''
     }
-    
-    
-    //  Aggregate methylation info from BME logs for all samples, into a single .rda file
-    process ParseBMELogs {
-    
-        publishDir "${params.output}/", mode:'copy'
-        
-        input:
-            file BME_logs_in from BME_logs_out.collect()
-            file parse_BME_script from file("${workflow.projectDir}/scripts/parse_bme_logs.R")
-            
-        output:
-            file "BME_metrics.rda"
-            
-        shell:
-            '''
-            Rscript !{parse_BME_script}
-            '''
-    }
-    
     
     BME_outputs
         .flatten()
@@ -396,6 +358,31 @@ cytosine_reports
     .map{ file -> tuple(get_chromosome_name(file), file) }
     .groupTuple()
     .set{ cytosine_reports_by_chr }
+
+
+//  Take reports and logs from Arioc and optionally Trim Galore, XMC, and BME;
+//  aggregate relevant metrics/ QC-related stats into a data frame.
+process ParseReports {
+
+    publishDir "${params.output}/metrics", mode:'copy'
+    
+    input:
+        file trim_reports_in from trim_reports_out.collect()
+        file xmc_reports_in from xmc_reports_out.collect()
+        file bme_reports_in from bme_reports_out.collect()
+        file arioc_reports_in from arioc_reports_out.collect()
+        file parse_reports_script from file("${workflow.projectDir}/scripts/parse_reports.R")
+        
+    output:
+        file "metrics.rda"
+        file "metrics.log"
+        
+    shell:
+        '''
+        Rscript !{parse_reports_script}
+        cp .command.log metrics.log
+        '''
+}
 
 
 process FormBsseqObjects {
