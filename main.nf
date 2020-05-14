@@ -151,6 +151,7 @@ if (params.with_lambda) {
         output:
             file "lambda*.idx" into lambda_indices_out
             file "lambda*.fa" into lambda_genomes_out
+            file "prepare_lambda.log"
             
         shell:
             baseName = file("${params.lambda_link}").getName() - ".gz"
@@ -165,8 +166,38 @@ if (params.with_lambda) {
             #  Create a kallisto index for each version of the genome
             !{params.kallisto} index -i lambda_normal.idx lambda.fa
             !{params.kallisto} index -i lambda_bs_artificial.idx lambda_bs_artificial.fa
+            
+            cp .command.log prepare_lambda.log
+            '''
     }
 }
+
+
+//  Place SAMs and any reports/logs into channels for use in the pipeline
+process PreprocessInputs {
+    
+    publishDir "${params.output}/logs/", mode:'copy', pattern:'preprocess_inputs.log'
+    
+    input:
+        file rules from file("${params.input}/rules.txt")
+        file preprocess_script from file("${workflow.projectDir}/scripts/preprocess_inputs.R")
+        
+    output:
+        file "*.sam" into concordant_sams_out
+        file "*_arioc.log" into arioc_reports_out
+        file "*_trim_report_r*.txt" optional true into trim_reports_out
+        file "*_xmc.log" optional true into xmc_reports_out
+        file "*_bme.log" optional true into bme_reports_out
+        file "*.f*q*" optional true into fastq_out
+        file preprocess_inputs.log
+        
+    shell:
+        '''
+        Rscript !{preprocess_script}
+        cp .command.log preprocess_inputs.log
+        '''
+}
+
 
 // ######################################################
 //    Begin pipeline
@@ -174,6 +205,22 @@ if (params.with_lambda) {
 
 
 if (params.with_lambda) {
+    if (params.sample == "single") {
+        fastq_out
+            .flatten()
+            .map{file -> tuple(get_prefix(file), file) }
+            .ifEmpty{ error "Input fastq files (after any merging) are missing from the channel"}
+            .set{ fastq_in }
+            
+    } else {
+        fastq_out
+            .flatten()
+            .map{file -> tuple(get_prefix(file), file) }
+            .groupTuple()
+            .ifEmpty{ error "Input fastq files (after any merging) are missing from the channel"}
+            .set{ fastq_in }
+    }
+    
     process LambdaPseudo {
         
         tag "$prefix"
@@ -182,6 +229,7 @@ if (params.with_lambda) {
         input:
             file lambda_indices_in from lambda_indices_out.collect()
             file lambda_genomes_in from lambda_genomes_out.collect()
+            set val(prefix), file(fq_file) from fastq_in
             file rules from file("${params.input}/rules.txt")
             
         output:
@@ -189,9 +237,9 @@ if (params.with_lambda) {
             
         shell:
             '''
-            #  Get the path to the FASTQ files
-            fq1=$(grep "^fastq_r1" rules.txt | cut -d "=" -f 2 | tr -d " " | sed "s/\[id\]/!{prefix}/")
-            fq2=$(grep "^fastq_r2" rules.txt | cut -d "=" -f 2 | tr -d " " | sed "s/\[id\]/!{prefix}/")
+            #  This assumes paired-end samples!! (change later)
+            fq1=!{prefix}_1.f*q*
+            fq2=!{prefix}_2.f*q*
             
             #  Perform pseudoalignment to original and bisulfite-converted genomes
             !{params.kallisto} quant -i lambda_normal.idx -o ./orig $fq1 $fq2
@@ -208,35 +256,13 @@ if (params.with_lambda) {
             '''
     }
 }
-            
-//  Place SAMs and any reports/logs into channels for use in the pipeline
-process PreprocessInputs {
-    
-    publishDir "${params.output}/logs/", mode:'copy', pattern:'*.log'
-    
-    input:
-        file rules from file("${workflow.projectDir}/rules.txt")
-        file preprocess_script from file("${workflow.projectDir}/scripts/preprocess_inputs.R")
-        
-    output:
-        file "*.sam" into concordant_sams_out
-        file "*_arioc.log" into arioc_reports_out
-        file "*_trim_report_r*.txt" optional true into trim_reports_out
-        file "*_xmc.log" optional true into xmc_reports_out
-        file "*_bme.log" optional true into bme_reports_out
-        
-    shell:
-        '''
-        Rscript !{preprocess_script}
-        cp .command.log preprocess_inputs.log
-        '''
-}
+
 
 concordant_sams_out
     .flatten()
     .map{ file -> tuple(get_prefix(file), file) }
     .ifEmpty{ error "Concordant sams missing from input to 'SamToBam' and (if applicable) 'BME' processes." }
-    .set{ concordant_sams_in_stb; concordant_sams_in_bme }
+    .into{ concordant_sams_in_stb; concordant_sams_in_bme }
     
 
 //  Sort and compress Arioc SAMs
