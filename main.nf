@@ -39,6 +39,10 @@ def helpMessage() {
         --use_bme:        include this flag to perform methylation extraction-
                           related processes with Bismark utilities, rather than
                           the default of MethylDackel
+        --with_lambda:    include this flag if all samples have spike-ins with
+                          the lambda bacteriophage genome. Pseudoalignment will
+                          then be performed to estimate bisulfite conversion
+                          efficiency
     """.stripIndent()
 }
 
@@ -53,6 +57,7 @@ params.input = "${workflow.projectDir}/test"
 params.output = "${workflow.projectDir}/out"
 params.work = "${workflow.projectDir}/work"
 params.use_bme = false
+params.with_lambda = false
 
 // -------------------------------------
 //   Validate Inputs
@@ -77,6 +82,8 @@ if (params.reference == "hg38") {
 } else {  // mm10
     params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/GRCm38.primary_assembly.genome.fa.gz"
 }
+
+params.lambda_link = "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/840/245/GCA_000840245.1_ViralProj14204/GCA_000840245.1_ViralProj14204_genomic.fna.gz"
 
 // ------------------------------------------------------------
 //   Utilities for retrieving info from filenames
@@ -134,10 +141,74 @@ process PrepareReference {
 }
 
 
+if (params.with_lambda) {
+    process PrepareLambda {
+        storeDir "${workflow.projectDir}/ref/lambda"
+        
+        input:
+            file convert_script from file("${workflow.projectDir}/scripts/bisulfite_convert.R")
+            
+        output:
+            file "lambda*.idx" into lambda_indices_out
+            file "lambda*.fa" into lambda_genomes_out
+            
+        shell:
+            baseName = file("${params.lambda_link}").getName() - ".gz"
+            '''
+            #  Pull, unzip, and simplify sequence name to 'lambda'
+            wget !{params.lambda_link}
+            gunzip -c !{baseName}.gz | sed '1s/>.*Es/>lambda Es/' > lambda.fa
+            
+            #  Artificially create a "perfectly bisulfite-converted" fasta
+            Rscript !{convert_script}
+            
+            #  Create a kallisto index for each version of the genome
+            !{params.kallisto} index -i lambda_normal.idx lambda.fa
+            !{params.kallisto} index -i lambda_bs_artificial.idx lambda_bs_artificial.fa
+    }
+}
+
 // ######################################################
 //    Begin pipeline
 // ######################################################
 
+
+if (params.with_lambda) {
+    process LambdaPseudo {
+        
+        tag "$prefix"
+        publishDir "${params.output}/lambda", mode:'copy'
+        
+        input:
+            file lambda_indices_in from lambda_indices_out.collect()
+            file lambda_genomes_in from lambda_genomes_out.collect()
+            file rules from file("${params.input}/rules.txt")
+            
+        output:
+            file "${prefix}_lambda_pseudo.log" into lambda_reports_out
+            
+        shell:
+            '''
+            #  Get the path to the FASTQ files
+            fq1=$(grep "^fastq_r1" rules.txt | cut -d "=" -f 2 | tr -d " " | sed "s/\[id\]/!{prefix}/")
+            fq2=$(grep "^fastq_r2" rules.txt | cut -d "=" -f 2 | tr -d " " | sed "s/\[id\]/!{prefix}/")
+            
+            #  Perform pseudoalignment to original and bisulfite-converted genomes
+            !{params.kallisto} quant -i lambda_normal.idx -o ./orig $fq1 $fq2
+            !{params.kallisto} quant -i lambda_bs_artificial.idx -o ./bs $fq1 $fq2
+            
+            #  Get the counts for number of successfully "aligned" reads
+            orig_count=$(sed -n '2p' orig/abundance.tsv | cut -f 4)
+            bs_count=$(sed -n '2p' bs/abundance.tsv | cut -f 4)
+
+            #  Write the estimated conversion efficiency to the log
+            conv_eff=$(Rscript -e "100 * $bs_count/($orig_count + $bs_count)" | cut -d ']' -f 2)
+            echo "Conversion efficiency:${conv_eff}%."
+            cp .command.log !{prefix}_lambda_pseudo.log
+            '''
+    }
+}
+            
 //  Place SAMs and any reports/logs into channels for use in the pipeline
 process PreprocessInputs {
     
@@ -361,8 +432,9 @@ cytosine_reports
     .set{ cytosine_reports_by_chr }
 
 
-//  Take reports and logs from Arioc and optionally Trim Galore, XMC, and BME;
-//  aggregate relevant metrics/ QC-related stats into a data frame.
+//  Take reports and logs from Arioc and optionally Trim Galore, XMC, BME, and
+//  lambda pseudoalignment (if applicable); aggregate relevant metrics/
+//  QC-related stats into a data frame.
 process ParseReports {
 
     publishDir "${params.output}/metrics", mode:'copy'
@@ -372,6 +444,7 @@ process ParseReports {
         file xmc_reports_in from xmc_reports_out.collect()
         file bme_reports_in from bme_reports_out.collect()
         file arioc_reports_in from arioc_reports_out.collect()
+        file lambda_reports_in from lambda_reports_out.collect()
         file parse_reports_script from file("${workflow.projectDir}/scripts/parse_reports.R")
         
     output:

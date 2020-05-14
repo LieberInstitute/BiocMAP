@@ -249,5 +249,25 @@ if (file.exists(f[1])) {
     print("Skipping XMC metrics (no files specified)...")
 }
 
+######################################################
+#  Lambda pseudoalignment
+######################################################
+
+f = paste0(ids, '_lambda_pseudo.log')
+if (file.exists(f[1])) {
+    print("Adding inferred BS-conversion efficiency from lambda alignment...")
+    
+    conv_eff = rep('empty', length(ids))
+    for (i in 1:length(f)) {
+        conv_eff[i] = system(paste0('tail -n 1 ', f[i], ' | cut -d ":" -f 2 | tr -d "%| "'), intern=TRUE)
+    }
+    temp = colnames(metrics)
+    metrics = cbind(metrics, as.numeric(conv_eff))
+    colnames(metrics) = c(temp, "lambda_bs_conv_eff")
+} else {
+    print("Skipping BS-conversion efficiency estimate via lambda alignment ('--with_lambda' not specified)...")
+}
+
+rownames(metrics) = ids
 save(metrics, file='metrics.rda')
 print("Metrics saved as 'metrics.rda'.")
