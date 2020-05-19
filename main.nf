@@ -76,11 +76,19 @@ if (params.reference != "hg19" && params.reference != "hg38" && params.reference
 // ------------------------------------------------------------
 
 if (params.reference == "hg38") {
-    params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/GRCh38.primary_assembly.genome.fa.gz"
+    params.anno_suffix = params.reference + '_gencode_v' + params.gencode_version_human + '_' + params.anno_build
+    params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_${params.gencode_version_human}/GRCh38.primary_assembly.genome.fa.gz"
 } else if (params.reference == "hg19") {
-    params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/GRCh37_mapping/GRCh37.primary_assembly.genome.fa.gz"
+    if (params.anno_build == "primary") {
+        print("Warning: use of 'primary' annotation is not supported for hg19, as GENCODE does not provide a primary .gtf file. Continuing with annotation build 'main'.")
+        params.anno_build = "main"
+    }
+    
+    params.anno_suffix = params.reference + '_gencode_v' + params.gencode_version_human + 'lift37_' + params.anno_build
+    params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_${params.gencode_version_human}/GRCh37_mapping/GRCh37.primary_assembly.genome.fa.gz"
 } else {  // mm10
-    params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/GRCm38.primary_assembly.genome.fa.gz"
+    params.anno_suffix = params.reference + '_gencode_' + params.gencode_version_mouse + '_' + params.anno_build
+    params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_${params.gencode_version_mouse}/GRCm38.primary_assembly.genome.fa.gz"
 }
 
 params.lambda_link = "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/840/245/GCA_000840245.1_ViralProj14204/GCA_000840245.1_ViralProj14204_genomic.fna.gz"
@@ -116,7 +124,7 @@ def get_chromosome_name(f) {
 // Pull the reference fasta for the given reference; build the bisulfite-converted
 // genome required by Bismark tools
 process PrepareReference {
-    storeDir "${workflow.projectDir}/ref/${params.reference}"
+    storeDir "${workflow.projectDir}/ref/${params.reference}/${params.anno_suffix}"
     
     input:
         file split_fasta_script from file("${workflow.projectDir}/scripts/split_fasta.sh")
@@ -126,11 +134,43 @@ process PrepareReference {
         file "$baseName" into BME_genome, MD_genome  // the original reference fasta
         
     shell:
+        //  Name of the primary assembly fasta after being downloaded and unzipped
         baseName = file("${params.ref_fasta_link}").getName() - ".gz"
+            
+        //  Name the pipeline will use for the primary and main assembly fastas, respectively
+        primaryName = "assembly_${params.anno_suffix}.fa".replaceAll("main", "primary")
+        mainName = "assembly_${params.anno_suffix}.fa".replaceAll("primary", "main")
+            
+        //  Name of fasta to use for this pipeline execution instance
+        out_fasta = "assembly_${params.anno_suffix}.fa"
         '''
-        #  Pull fasta from GENCODE
-        wget !{params.ref_fasta_link}
-        gunzip !{baseName}.gz
+        if [ -f !{workflow.projectDir}/ref/!{params.reference}/${params.anno_suffix}/!{primaryName} ]; then
+            ln -s !{workflow.projectDir}/ref/!{params.reference}/${params.anno_suffix}/!{primaryName} !{primaryName}
+        else
+            #  Pull fasta from GENCODE
+            wget !{params.ref_fasta_link}
+            gunzip !{baseName}.gz
+            mv !{baseName} !{primaryName} # rename for consistency with pipeline naming conventions
+        fi
+        
+        #######################################################################
+        #  Create the "main" fasta of canonical seqs only
+        #######################################################################
+        
+        if [ !{params.anno_build} == "main" ]; then
+            #  Determine how many chromosomes/seqs to keep
+            if [ !{params.reference_type} == "human" ]; then
+                num_chrs=25
+            else
+                num_chrs=22
+            
+            fi
+            #  Find the line of the header for the first extra contig (to not
+            #  include in the "main" annotation fasta
+            first_bad_line=$(grep -n ">" !{primaryName} | cut -d : -f 1 | paste -s | cut -f $(($num_chrs + 1)))
+            
+            #  Make a new file out of all the lines up and not including that
+            sed -n "1,$(($first_bad_line - 1))p;${first_bad_line}q" !{primaryName} > !{mainName}
         
         #  Build the bisulfite genome, needed for bismark (and copy it to publishDir,
         #  circumventing Nextflow's inability to recursively copy)
@@ -176,7 +216,7 @@ if (params.with_lambda) {
 //  Place SAMs and any reports/logs into channels for use in the pipeline
 process PreprocessInputs {
     
-    publishDir "${params.output}/logs/", mode:'copy', pattern:'preprocess_inputs.log'
+    publishDir "${params.output}/logs/", mode:'copy'// , pattern:'preprocess_inputs.log'
     
     input:
         file rules from file("${params.input}/rules.txt")
@@ -189,7 +229,7 @@ process PreprocessInputs {
         file "*_xmc.log" optional true into xmc_reports_out
         file "*_bme.log" optional true into bme_reports_out
         file "*.f*q*" optional true into fastq_out
-        file preprocess_inputs.log
+        // file "preprocess_inputs.log"
         
     shell:
         '''
@@ -419,7 +459,7 @@ if (params.use_bme) {
         tag "$prefix"
         
         input:
-            set val(prefix), file(bam_file), file(bam_index) from processed_alignments_in
+            set val(prefix), file(bam_pair) from processed_alignments_in
             file MD_genome
             file meth_count_script from file("${workflow.projectDir}/scripts/meth_count.R")
             
@@ -431,7 +471,7 @@ if (params.use_bme) {
             '''
             #  Run methylation extraction
             echo "Running 'MethylDackel extract' on the sorted bam..."
-            !{params.MethylDackel} extract --cytosine_report !{MD_genome} !{bam_file}
+            !{params.MethylDackel} extract --cytosine_report !{MD_genome} *.bam
             
             echo "Summary stats for !{prefix}:"
             Rscript !{meth_count_script} -t !{params.data_table_threads}
@@ -439,7 +479,7 @@ if (params.use_bme) {
             
             #  Split reports by sequence (pulled from BAM header)
             echo "Splitting cytosine report by sequence..."
-            for SN in $(!{params.samtools} view -H !{bam_file} | cut -f 2 | grep "SN:" | cut -d ":" -f 2); do
+            for SN in $(!{params.samtools} view -H *.bam | cut -f 2 | grep "SN:" | cut -d ":" -f 2); do
                 awk -v sn=$SN '$1 == sn' !{prefix}.cytosine_report.txt > !{prefix}.$SN.CX_report.txt
             done
             
@@ -471,7 +511,9 @@ process ParseReports {
         file bme_reports_in from bme_reports_out.collect()
         file arioc_reports_in from arioc_reports_out.collect()
         file lambda_reports_in from lambda_reports_out.collect()
+        
         file parse_reports_script from file("${workflow.projectDir}/scripts/parse_reports.R")
+        file rules from file("${params.input}/rules.txt")
         
     output:
         file "metrics.rda"
