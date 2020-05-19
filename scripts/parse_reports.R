@@ -1,9 +1,18 @@
 library('jaffelab')
 
+get_value = function(rules, key) {
+    this_line = rules[grep(key, ss(rules, '='))]
+    if (length(this_line) != 1) {
+        stop(paste0("Key '", key, "' had ", length(this_line), " values in rules.txt."))
+    }
+    
+    return(gsub(' ', '', ss(this_line, '=', 2)))
+}
+
 #  Get sample IDs
 rules = readLines('rules.txt')
 manifest = read.table(get_value(rules, 'manifest'), header = FALSE, stringsAsFactors = FALSE)
-ids = manifest[ncol(manifest)]
+ids = manifest[,ncol(manifest)]
 
 ######################################################
 #  Arioc
