@@ -9,7 +9,7 @@ opt <- getopt(spec)
 print("Writing AriocE configs...")
 
 if (opt$paired == "paired") {
-    id = strsplit(system('ls *.fastq', intern=TRUE)[1], "_1.fastq", fixed=TRUE)[[1]]
+    id = strsplit(list.files(pattern=".*_val_1\\.fq"), "_val_1.fq", fixed=TRUE)[[1]]
     
     ###################################################################################
     #  Downstream utilities like Bismark and samblaster are incapable of recognizing
@@ -19,8 +19,8 @@ if (opt$paired == "paired") {
     #  FASTQ sequence to AriocE.
     ###################################################################################
     
-    id1 = system(paste0('cat ', id, '_1.fastq | grep "@" | head -n 1'), intern=TRUE)
-    id2 = system(paste0('cat ', id, '_2.fastq | grep "@" | head -n 1'), intern=TRUE)
+    id1 = system(paste0('cat ', id, '_val_1.fq | grep "@" | head -n 1'), intern=TRUE)
+    id2 = system(paste0('cat ', id, '_val_2.fq | grep "@" | head -n 1'), intern=TRUE)
     
     #----------------------------------------------------------------------------------
     #  Tries to recognize the read-ID style (checks "old illumina", "illumina casava")
@@ -97,7 +97,7 @@ if (opt$paired == "paired") {
     }
     
 } else {
-    id = strsplit(system('ls *.fastq', intern=TRUE), ".fastq", fixed=TRUE)[[1]]
+    id = strsplit(list.files(pattern='.*_trimmed\\.fq'), "_trimmed.fq", fixed=TRUE)[[1]]
     qname_field = ''
     rg_line = ''
 }
@@ -121,11 +121,11 @@ config_lines = c('<?xml version="1.0" encoding="utf-8"?>', '',
 #  Lines related to the particular reads used for this alignment
 if (opt$paired == "paired") {
     config_lines = c(config_lines,
-                     paste0('    <file subId="', idNum, '" mate="1">', man[idRowNum, 5], '_1.fastq</file>'),
-                     paste0('    <file subId="', idNum, '" mate="2">', man[idRowNum, 5], '_2.fastq</file>'))
+                     paste0('    <file subId="', idNum, '" mate="1">', man[idRowNum, 5], '_val_1.fq</file>'),
+                     paste0('    <file subId="', idNum, '" mate="2">', man[idRowNum, 5], '_val_2.fq</file>'))
 } else {
     config_lines = c(config_lines,
-                     paste0('    <file subId="', idNum, '">', man[idRowNum, 3], '.fastq</file>'))
+                     paste0('    <file subId="', idNum, '">', man[idRowNum, 3], '_trimmed.fq</file>'))
 }
 config_lines = c(config_lines, '  </dataIn>')
 

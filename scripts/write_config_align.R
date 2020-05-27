@@ -13,13 +13,13 @@ print("Writing configs for AriocP...")
 
 if (opt$paired == "paired") {
   exec_name = 'AriocP'
-  id = strsplit(system('ls *.fastq', intern=TRUE)[1], "_1.fastq", fixed=TRUE)[[1]]
+  id = strsplit(list.files(pattern=".*_val_1\\.fq"), "_val_1.fq", fixed=TRUE)[[1]]
 } else {
   exec_name = 'AriocU'
-  id = strsplit(system('ls *.fastq', intern=TRUE), ".fastq", fixed=TRUE)[[1]]
+  id = strsplit(list.files(pattern='.*_trimmed\\.fq'), "_trimmed.fq", fixed=TRUE)[[1]]
 }
 
-#  The processed manifest outputted from the "Manifest" process will be in
+#  The processed manifest outputted from the "Merging" process will be in
 #  the working directory. Infer the directory containing the input FASTQs from
 #  the first sample in the manifest (thus the assumption is made: the manifest
 #  paths all match the input directory, params.input)
@@ -50,13 +50,13 @@ config_lines = c('<?xml version="1.0" encoding="utf-8"?>',
 if (opt$paired == "paired") {
     config_lines = c(config_lines,
                      paste0('    <paired subId="', idNum, '">'),
-                     paste0('      <file>', man[idRowNum, 5], '_R1</file>'),
-                     paste0('      <file>', man[idRowNum, 5], '_R2</file>'),
+                     paste0('      <file>', man[idRowNum, 5], '_val_1</file>'),
+                     paste0('      <file>', man[idRowNum, 5], '_val_2</file>'),
                      '    </paired>')
 } else {    
     config_lines = c(config_lines,
                      paste0('    <unpaired subId="', idNum, '">'),
-                     paste0('      <file>', man[idRowNum, 3], '</file>'),
+                     paste0('      <file>', man[idRowNum, 3], '_trimmed</file>'),
                      '    </unpaired>')
 }
 
