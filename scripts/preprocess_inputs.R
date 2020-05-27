@@ -1,4 +1,4 @@
-## Required libraries
+library('BiocParallel')
 library('devtools')
 library('jaffelab')
 
@@ -8,45 +8,45 @@ run_command = function(command) {
     print("Done.")
 }
 
-manifest = read.table('samples.manifest', header = FALSE, stringsAsFactors = FALSE)
+manifest <- read.table("samples.manifest", header = FALSE, stringsAsFactors = FALSE)
 
 ## Is the data paired end?
-paired = ncol(manifest) > 3
+paired <- ncol(manifest) > 3
+
+############################################################
+#  Verify the files in the manifest have known extensions
+############################################################
+
+print("Verifying file extensions from the manifest are valid...")
 
 #  Get the FASTQ filenames, as declared in samples.manifest
 filenames = manifest[,1]
 if (paired) filenames = c(filenames, manifest[,3])
 
-#  Get the last file extension (eg. ".gz" for "a.fastq.gz")
-split_name = strsplit(filenames, ".", fixed=TRUE)
-exts = sapply(split_name, function(x) x[length(x)])
+is_zipped = grepl(".gz", filenames, fixed=TRUE)
 
-#  Decompress any gzipped files and adjust their filenames to not have
-#  the ".gz" ending (Arioc needs unzipped files)
-print("Unzipping any gzipped reads...")
-for (i in which(exts == "gz")) {
-    #  Remove ".gz" and make sure suffix is ".fastq"
-    new_name = sub("\\.fq", "\\.fastq", basename(ss(filenames[i], "\\.gz")))
-    
-    command = paste0('gunzip -c ', filenames[i], ' > ', new_name)
-    run_command(command)
-    filenames[i] = new_name
+valid_exts = c('fastq.gz', 'fq.gz', 'fastq', 'fq')
+actual_exts = sapply(1:length(filenames), function(i) {
+    temp = strsplit(sub(".gz", "", filenames[i]), ".", fixed=TRUE)[[1]]
+    if (is_zipped[i]) {
+        return(paste0(temp[length(temp)], '.gz'))
+    } else {
+        return(temp[length(temp)])
+    }
+})
+
+if (!all(actual_exts %in% valid_exts)) {
+    stop("Unrecognized fastq filename extension. Should be fastq.gz, fq.gz, fastq or fq")
 }
 
-print("Symbolically linking remaining FASTQs into the working directory...")
-for (i in which(exts != "gz")) {
-    stopifnot(exts[i] %in% c("fq", "fastq"))
-    new_name = sub("\\.fq", "\\.fastq", basename(filenames[i]))
-    
-    command = paste('ln -s', filenames[i], new_name)
-    run_command(command)
-    filenames[i] = new_name
+if (paired && any(actual_exts[1:nrow(manifest)] != actual_exts[(nrow(manifest)+1):length(actual_exts)])) {
+    stop("A given pair of reads must have the same file extensions.")
 }
 
-#  Recompute last file extensions
-split_name = strsplit(filenames, ".", fixed=TRUE)
-exts = sapply(split_name, function(x) x[length(x)])
-
+####################################################################
+#  Perform merging and renaming of files for use in the
+#  pipeline. Then write a new manifest to reflect these actions
+####################################################################
 
 #  This forms a list, where each element is a vector containing row numbers
 #  of the manifest to combine (and each element contains a unique set of rows)
@@ -59,67 +59,77 @@ for (i in 1:nrow(manifest)) {
 }
 indicesToCombine = indicesToCombine[!sapply(indicesToCombine, is.null)]
 
-if (length(unlist(indicesToCombine)) > 0) {
-    remaining_rows = (1:nrow(manifest))[-unlist(indicesToCombine)]
-} else {
-    remaining_rows = 1:nrow(manifest)
-}
-
-#  Merge any files that need to be merged (based on having the same ID in the
-#  last column of the manifest
-print("Merging any files that need to be merged...")
 if (paired) {
+    #  Merge files that require merging
+    print("Merging any files that need to be merged...")
     for (indices in indicesToCombine) {
-        files_to_combine = do.call(paste, as.list(filenames[indices]))
-        new_file = paste0(manifest[indices[1], 5], '_1.fastq')
-        command = paste0('cat ', files_to_combine, ' > ', new_file)
-        run_command(command)
-        command = paste0('rm ', files_to_combine)
+        #  Determine file extension for the merged file to have
+        first_ext = actual_exts[indices[1]]
+        
+        #  Do the file merging
+        files_to_combine = do.call(paste, as.list(manifest[indices, 1]))
+        new_file = paste0(manifest[indices[1], 5], '_1.', first_ext)
+        command = paste('cat', files_to_combine, '>', new_file)
         run_command(command)
         
-        files_to_combine = do.call(paste, as.list(filenames[indices + nrow(manifest)]))
-        new_file = paste0(manifest[indices[1], 5], '_2.fastq')
-        command = paste0('cat ', files_to_combine, ' > ', new_file)
-        run_command(command)
-        command = paste0('rm ', files_to_combine)
+        files_to_combine = do.call(paste, as.list(manifest[indices, 3]))
+        new_file = paste0(manifest[indices[1], 5], '_2.', first_ext)
+        command = paste('cat', files_to_combine, '>', new_file)
         run_command(command)
     }
     
-    print("Renaming files for handling in the pipeline...")
+    #  Symbolically link any remaining files: this renames the files
+    #  by their associated sampleID, and uses the paired suffices _1 and _2.
+    print("Renaming and symbolically linking files for handling in the pipeline...")
+    if (length(unlist(indicesToCombine)) > 0) {
+        remaining_rows = (1:nrow(manifest))[-unlist(indicesToCombine)]
+    } else {
+        remaining_rows = 1:nrow(manifest)
+    }
     for (index in remaining_rows) {
-        new_file = paste0(manifest[index, 5], '_1.fastq')
-        command = paste('mv', filenames[index], new_file)
+        first_ext = actual_exts[index]
+        
+        new_file = paste0(manifest[index, 5], '_1.', first_ext)
+        command = paste('ln -s', manifest[index, 1], new_file)
         run_command(command)
         
-        new_file = paste0(manifest[index, 5], '_2.fastq')
-        command = paste('mv', filenames[index + nrow(manifest)], new_file)
+        new_file = paste0(manifest[index, 5], '_2.', first_ext)
+        command = paste('ln -s', manifest[index, 3], new_file)
         run_command(command)
     }
     
     #  Rewrite a manifest to reflect the file name changes and any merging
     print("Constructing a new manifest to reflect these changes...")
-    first_reads = system('ls *_1.f*q*', intern=TRUE)
-    ids = ss(first_reads, '_1\\.')
+    first_reads = basename(system('ls *_1.f*q*', intern=TRUE))
+    ids = ss(first_reads, '_1.', fixed=TRUE)
     new_man = paste(first_reads,
                     0,
-                    system('ls *_2.f*q*', intern=TRUE),
+                    basename(system('ls *_2.f*q*', intern=TRUE)),
                     0,
                     ids)
     writeLines(new_man, con="arioc_samples.manifest")
+
 } else {
+    print("Merging any files that need to be merged...")
     for (indices in indicesToCombine) {
-        files_to_combine = do.call(paste, as.list(filenames[indices]))
-        new_file = paste0(manifest[indices[1], 3], '.fastq')
-        command = paste0('cat ', files_to_combine, ' > ', new_file)
-        run_command(command)
-        command = paste0('rm ', files_to_combine)
+        #  Do the file merging
+        files_to_combine = do.call(paste, as.list(manifest[indices, 1]))
+        new_file = paste0(manifest[indices[1], 3], '.', actual_exts[indices[1]])
+        command = paste('cat', files_to_combine, '>', new_file)
         run_command(command)
     }
     
-    print("Renaming files for handling in the pipeline...")
+    #  Symbolically link any remaining files; also renames the files
+    #  by their associated sampleID
+    print("Renaming and symbolically linking files for handling in the pipeline...")
+    if (length(unlist(indicesToCombine)) > 0) {
+        remaining_rows = (1:nrow(manifest))[-unlist(indicesToCombine)]
+    } else {
+        remaining_rows = 1:nrow(manifest)
+    }
     for (index in remaining_rows) {
-        new_file = paste0(manifest[index, 3], '.fastq')
-        command = paste('mv', filenames[index], new_file)
+        new_file = paste0(manifest[index, 3], '.', actual_exts[index])
+        command = paste('ln -s', manifest[index, 1], new_file)
         run_command(command)
     }
     
@@ -130,3 +140,5 @@ if (paired) {
     new_man = paste(reads, 0, ids)
     writeLines(new_man, con="arioc_samples.manifest")
 }
+
+print("Done all tasks.")
