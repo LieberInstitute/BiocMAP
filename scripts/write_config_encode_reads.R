@@ -52,7 +52,8 @@ if (opt$paired == "paired") {
         
         print("FASTQ read-id is in the old Illumina format, and looks as expected.")
         
-        qname_field = ''
+        qname_field = ' '
+        qbias_field = 'qualityScoreBias="64"'
         
         #  Use flowcell id as the "read group"
         rg_line = '    <rg ID="*:(*):" PL="ILLUMINA" />'
@@ -82,7 +83,9 @@ if (opt$paired == "paired") {
         
         #  Many utilites fail to recognize read IDs as the same in this format (don't know where mate ID is),
         #  so we signal here to AriocE to remove the mate ID from the output SAM's QNAME field
-        qname_field = 'QNAME="*:*:*:(*:*:*:*) "'
+        qname_field = 'QNAME="*:*:*:(*:*:*:*) " '
+        
+        qbias_field = 'qualityScoreBias="33"'
         
         #  Use flowcell id and lane as the "read group"
         rg_line = '    <rg ID="*:*:(*:*):" PL="ILLUMINA" />'
@@ -115,7 +118,7 @@ idNum = as.integer(idRowNum / 2) + 1
 #  Starting lines
 config_lines = c('<?xml version="1.0" encoding="utf-8"?>', '',
                  '<AriocE>',
-                 paste0('  <dataIn sequenceType="Q" ', qname_field, '>'),
+                 paste0('  <dataIn sequenceType="Q" ', qname_field, qbias_field, '>'),
                  rg_line)
                  
 #  Lines related to the particular reads used for this alignment
