@@ -48,6 +48,7 @@ row_data = lapply(f, function(filename) {
 })
 
 metrics = as.data.frame(matrix(unlist(row_data), nrow=length(row_data), byrow=TRUE))
+colnames(metrics) = col_names
 
 ######################################################
 #  BME logs
@@ -129,7 +130,6 @@ if (file.exists(f1[1]) && file.exists(f2[1])) {
     col_names = c(gsub(" ", "_", ss(summary1[[1]],":")),
                   gsub(" ", "_", ss(adapter1[[1]],":"))) # use the first file's keys
     col_names = c(paste0(col_names, "_R1"), paste0(col_names, "_R2"))
-    print(col_names)
                       
     #  Combine rows for each read into a single long row
     rows = list()
@@ -268,7 +268,7 @@ if (file.exists(f[1])) {
     
     conv_eff = rep('empty', length(ids))
     for (i in 1:length(f)) {
-        conv_eff[i] = system(paste0('tail -n 1 ', f[i], ' | cut -d ":" -f 2 | tr -d "%| "'), intern=TRUE)
+        conv_eff[i] = system(paste0('tail -n 1 ', f[i], ' | cut -d ":" -f 2 | cut -d "%" -f 1 | tr -d " "'), intern=TRUE)
     }
     temp = colnames(metrics)
     metrics = cbind(metrics, as.numeric(conv_eff))
