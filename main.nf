@@ -79,11 +79,6 @@ if (params.reference == "hg38") {
     params.anno_suffix = params.reference + '_gencode_v' + params.gencode_version_human + '_' + params.anno_build
     params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_${params.gencode_version_human}/GRCh38.primary_assembly.genome.fa.gz"
 } else if (params.reference == "hg19") {
-    if (params.anno_build == "primary") {
-        print("Warning: use of 'primary' annotation is not supported for hg19, as GENCODE does not provide a primary .gtf file. Continuing with annotation build 'main'.")
-        params.anno_build = "main"
-    }
-    
     params.anno_suffix = params.reference + '_gencode_v' + params.gencode_version_human + 'lift37_' + params.anno_build
     params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_${params.gencode_version_human}/GRCh37_mapping/GRCh37.primary_assembly.genome.fa.gz"
 } else {  // mm10
@@ -131,7 +126,7 @@ process PrepareReference {
         file encode_ref_script from file("${workflow.projectDir}/scripts/write_configs_encode_ref.R")
     
     output:
-        file "$baseName" into BME_genome, MD_genome  // the original reference fasta
+        file "$out_fasta" into BME_genome, MD_genome
         
     shell:
         //  Name of the primary assembly fasta after being downloaded and unzipped
@@ -144,14 +139,12 @@ process PrepareReference {
         //  Name of fasta to use for this pipeline execution instance
         out_fasta = "assembly_${params.anno_suffix}.fa"
         '''
-        if [ -f !{workflow.projectDir}/ref/!{params.reference}/${params.anno_suffix}/!{primaryName} ]; then
-            ln -s !{workflow.projectDir}/ref/!{params.reference}/${params.anno_suffix}/!{primaryName} !{primaryName}
-        else
-            #  Pull fasta from GENCODE
-            wget !{params.ref_fasta_link}
-            gunzip !{baseName}.gz
-            mv !{baseName} !{primaryName} # rename for consistency with pipeline naming conventions
-        fi
+        mkdir -p !{workflow.projectDir}/ref/!{params.reference}/!{params.anno_suffix}
+        
+        #  Pull fasta from GENCODE
+        wget !{params.ref_fasta_link}
+        gunzip !{baseName}.gz
+        mv !{baseName} !{primaryName} # rename for consistency with pipeline naming conventions
         
         #######################################################################
         #  Create the "main" fasta of canonical seqs only
@@ -159,11 +152,10 @@ process PrepareReference {
         
         if [ !{params.anno_build} == "main" ]; then
             #  Determine how many chromosomes/seqs to keep
-            if [ !{params.reference_type} == "human" ]; then
-                num_chrs=25
-            else
+            if [ !{params.reference} == "mm10" ]; then
                 num_chrs=22
-            
+            else
+                num_chrs=25
             fi
             #  Find the line of the header for the first extra contig (to not
             #  include in the "main" annotation fasta
@@ -171,12 +163,24 @@ process PrepareReference {
             
             #  Make a new file out of all the lines up and not including that
             sed -n "1,$(($first_bad_line - 1))p;${first_bad_line}q" !{primaryName} > !{mainName}
-        
+            
+            #  Create a link in an isolated directory for compatibility with bismark genome preparation
+            mkdir main
+            cd main
+            ln -s  ../!{mainName} !{mainName}
+            cd ..
+        else
+            #  Create a link in an isolated directory for compatibility with bismark genome preparation
+            mkdir primary
+            cd primary
+            ln -s ../!{primaryName} !{primaryName}
+            cd ..
+        fi
+                    
         #  Build the bisulfite genome, needed for bismark (and copy it to publishDir,
         #  circumventing Nextflow's inability to recursively copy)
-        !{params.bismark_genome_preparation} --hisat2 --path_to_aligner !{params.hisat2} ./
-        mkdir -p !{workflow.projectDir}/ref/!{params.reference}
-        cp -R Bisulfite_Genome !{workflow.projectDir}/ref/!{params.reference}/
+        !{params.bismark_genome_preparation} --hisat2 --path_to_aligner !{params.hisat2} ./!{params.anno_build}
+        cp -R !{params.anno_build}/Bisulfite_Genome !{workflow.projectDir}/ref/!{params.reference}/!{params.anno_suffix}/
         '''
 }
 
@@ -216,7 +220,7 @@ if (params.with_lambda) {
 //  Place SAMs and any reports/logs into channels for use in the pipeline
 process PreprocessInputs {
     
-    publishDir "${params.output}/logs/", mode:'copy'// , pattern:'preprocess_inputs.log'
+    publishDir "${params.output}/logs/", mode:'copy', pattern:'preprocess_inputs.log'
     
     input:
         file rules from file("${params.input}/rules.txt")
@@ -229,7 +233,7 @@ process PreprocessInputs {
         file "*_xmc.log" optional true into xmc_reports_out
         file "*_bme.log" optional true into bme_reports_out
         file "*.f*q*" optional true into fastq_out
-        // file "preprocess_inputs.log"
+        file "preprocess_inputs.log"
         
     shell:
         '''
@@ -471,10 +475,10 @@ if (params.use_bme) {
             '''
             #  Run methylation extraction
             echo "Running 'MethylDackel extract' on the sorted bam..."
-            !{params.MethylDackel} extract --cytosine_report !{MD_genome} *.bam
+            !{params.MethylDackel} extract --cytosine_report --CHG --CHH !{MD_genome} *.bam
             
             echo "Summary stats for !{prefix}:"
-            Rscript !{meth_count_script} -t !{params.data_table_threads}
+            Rscript !{meth_count_script}
             
             
             #  Split reports by sequence (pulled from BAM header)
