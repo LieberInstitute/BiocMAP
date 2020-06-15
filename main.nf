@@ -76,12 +76,15 @@ if (params.reference != "hg19" && params.reference != "hg38" && params.reference
 // ------------------------------------------------------------
 
 if (params.reference == "hg38") {
+    params.anno_version = params.gencode_version_human
     params.anno_suffix = params.reference + '_gencode_v' + params.gencode_version_human + '_' + params.anno_build
     params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_${params.gencode_version_human}/GRCh38.primary_assembly.genome.fa.gz"
 } else if (params.reference == "hg19") {
+    params.anno_version = params.gencode_version_human
     params.anno_suffix = params.reference + '_gencode_v' + params.gencode_version_human + 'lift37_' + params.anno_build
     params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_${params.gencode_version_human}/GRCh37_mapping/GRCh37.primary_assembly.genome.fa.gz"
 } else {  // mm10
+    params.anno_version = params.gencode_version_mouse
     params.anno_suffix = params.reference + '_gencode_' + params.gencode_version_mouse + '_' + params.anno_build
     params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_${params.gencode_version_mouse}/GRCm38.primary_assembly.genome.fa.gz"
 }
@@ -110,6 +113,29 @@ def get_chromosome_name(f) {
         .tokenize('.')[1]
         .replaceAll("chrchr", "chr")
 }
+
+def get_context(f) {
+    f.name.toString()
+        .tokenize('.')[1][-3..-1]
+}
+
+//  Write run info to output
+log.info "=================================="
+log.info " WGBS Pipeline"
+log.info "=================================="
+def summary = [:]
+summary['Sample']	= params.sample
+summary['Reference'] = params.reference
+summary['Annotation release'] = params.anno_version
+summary['Annotation build'] = params.anno_build
+summary['Input dir'] = params.input
+summary['Output dir'] = params.output
+summary['Working dir'] = workflow.workDir
+summary['Use BME'] = params.use_bme
+summary['Has lambda spike-ins'] = params.with_lambda
+summary['Current user']		= "$USER"
+log.info summary.collect { k,v -> "${k.padRight(20)}: $v" }.join("\n")
+log.info "==========================================="
 
 
 // ######################################################
@@ -478,8 +504,11 @@ if (params.use_bme) {
             !{params.MethylDackel} extract --cytosine_report --CHG --CHH !{MD_genome} *.bam
             
             echo "Summary stats for !{prefix}:"
-            Rscript !{meth_count_script}
-            
+            c_contexts=("CG" "CHG" "CHH")
+            for context in ${c_contexts[@]}; do
+                m_perc=$(awk -v ctxt=$context '{if ($6 == ctxt) {U += $4; M += $5}}END{print 100*M/(U+M)}' !{prefix}.cytosine_report.txt)
+                echo "C methylated in $context context: ${m_perc}%"
+            done
             
             #  Split reports by sequence (pulled from BAM header)
             echo "Splitting cytosine report by sequence..."
@@ -541,18 +570,30 @@ process FormBsseqObjects {
         file bs_creation_script from file("${workflow.projectDir}/scripts/bs_create.R")
         
     output:
-        file "assays_${chr}.h5" into assays_out
-        file "bs_${chr}_*.rda" into bs_objs_out
+        file "${chr}_Cp*.success" into bs_tokens_out
         file "create_bs_${chr}.log"
         
     shell:
         '''
-        Rscript !{bs_creation_script} -s !{chr} -c !{task.cpus}
-        
+        Rscript !{bs_creation_script} \
+            -s !{chr} \
+            -c !{task.cpus} \
+            -d !{params.output}/BSobjects/objects
+        if [ "$?" == "0" ]; then
+            touch !{chr}_CpG.success
+            touch !{chr}_CpH.success
+        fi
         cp .command.log create_bs_!{chr}.log
         '''
 }
 
+
+//  Group tokens into two elements ("CpG" context and "CpH" context)
+bs_tokens_out
+    .flatten()
+    .map{ file -> tuple(get_context(file), file) }
+    .groupTuple()
+    .set{ bs_tokens_in }
 
 //  Combine Bsseq objects and their HDF5-backed assays into two .rda files
 //  (one for CpG context, the other for CpH) and a single .h5 file
@@ -561,8 +602,7 @@ process MergeBsseqObjects {
     publishDir "${params.output}/BSobjects/logs", mode:'copy'
     
     input:
-        file assays_in from assays_out.collect()
-        file bs_objs_in from bs_objs_out.collect()
+        set val(context), file(token) from bs_tokens_in
         file combine_script from file("${workflow.projectDir}/scripts/bs_merge.R")
         
     output:
@@ -571,7 +611,7 @@ process MergeBsseqObjects {
     shell:
         '''
         #  This script actually writes result files directly to publishDir
-        Rscript !{combine_script} -d !{params.output}/BSobjects
+        Rscript !{combine_script} -d !{params.output}/BSobjects/objects -c !{context}
         
         cp .command.log merge_objects.log
         '''
