@@ -95,17 +95,24 @@ params.lambda_link = "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/840/245/GCA
 //   Utilities for retrieving info from filenames
 // ------------------------------------------------------------
 
+def replace_listed(x, pattern_list, replacement) {
+    for (pattern in pattern_list) {
+        x = x.replaceAll(pattern, replacement)
+    }
+    return x
+}
+
 def get_prefix(f) {
     //  Remove these regardless of position in the string (note blackListAny is a regular expression)
-    blackListAny = ~/_[12]_summary|_[12]_fastqc_data|_success_token|_(trimmed|untrimmed)|_(reverse|forward)_(paired|unpaired)|_R[12]\$(a21|raw|sqm|sqq)|CH[GH]_*O[BT]_|CpG_*O[BT]_|_bedgraph_merged/
+    blackListAny = [~/_[12]_(summary|fastqc_data)/, ~/_success_token/, ~/_(trimmed|untrimmed)/, ~/_(reverse|forward)/, ~/_(paired|unpaired)/, ~/_R[12]\$(a21|raw|sqm|sqq)/, ~/CH[GH]_*O[BT]_|CpG_*O[BT]_/, ~/|_bedgraph_merged/]
     
-    //  Remove these if at the end of the file (before the file extension)
-    String blackListEnd = "_[12]\\.|_R[12]\\.|_(encode|align)_reads\\.|\\.(c|cfu|txt|gz|sorted|)"
+    //  Replace these with a dot
+    blackListDot = [~/(_[12]|_R[12])\./, ~/_(encode|align)_reads\./, ~/\.(c|cfu)/, ~/\.txt/, ~/\.gz/, ~/\.sorted/]
 
-    f.name.toString()
-        .replaceAll(blackListAny, "")
-        .replaceAll(blackListEnd, ".")
-        .tokenize('.')[0]
+    f = replace_listed(f.name.toString(), blackListAny, "")
+    f = replace_listed(f, blackListDot, ".")
+    
+    return f.tokenize('.')[0]
 }
 
 def get_chromosome_name(f) {
@@ -153,6 +160,7 @@ process PrepareReference {
     
     output:
         file "$out_fasta" into BME_genome, MD_genome
+        file "chr_names_${params.anno_suffix}" into chr_names
         
     shell:
         //  Name of the primary assembly fasta after being downloaded and unzipped
@@ -190,6 +198,9 @@ process PrepareReference {
             #  Make a new file out of all the lines up and not including that
             sed -n "1,$(($first_bad_line - 1))p;${first_bad_line}q" !{primaryName} > !{mainName}
             
+            #  Make a file containing a list of seqnames
+            grep ">" !{mainName} | cut -d " " -f 1 | cut -d ">" -f 2 > chr_names_!{params.anno_suffix}
+            
             #  Create a link in an isolated directory for compatibility with bismark genome preparation
             mkdir main
             cd main
@@ -201,6 +212,9 @@ process PrepareReference {
             cd primary
             ln -s ../!{primaryName} !{primaryName}
             cd ..
+            
+            #  Make a file containing a list of seqnames
+            grep ">" !{primaryName} | cut -d " " -f 1 | cut -d ">" -f 2 > chr_names_!{params.anno_suffix}
         fi
                     
         #  Build the bisulfite genome, needed for bismark (and copy it to publishDir,
@@ -501,7 +515,7 @@ if (params.use_bme) {
             '''
             #  Run methylation extraction
             echo "Running 'MethylDackel extract' on the sorted bam..."
-            !{params.MethylDackel} extract --cytosine_report --CHG --CHH !{MD_genome} *.bam
+            !{params.MethylDackel} extract --cytosine_report -o !{prefix} --CHG --CHH !{MD_genome} *.bam
             
             echo "Summary stats for !{prefix}:"
             c_contexts=("CG" "CHG" "CHH")
@@ -603,6 +617,7 @@ process MergeBsseqObjects {
     
     input:
         set val(context), file(token) from bs_tokens_in
+        file chr_names
         file combine_script from file("${workflow.projectDir}/scripts/bs_merge.R")
         
     output:
