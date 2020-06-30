@@ -123,7 +123,7 @@ def get_chromosome_name(f) {
 
 def get_context(f) {
     f.name.toString()
-        .tokenize('.')[1][-3..-1]
+        .tokenize('.')[0][-3..-1]
 }
 
 //  Write run info to output
@@ -505,7 +505,6 @@ if (params.use_bme) {
         input:
             set val(prefix), file(bam_pair) from processed_alignments_in
             file MD_genome
-            file meth_count_script from file("${workflow.projectDir}/scripts/meth_count.R")
             
         output:
             file "methyl_extraction_${prefix}.log"
@@ -589,6 +588,7 @@ process FormBsseqObjects {
         
     shell:
         '''
+        mkdir -p !{params.output}/BSobjects/objects
         Rscript !{bs_creation_script} \
             -s !{chr} \
             -c !{task.cpus} \
@@ -621,13 +621,13 @@ process MergeBsseqObjects {
         file combine_script from file("${workflow.projectDir}/scripts/bs_merge.R")
         
     output:
-        file "merge_objects.log"
+        file "merge_objects_${context}.log"
         
     shell:
         '''
         #  This script actually writes result files directly to publishDir
         Rscript !{combine_script} -d !{params.output}/BSobjects/objects -c !{context}
         
-        cp .command.log merge_objects.log
+        cp .command.log merge_objects_!{context}.log
         '''
 }
