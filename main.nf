@@ -48,9 +48,11 @@ def helpMessage() {
                           samples.manifest. Defaults to "./test"
         --output [path]:  the directory into which to place pipeline results and
                           outputs. Defaults to "./out"
-        --force_trim:     include this flag to perform trimming on all samples
-                          (by default, trimming is done on samples failing the
-                          FastQC "adapter content" metric)
+        --trim_mode [mode] <- determines the conditions under which trimming occurs:
+                          "skip": do not perform trimming on samples
+                          "adaptive": [default] perform trimming on samples that
+                              have failed the FastQC "Adapter content" metric
+                          "force": perform trimming on all samples
         --all_alignments: include this flag to signal Arioc to also write
                           outputs for discondant, rejected, and unmapped reads.
                           Sam files for each outcome are kept as pipeline
@@ -76,6 +78,7 @@ params.work = "${workflow.projectDir}/work"
 params.force_trim = false
 params.all_alignments = false
 params.use_bme = false
+params.trim_mode = "adaptive"
 
 // -------------------------------------
 //   Validate Inputs
@@ -87,6 +90,11 @@ if (params.sample != "single" && params.sample != "paired") {
 
 if (params.reference != "hg19" && params.reference != "hg38" && params.reference != "mm10") {
     exit 1, "Reference not provided or invalid. Valid options for --reference are 'hg19', 'hg38', or 'mm10'."
+}
+
+// Trim mode
+if (params.trim_mode != "skip" && params.trim_mode != "adaptive" && params.trim_mode != "force") {
+    exit 1, "'--trim_mode' accepts one of three possible arguments: 'skip', 'adaptive', or 'force'."
 }
 
 // ------------------------------------------------------------
@@ -110,7 +118,7 @@ def get_prefix(f) {
     blackListAny = ~/_[12]_summary|_[12]_fastqc_data|_success_token|_(trimmed|untrimmed)|_(reverse|forward)_(paired|unpaired)|_R[12]\$(a21|raw|sqm|sqq)|CH[GH]_*O[BT]_|CpG_*O[BT]_|_bedgraph_merged/
     
     //  Remove these if at the end of the file (before the file extension)
-    String blackListEnd = "_[12]\\.|_R[12]\\.|_(encode|align)_reads\\.|\\.(c|cfu|txt|gz|sorted|)"
+    String blackListEnd = "_val_[12]\\.|_[12]\\.|_R[12]\\.|_(encode|align)_reads\\.|\\.(cfu|c|txt|sorted|gz)"
 
     f.name.toString()
         .replaceAll(blackListAny, "")
@@ -122,6 +130,14 @@ def get_chromosome_name(f) {
     f.name.toString()
         .tokenize('.')[1]
         .replaceAll("chrchr", "chr")
+}
+
+def get_file_ext(f) {
+    if (f.name.toString().tokenize(".")[-1] == "gz") {
+        return('.fastq.gz')
+    } else {
+        return('.fastq')
+    }
 }
 
 
@@ -199,7 +215,7 @@ process Merging {
         file merge_script from file("${workflow.projectDir}/scripts/preprocess_inputs.R")
         
     output:
-        file "*.fastq" into merged_inputs_flat
+        file "*.f*q*" into merged_inputs_flat
         file "arioc_samples.manifest" into arioc_manifest
         file "preprocess_inputs.log"
 
@@ -232,7 +248,7 @@ if (params.sample == "single") {
 //    Begin pipeline
 // ######################################################
 
-
+/*
 //  -----------------------------------------
 //   Step 1: Run FastQC on each sample
 //  -----------------------------------------
@@ -257,7 +273,7 @@ process FastQC_Untrimmed {
             data_command = "cp ${fq_prefix}_1_fastqc/fastqc_data.txt ${fq_prefix}_1_fastqc_data.txt && cp ${fq_prefix}_2_fastqc/fastqc_data.txt ${fq_prefix}_2_fastqc_data.txt"
         }
         '''
-        !{params.fastqc} -t !{task.cpus} *.fastq --extract
+        !{params.fastqc} -t !{task.cpus} *.f*q* --extract
         !{copy_command}
         !{data_command}
         '''
@@ -283,6 +299,7 @@ if (params.sample == "single") {
         .ifEmpty{ error "All files (fastQC summaries on untrimmed inputs, and the FASTQs themselves) missing from input to trimming channel." }
         .set{ trimming_inputs }
 }    
+*/
 
 //  -----------------------------------------------------------------------
 //   Step 2: Trim FASTQ files if required (or requested via --force_trim)
@@ -294,36 +311,35 @@ process Trimming {
     publishDir "${params.output}/Trimming",mode:'copy'
 
     input:
-        set val(fq_prefix), file(fq_summary), file(fq_file) from trimming_inputs
+        set val(fq_prefix), file(fq_file) from fastqc_untrimmed_inputs
 
     output:
-        file "*.fastq" into trimmed_fastqc_inputs, trimming_outputs
+        file "${fq_prefix}*.f*q*_trimming_report.txt"
+        file "${fq_prefix}*.fq" into trimming_outputs
 
     shell:
-        if (params.sample == "single") {
-            output_option = "${fq_prefix}_trimmed.fastq"
-            trim_mode = "SE"
-            adapter_fa_temp = params.adapter_fasta_single
-            trim_clip = params.trim_clip_single
-        } else {
-            output_option = "${fq_prefix}_trimmed_forward_paired.fastq ${fq_prefix}_trimmed_forward_unpaired.fastq ${fq_prefix}_trimmed_reverse_paired.fastq ${fq_prefix}_trimmed_reverse_unpaired.fastq"
-            trim_mode = "PE"
-            adapter_fa_temp = params.adapter_fasta_paired
-            trim_clip = params.trim_clip_paired
+        file_ext = get_file_ext(fq_file[0])
+        trim_args = "--illumina --fastqc --dont_gzip --basename ${fq_prefix}"
+        if (params.sample == "paired") {
+            trim_args = trim_args + " --paired"
         }
-        '''        
-        #  Determine whether to trim the FASTQ file(s). This is done if the user
-        #  adds the --force_trim flag, or if fastQC adapter content metrics fail
-        #  for at least one FASTQ
-        if [ "!{params.force_trim}" == true ]; then
+        '''
+        #  Determine whether to trim the FASTQ file(s). This is ultimately
+        #  controlled by the '--trim_mode' command flag.
+        if [ "!{params.trim_mode}" == "force" ]; then
             do_trim=true
+        elif [ "!{params.trim_mode}" == "skip" ]; then
+            do_trim=false
         elif [ "!{params.sample}" == "single" ]; then
-            if [ $(grep "Adapter Content" !{fq_summary} | cut -f 1)  == "FAIL" ]; then
+            #  Then '--trim_mode "adaptive"' was selected, and data is single-end
+            #  (was fq_summary)
+            if [ $(grep "Adapter Content" *summary.txt | cut -f 1)  == "FAIL" ]; then
                 do_trim=true
             else
                 do_trim=false
             fi
         else
+            #  Then '--trim_mode "adaptive"' was selected, and data is paired-end
             result1=$(grep "Adapter Content" !{fq_prefix}_1_summary.txt | cut -c1-4)
             result2=$(grep "Adapter Content" !{fq_prefix}_2_summary.txt | cut -c1-4)
             if [ $result1 == "FAIL" ] || [ $result2 == "FAIL" ]; then
@@ -335,38 +351,28 @@ process Trimming {
         
         #  Run trimming if required
         if [ "$do_trim" == true ]; then
-            #  This solves the problem of trimmomatic and the adapter fasta
-            #  needing hard paths, even when on the PATH.
-            if [ !{params.use_long_paths} == "true" ]; then
-                trim_jar=!{params.trimmomatic}
-                adapter_fa=!{adapter_fa_temp}
-            else
-                trim_jar=$(which !{params.trimmomatic})
-                adapter_fa=$(which !{adapter_fa_temp})
-            fi
-            
-            #  Run trimmomatic
-            java -Xmx512M \
-                -jar $trim_jar \
-                !{trim_mode} \
-                -threads !{task.cpus} \
-                -phred33 \
-                !{fq_file} \
-                !{output_option} \
-                ILLUMINACLIP:$adapter_fa:!{trim_clip} \
-                LEADING:!{params.trim_lead} \
-                TRAILING:!{params.trim_trail} \
-                SLIDINGWINDOW:!{params.trim_slide_window} \
-                MINLEN:!{params.trim_min_len}
+            trim_galore !{trim_args} *.f*q*
         else
-            #  Otherwise rename files (signal to nextflow to output these files)
-            if [ "!{params.sample}" == "single" ]; then
-                mv !{fq_prefix}.fastq !{fq_prefix}_untrimmed.fastq
+            #  Otherwise rename files (for compatibility downnstream, and to signal to
+            #  nextflow to output these files) and decompress as necessary
+            if [ ![file_ext] == '.fastq.gz' ]; then
+                if [ "!{params.sample}" == "single" ]; then
+                    gunzip -c !{fq_prefix}!{file_ext} > !{fq_prefix}_trimmed.fq
+                else
+                    gunzip -c !{fq_prefix}_1!{file_ext} > !{fq_prefix}_val_1.fq
+                    gunzip -c !{fq_prefix}_2!{file_ext} > !{fq_prefix}_val_2.fq
+                fi
             else
-                mv !{fq_prefix}_1.fastq !{fq_prefix}_untrimmed_1.fastq
-                mv !{fq_prefix}_2.fastq !{fq_prefix}_untrimmed_2.fastq
+                if [ "!{params.sample}" == "single" ]; then
+                    mv !{fq_prefix}!{file_ext} !{fq_prefix}_untrimmed.fq
+                else
+                    mv !{fq_prefix}_1!{file_ext} !{fq_prefix}_untrimmed_1.fq
+                    mv !{fq_prefix}_2!{file_ext} !{fq_prefix}_untrimmed_2.fq
+                fi
             fi
         fi
+        
+        cp .command.log trimming_!{fq_prefix}.log
         '''
 }
 
@@ -388,27 +394,6 @@ if (params.sample == "single") {
         .into{ ariocE_inputs1; ariocE_inputs2 }
 }
 
-//  ------------------------------------------------------------------------------
-//   Step 3: Rerun FastQC on any trimmed files, to make sure trimming did its job
-//  ------------------------------------------------------------------------------
-
-process FastQC_Trimmed {
-
-    tag "$fastq_name"
-    publishDir "${params.output}/FastQC/Trimmed",'mode':'copy'
-
-    input:
-        file trimmed_input from trimmed_fastqc_inputs
-
-    output:
-        file "*"
-
-    shell:
-        fastq_name = get_prefix(trimmed_input[0])
-        '''
-        !{params.fastqc} -t !{task.cpus} !{trimmed_input} --extract
-        '''
-}
 
 //  -------------------------------------------------------------------------
 //   Step 4: Alignment with Arioc
@@ -584,6 +569,7 @@ process FilterAlignments {
                 
             #  Index the sorted BAM
             !{params.samtools} index !{prefix}.cfu.sorted.bam
+        fi
             
         cp .command.log filter_sam_!{prefix}.log
         '''
@@ -755,7 +741,7 @@ if (params.use_bme) {
             '''
             #  Run methylation extraction
             echo "Running 'MethylDackel extract' on the sorted bam..."
-            !{params.MethylDackel} extract --cytosine_report !{MD_genome} !{bam_file}
+            !{params.MethylDackel} extract --cytosine_report --CHG --CHH !{MD_genome} !{bam_file}
             
             echo "Summary stats for !{prefix}:"
             Rscript !{meth_count_script} -t !{params.data_table_threads}
