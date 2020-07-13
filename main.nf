@@ -140,6 +140,11 @@ def get_file_ext(f) {
     }
 }
 
+def get_context(f) {
+    f.name.toString()
+        .tokenize('.')[0][-3..-1]
+}
+
 
 // ######################################################
 //    Pre-processing steps 
@@ -149,36 +154,85 @@ def get_file_ext(f) {
 // genome required by Bismark tools; split the fasta into individual files (1 per
 // canonical sequence) and write the configs for encoding the reference with AriocE
 process PrepareReference {
-    storeDir "${workflow.projectDir}/ref/${params.reference}"
+    storeDir "${workflow.projectDir}/ref/${params.reference}/${params.anno_suffix}"
     
     input:
         file split_fasta_script from file("${workflow.projectDir}/scripts/split_fasta.sh")
         file encode_ref_script from file("${workflow.projectDir}/scripts/write_configs_encode_ref.R")
     
     output:
-        file "$baseName" into BME_genome, MD_genome  // the original reference fasta
+        file "$out_fasta" into BME_genome, MD_genome
+        file "chr_names_${params.anno_suffix}" into chr_names
         file "encode_ref_gap.cfg" into encode_ref_gap_cfg
         file "encode_ref_nongap.cfg" into encode_ref_nongap_cfg
         
     shell:
+        //  Name of the primary assembly fasta after being downloaded and unzipped
         baseName = file("${params.ref_fasta_link}").getName() - ".gz"
+            
+        //  Name the pipeline will use for the primary and main assembly fastas, respectively
+        primaryName = "assembly_${params.anno_suffix}.fa".replaceAll("main", "primary")
+        mainName = "assembly_${params.anno_suffix}.fa".replaceAll("primary", "main")
+            
+        //  Name of fasta to use for this pipeline execution instance
+        out_fasta = "assembly_${params.anno_suffix}.fa"
+        
         '''
+        mkdir -p !{workflow.projectDir}/ref/!{params.reference}/!{params.anno_suffix}
+        
         #  Pull fasta from GENCODE
         wget !{params.ref_fasta_link}
         gunzip !{baseName}.gz
+        mv !{baseName} !{primaryName} # rename for consistency with pipeline naming conventions
         
+        #######################################################################
+        #  Create the "main" fasta of canonical seqs only
+        #######################################################################
+        
+        if [ !{params.anno_build} == "main" ]; then
+            #  Determine how many chromosomes/seqs to keep
+            if [ !{params.reference} == "mm10" ]; then
+                num_chrs=22
+            else
+                num_chrs=25
+            fi
+            #  Find the line of the header for the first extra contig (to not
+            #  include in the "main" annotation fasta
+            first_bad_line=$(grep -n ">" !{primaryName} | cut -d : -f 1 | paste -s | cut -f $(($num_chrs + 1)))
+            
+            #  Make a new fasta out of all the lines up to and not including that
+            sed -n "1,$(($first_bad_line - 1))p;${first_bad_line}q" !{primaryName} > !{mainName}
+            
+            #  Make a file containing a list of seqnames
+            grep ">" !{mainName} | cut -d " " -f 1 | cut -d ">" -f 2 > chr_names_!{params.anno_suffix}
+            
+            #  Create a link in an isolated directory for compatibility with bismark genome preparation
+            mkdir main
+            cd main
+            ln -s  ../!{mainName} !{mainName}
+            cd ..
+        else
+            #  Create a link in an isolated directory for compatibility with bismark genome preparation
+            mkdir primary
+            cd primary
+            ln -s ../!{primaryName} !{primaryName}
+            cd ..
+            
+            #  Make a file containing a list of seqnames
+            grep ">" !{primaryName} | cut -d " " -f 1 | cut -d ">" -f 2 > chr_names_!{params.anno_suffix}
+        fi
+                    
         #  Build the bisulfite genome, needed for bismark (and copy it to publishDir,
         #  circumventing Nextflow's inability to recursively copy)
-        !{params.bismark_genome_preparation} --hisat2 --path_to_aligner !{params.hisat2} ./
-        mkdir -p !{workflow.projectDir}/ref/!{params.reference}
-        cp -R Bisulfite_Genome !{workflow.projectDir}/ref/!{params.reference}/
+        !{params.bismark_genome_preparation} --hisat2 --path_to_aligner !{params.hisat2} ./!{params.anno_build}
+        cp -R !{params.anno_build}/Bisulfite_Genome !{workflow.projectDir}/ref/!{params.reference}/!{params.anno_suffix}/
         
         #  Split by sequence, to prepare for encoding reference with Arioc
         bash !{split_fasta_script} !{baseName}
         
         #  Write the Arioc configs for encoding the reference
-        out_dir=!{workflow.projectDir}/ref/!{params.reference}/encoded_ref
-        mkdir $out_dir
+        out_dir=!{workflow.projectDir}/ref/!{params.reference}/!{params.anno_suffix}/encoded_ref
+        mkdir -p $out_dir
         Rscript !{encode_ref_script} -r !{params.reference} -d $out_dir
         '''
 }

@@ -5,9 +5,7 @@ spec <- matrix(c('ref', 'r', 1, 'character', 'reference genome',
                byrow=TRUE, ncol=5)
 opt <- getopt(spec)
 
-#  Get seq names from the fasta files present in the working directory
-seq_names = basename(system(paste0('ls ', getwd(), '/chr*.fa'), intern=TRUE))
-seq_names = sapply(strsplit(seq_names, '.', fixed=TRUE), function(x) x[1])
+seq_names = readLines(list.files(pattern='chr_names_.*'))
 
 for (seed in c("hsi25_0_32_CT", "ssi84_2_30_CT")) {
     #  The beginning portion of the config
