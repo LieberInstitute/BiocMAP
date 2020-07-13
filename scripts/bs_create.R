@@ -1,11 +1,14 @@
 #  Read cytosine reports and produce 2 HDF5-backed BSseq objects (CpG and nonCpG context).
 
-library('bsseq')
-library('GenomicRanges')
+suppressPackageStartupMessages(library('bsseq'))
+suppressPackageStartupMessages(library('HDF5Array'))
+suppressPackageStartupMessages(library('BiocParallel'))
+suppressPackageStartupMessages(library('getopt'))
+suppressPackageStartupMessages(library('GenomicRanges'))
+suppressPackageStartupMessages(library('jaffelab'))
 library('data.table')
-library('getopt')
-library('HDF5Array')
-library('jaffelab')
+
+r_time = proc.time()
 
 ################################################################
 #  Convenience variables
@@ -14,11 +17,11 @@ library('jaffelab')
 spec <- matrix(c(
     'chr', 's', 1, 'character', 'chromosome to subset',
     'region', 'r', 1, 'character', 'brain region',
-    'cores', 'c', 1, 'integer', 'number of cores to utilize'
+    'cores', 'c', 1, 'integer', 'number of cores to utilize',
+    'dir', 'd', 1, 'character', 'output dir for objects'
 ), byrow=TRUE, ncol=5)
 opt <- getopt(spec)
 
-assayPath = paste0('assays_', opt$chr, '.h5')
 tempDir = paste0('temp_hd5/', opt$chr, '/')
 dir.create('temp_hd5')
 
@@ -34,7 +37,7 @@ setAutoBlockSize(1e9)  # for speed- default is 1e8
 #  split by CpG/nonCpG context). 
 ################################################################
 
-reportFiles = system('ls *.CX_report.txt', intern=TRUE)
+reportFiles = list.files(pattern='.*\\.CX_report\\.txt')
 ids = ss(reportFiles, '.', fixed=TRUE)
 
 #  Read the reports
@@ -62,32 +65,46 @@ print('Done.')
 #  Split objects by context and save everything to disk
 #################################################################################################
 
-#    Write the filtered bsseq objects (the GRanges being the primary attribute written)
-print('Splitting BSobj by cytosine context...')
-BS_CpG = BSobj[which(rowRanges(BSobj)$c_context == 'CG'),]
-BS_CpH = BSobj[which(rowRanges(BSobj)$c_context != 'CG'),]
-
-#    Write the methylation and coverage assays (realized into memory in chunks)
-print('Realizing the CpG assays and writing to .h5 file...')
-M_CpG = writeHDF5Array(assays(BS_CpG)$M, assayPath, 'M_CpG', verbose=TRUE)
-Cov_CpG = writeHDF5Array(assays(BS_CpG)$Cov, assayPath, 'Cov_CpG', verbose=TRUE)
-print('Realizing the CpH assays and writing to .h5 file...')
-M_CpH = writeHDF5Array(assays(BS_CpH)$M, assayPath, 'M_CpH', verbose=TRUE)
-Cov_CpH = writeHDF5Array(assays(BS_CpH)$Cov, assayPath, 'Cov_CpH', verbose=TRUE)
-rm(BSobj)
+#  Note the entire CpG object is realized into memory- at the time of writing
+#  this script, strand collapsing takes an unreasonable time to block process
+print('Subsetting to CpG context, strand collapsing, and saving...')
+BS_CpG = strandCollapse(realize(BSobj[which(rowRanges(BSobj)$c_context == 'CG'),]))
+BS_CpG = saveHDF5SummarizedExperiment(BS_CpG,
+                                      dir=paste0(opt$dir, '/', opt$chr), 
+                                      prefix='CpG')
 gc()
 
-#    Point split objects to their new assays on disk
-assays(BS_CpG)$M = M_CpG
-assays(BS_CpG)$Cov = Cov_CpG
-assays(BS_CpH)$M = M_CpH
-assays(BS_CpH)$Cov = Cov_CpH
+#  Direct 'BSmooth' to the proper on-disk realization (does not seem to work
+#  automatically)
+setRealizationBackend("HDF5Array")
+setHDF5DumpFile(paste0(opt$dir, '/', opt$chr, '/CpGassays.h5'))
+setHDF5DumpName('coef')
 
-#    Save the BSobjs (minus their assays)
-print('Writing the remaining components of the BSobjs...')
-save(BS_CpG, file=paste0('bs_', opt$chr, '_CpG.rda'))
-save(BS_CpH, file=paste0('bs_', opt$chr, '_CpH.rda'))
+#  Perform smoothing and assign to dummy object
+print('Smoothing HDF5-backed CpG object...')
+bs_smooth = BSmooth(BS_CpG, 
+                    BPPARAM = MulticoreParam(opt$cores), 
+                    verbose = TRUE)
+
+#  Explicitly point 'BS_CpG' to the new 'coef' assay, and reserialize to the
+#  existing RDS file
+coef_CpG = HDF5Array(paste0(opt$dir, '/', opt$chr, '/CpGassays.h5'), 'coef')
+assays(BS_CpG, withDimnames=FALSE)$coef = coef_CpG
+quickResaveHDF5SummarizedExperiment(BS_CpG, verbose=TRUE)
+
+rm(BS_CpG, bs_smooth, coef_CpG)
+gc()
+setRealizationBackend(NULL)
+
+print('Subsetting to CpH context, sorting ranges, and saving...')
+BS_CpH = BSobj[which(rowRanges(BSobj)$c_context != 'CG'),]
+BS_CpH = BS_CpH[order(ranges(BS_CpH)),]
+saveHDF5SummarizedExperiment(BS_CpH, dir=paste0(opt$dir, '/', opt$chr), prefix='CpH')
+
 print('Done with all tasks.')
+
+gc()
+proc.time() - r_time
 
 #    Ensure R doesn't save a .RData file, potentially on the order of 10s of GBs
 rm(list = ls())

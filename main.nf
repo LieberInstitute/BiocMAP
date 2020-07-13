@@ -778,18 +778,31 @@ process FormBsseqObjects {
         file bs_creation_script from file("${workflow.projectDir}/scripts/bs_create.R")
         
     output:
-        file "assays_${chr}.h5" into assays_out
-        file "bs_${chr}_*.rda" into bs_objs_out
+        file "${chr}_Cp*.success" into bs_tokens_out
         file "create_bs_${chr}.log"
         
     shell:
         '''
-        Rscript !{bs_creation_script} -s !{chr} -c !{task.cpus}
-        
+        mkdir -p !{params.output}/BSobjects/objects
+        Rscript !{bs_creation_script} \
+            -s !{chr} \
+            -c !{task.cpus} \
+            -d !{params.output}/BSobjects/objects
+        if [ "$?" == "0" ]; then
+            touch !{chr}_CpG.success
+            touch !{chr}_CpH.success
+        fi
         cp .command.log create_bs_!{chr}.log
         '''
 }
 
+
+//  Group tokens into two elements ("CpG" context and "CpH" context)
+bs_tokens_out
+    .flatten()
+    .map{ file -> tuple(get_context(file), file) }
+    .groupTuple()
+    .set{ bs_tokens_in }
 
 //  Combine Bsseq objects and their HDF5-backed assays into two .rda files
 //  (one for CpG context, the other for CpH) and a single .h5 file
@@ -798,18 +811,18 @@ process MergeBsseqObjects {
     publishDir "${params.output}/BSobjects/logs", mode:'copy'
     
     input:
-        file assays_in from assays_out.collect()
-        file bs_objs_in from bs_objs_out.collect()
+        set val(context), file(token) from bs_tokens_in
+        file chr_names
         file combine_script from file("${workflow.projectDir}/scripts/bs_merge.R")
         
     output:
-        file "merge_objects.log"
+        file "merge_objects_${context}.log"
         
     shell:
         '''
         #  This script actually writes result files directly to publishDir
-        Rscript !{combine_script} -d !{params.output}/BSobjects
+        Rscript !{combine_script} -d !{params.output}/BSobjects/objects -c !{context}
         
-        cp .command.log merge_objects.log
+        cp .command.log merge_objects_!{context}.log
         '''
 }
