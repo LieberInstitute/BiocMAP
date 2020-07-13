@@ -102,28 +102,41 @@ if (params.trim_mode != "skip" && params.trim_mode != "adaptive" && params.trim_
 // ------------------------------------------------------------
 
 if (params.reference == "hg38") {
-    params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/GRCh38.primary_assembly.genome.fa.gz"
+    params.anno_version = params.gencode_version_human
+    params.anno_suffix = params.reference + '_gencode_v' + params.gencode_version_human + '_' + params.anno_build
+    params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_${params.gencode_version_human}/GRCh38.primary_assembly.genome.fa.gz"
 } else if (params.reference == "hg19") {
-    params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/GRCh37_mapping/GRCh37.primary_assembly.genome.fa.gz"
+    params.anno_version = params.gencode_version_human
+    params.anno_suffix = params.reference + '_gencode_v' + params.gencode_version_human + 'lift37_' + params.anno_build
+    params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_${params.gencode_version_human}/GRCh37_mapping/GRCh37.primary_assembly.genome.fa.gz"
 } else {  // mm10
-    params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/GRCm38.primary_assembly.genome.fa.gz"
+    params.anno_version = params.gencode_version_mouse
+    params.anno_suffix = params.reference + '_gencode_' + params.gencode_version_mouse + '_' + params.anno_build
+    params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_${params.gencode_version_mouse}/GRCm38.primary_assembly.genome.fa.gz"
 }
 
 // ------------------------------------------------------------
 //   Utilities for retrieving info from filenames
 // ------------------------------------------------------------
 
+def replace_listed(x, pattern_list, replacement) {
+    for (pattern in pattern_list) {
+        x = x.replaceAll(pattern, replacement)
+    }
+    return x
+}
+
 def get_prefix(f) {
     //  Remove these regardless of position in the string (note blackListAny is a regular expression)
-    blackListAny = ~/_[12]_summary|_[12]_fastqc_data|_success_token|_(trimmed|untrimmed)|_(reverse|forward)_(paired|unpaired)|_R[12]\$(a21|raw|sqm|sqq)|CH[GH]_*O[BT]_|CpG_*O[BT]_|_bedgraph_merged/
+    blackListAny = [~/_[12]_(summary|fastqc_data)/, ~/_success_token/, ~/_(trimmed|untrimmed)/, ~/_(reverse|forward)/, ~/_(paired|unpaired)/, ~/_R[12]\$(a21|raw|sqm|sqq)/, ~/CH[GH]_*O[BT]_|CpG_*O[BT]_/, ~/|_bedgraph_merged/]
     
-    //  Remove these if at the end of the file (before the file extension)
-    String blackListEnd = "_val_[12]\\.|_[12]\\.|_R[12]\\.|_(encode|align)_reads\\.|\\.(cfu|c|txt|sorted|gz)"
+    //  Replace these with a dot
+    blackListDot = [~/(_[12]|_R[12])\./, ~/_(encode|align)_reads\./, ~/\.(c|cfu)/, ~/\.txt/, ~/\.gz/, ~/\.sorted/]
 
-    f.name.toString()
-        .replaceAll(blackListAny, "")
-        .replaceAll(blackListEnd, ".")
-        .tokenize('.')[0]
+    f = replace_listed(f.name.toString(), blackListAny, "")
+    f = replace_listed(f, blackListDot, ".")
+    
+    return f.tokenize('.')[0]
 }
 
 def get_chromosome_name(f) {
@@ -302,7 +315,6 @@ if (params.sample == "single") {
 //    Begin pipeline
 // ######################################################
 
-/*
 //  -----------------------------------------
 //   Step 1: Run FastQC on each sample
 //  -----------------------------------------
@@ -353,7 +365,7 @@ if (params.sample == "single") {
         .ifEmpty{ error "All files (fastQC summaries on untrimmed inputs, and the FASTQs themselves) missing from input to trimming channel." }
         .set{ trimming_inputs }
 }    
-*/
+
 
 //  -----------------------------------------------------------------------
 //   Step 2: Trim FASTQ files if required (or requested via --force_trim)
