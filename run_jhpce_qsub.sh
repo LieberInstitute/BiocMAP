@@ -10,6 +10,8 @@ export _JAVA_OPTIONS="-Xms8g -Xmx10g"
 nextflow main.nf \
     --sample "paired" \
     --reference "hg38" \
-    --input "/dcl01/lieber/ajaffe/Nick/misc/manifests/WGBS_test_small" \
-    --output "/dcl01/lieber/ajaffe/Nick/misc/manifests/WGBS_test_small/out" \
+    --input "/dcl01/lieber/ajaffe/Nick/misc/manifests/WGBS_test_master" \
+    --output "/dcl01/lieber/ajaffe/Nick/misc/manifests/WGBS_test_master/out" \
+    --with_lambda \
+    --trim_mode "force" \
     -profile jhpce
