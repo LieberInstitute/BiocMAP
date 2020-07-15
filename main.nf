@@ -46,22 +46,27 @@ def helpMessage() {
     Optional flags:
         --input [path]:   the path to the directory containing the 
                           samples.manifest. Defaults to "./test"
-        --output [path]:  the directory into which to place pipeline results and
-                          outputs. Defaults to "./out"
-        --trim_mode [mode] <- determines the conditions under which trimming occurs:
+        --output [path]:  the directory into which to place pipeline results 
+                          and outputs. Defaults to "./out"
+        --trim_mode [mode]: determines the conditions under which trimming occurs:
                           "skip": do not perform trimming on samples
-                          "adaptive": [default] perform trimming on samples that
-                              have failed the FastQC "Adapter content" metric
+                          "adaptive": [default] perform trimming on samples
+                              that have failed the FastQC "Adapter content" 
+                              metric
                           "force": perform trimming on all samples
         --all_alignments: include this flag to signal Arioc to also write
                           outputs for discondant, rejected, and unmapped reads.
                           Sam files for each outcome are kept as pipeline
-                          outputs. As by default, only concordant reads are used
+                          outputs. By default, only concordant reads are used
                           for later processing (methylation extraction and
                           beyond)
         --use_bme:        include this flag to perform methylation extraction-
                           related processes with Bismark utilities, rather than
                           the default of MethylDackel
+        --with_lambda:    include this flag if all samples have spike-ins with
+                          the lambda bacteriophage genome. Pseudoalignment will
+                          then be performed to estimate bisulfite conversion
+                          efficiency
     """.stripIndent()
 }
 
@@ -79,6 +84,7 @@ params.force_trim = false
 params.all_alignments = false
 params.use_bme = false
 params.trim_mode = "adaptive"
+params.with_lambda = false
 
 // -------------------------------------
 //   Validate Inputs
@@ -114,6 +120,9 @@ if (params.reference == "hg38") {
     params.anno_suffix = params.reference + '_gencode_' + params.gencode_version_mouse + '_' + params.anno_build
     params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_${params.gencode_version_mouse}/GRCm38.primary_assembly.genome.fa.gz"
 }
+
+params.lambda_link = "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/840/245/GCA_000840245.1_ViralProj14204/GCA_000840245.1_ViralProj14204_genomic.fna.gz"
+
 
 // ------------------------------------------------------------
 //   Utilities for retrieving info from filenames
@@ -272,6 +281,38 @@ process EncodeReference {
 }
 
 
+if (params.with_lambda) {
+    process PrepareLambda {
+        storeDir "${workflow.projectDir}/ref/lambda"
+        
+        input:
+            file convert_script from file("${workflow.projectDir}/scripts/bisulfite_convert.R")
+            
+        output:
+            file "lambda*.idx" into lambda_indices_out
+            file "lambda*.fa" into lambda_genomes_out
+            file "prepare_lambda.log"
+            
+        shell:
+            baseName = file("${params.lambda_link}").getName() - ".gz"
+            '''
+            #  Pull, unzip, and simplify sequence name to 'lambda'
+            wget !{params.lambda_link}
+            gunzip -c !{baseName}.gz | sed '1s/>.*Es/>lambda Es/' > lambda.fa
+            
+            #  Artificially create a "perfectly bisulfite-converted" fasta
+            Rscript !{convert_script}
+            
+            #  Create a kallisto index for each version of the genome
+            kallisto index -i lambda_normal.idx lambda.fa
+            kallisto index -i lambda_bs_artificial.idx lambda_bs_artificial.fa
+            
+            cp .command.log prepare_lambda.log
+            '''
+    }
+}
+
+
 process Merging {
 
     publishDir "${params.output}", mode:'copy', pattern:'*.log'
@@ -301,19 +342,56 @@ if (params.sample == "single") {
         .flatten()
         .map{file -> tuple(get_prefix(file), file) }
         .ifEmpty{ error "Input fastq files (after any merging) are missing from the channel"}
-        .into{ fastqc_untrimmed_inputs; trimming_inputs }
+        .into{ fastqc_untrimmed_inputs; trimming_inputs; lambda_inputs }
 } else {
     merged_inputs_flat
         .flatten()
         .map{file -> tuple(get_prefix(file), file) }
         .groupTuple()
         .ifEmpty{ error "Input fastq files (after any merging) are missing from the channel"}
-        .into{ fastqc_untrimmed_inputs; trimming_inputs }
+        .into{ fastqc_untrimmed_inputs; trimming_inputs; lambda_inputs }
 }
 
 // ######################################################
 //    Begin pipeline
 // ######################################################
+
+if (params.with_lambda) {
+    process LambdaPseudo {
+        
+        tag "$prefix"
+        publishDir "${params.output}/lambda", mode:'copy'
+        
+        input:
+            file lambda_indices_in from lambda_indices_out.collect()
+            file lambda_genomes_in from lambda_genomes_out.collect()
+            set val(prefix), file(fq_file) from lambda_inputs
+            
+        output:
+            file "${prefix}_lambda_pseudo.log" into lambda_reports_out
+            
+        shell:
+            '''
+            #  This assumes paired-end samples!! (change later)
+            fq1=!{prefix}_1.f*q*
+            fq2=!{prefix}_2.f*q*
+            
+            #  Perform pseudoalignment to original and bisulfite-converted genomes
+            kallisto quant -i lambda_normal.idx -o ./orig $fq1 $fq2
+            kallisto quant -i lambda_bs_artificial.idx -o ./bs $fq1 $fq2
+            
+            #  Get the counts for number of successfully "aligned" reads
+            orig_count=$(sed -n '2p' orig/abundance.tsv | cut -f 4)
+            bs_count=$(sed -n '2p' bs/abundance.tsv | cut -f 4)
+
+            #  Write the estimated conversion efficiency to the log
+            conv_eff=$(Rscript -e "100 * $bs_count/($orig_count + $bs_count)" | cut -d ']' -f 2)
+            echo "Conversion efficiency:${conv_eff}%."
+            cp .command.log !{prefix}_lambda_pseudo.log
+            '''
+    }
+}
+
 
 //  -----------------------------------------
 //   Step 1: Run FastQC on each sample
@@ -377,10 +455,10 @@ process Trimming {
     publishDir "${params.output}/Trimming",mode:'copy'
 
     input:
-        set val(fq_prefix), file(fq_file) from fastqc_untrimmed_inputs
+        set val(fq_prefix), file(fq_summary), file(fq_file) from trimming_inputs
 
     output:
-        file "${fq_prefix}*.f*q*_trimming_report.txt"
+        file "${fq_prefix}*.f*q*_trimming_report.txt" optional true
         file "${fq_prefix}*.fq" into trimming_outputs
 
     shell:
