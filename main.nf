@@ -458,6 +458,7 @@ process Trimming {
         set val(fq_prefix), file(fq_summary), file(fq_file) from trimming_inputs
 
     output:
+        file "${fq_prefix}*_fastqc.{html,zip}" optional true
         file "${fq_prefix}*.f*q*_trimming_report.txt" optional true
         file "${fq_prefix}*.fq" into trimming_outputs
 
