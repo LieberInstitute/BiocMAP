@@ -373,12 +373,15 @@ if (params.with_lambda) {
         shell:
             '''
             #  This assumes paired-end samples!! (change later)
-            fq1=!{prefix}_1.f*q*
-            fq2=!{prefix}_2.f*q*
+            if [ !{params.sample} == 'paired' ]; then
+                command_args='!{prefix}_1.f*q* !{prefix}_2.f*q*'
+            else
+                command_args='--single !{prefix}.f*q*'
+            fi
             
             #  Perform pseudoalignment to original and bisulfite-converted genomes
-            kallisto quant -i lambda_normal.idx -o ./orig $fq1 $fq2
-            kallisto quant -i lambda_bs_artificial.idx -o ./bs $fq1 $fq2
+            kallisto quant -t !{task.cpus} -i lambda_normal.idx -o ./orig $command_args
+            kallisto quant -t !{task.cpus} -i lambda_bs_artificial.idx -o ./bs $command_args
             
             #  Get the counts for number of successfully "aligned" reads
             orig_count=$(sed -n '2p' orig/abundance.tsv | cut -f 4)
