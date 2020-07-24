@@ -140,7 +140,7 @@ def get_prefix(f) {
     blackListAny = [~/_[12]_(summary|fastqc_data)/, ~/_success_token/, ~/_(trimmed|untrimmed)/, ~/_(reverse|forward)/, ~/_(paired|unpaired)/, ~/_R[12]\$(a21|raw|sqm|sqq)/, ~/CH[GH]_*O[BT]_|CpG_*O[BT]_/, ~/|_bedgraph_merged/]
     
     //  Replace these with a dot
-    blackListDot = [~/(_[12]|_R[12])\./, ~/_(encode|align)_reads\./, ~/\.(c|cfu)/, ~/\.txt/, ~/\.gz/, ~/\.sorted/]
+    blackListDot = [~/(_[12]|_R[12])\./, ~/_(encode|align)_reads\./, ~/\.(c|cfu)/, ~/\.txt/, ~/\.gz/, ~/\.sorted/, ~/_val/]
 
     f = replace_listed(f.name.toString(), blackListAny, "")
     f = replace_listed(f, blackListDot, ".")
@@ -253,7 +253,7 @@ process PrepareReference {
         bash !{split_fasta_script} !{baseName}
         
         #  Write the Arioc configs for encoding the reference
-        out_dir=!{workflow.projectDir}/ref/!{params.reference}/!{params.anno_suffix}/encoded_ref
+        out_dir=!{workflow.projectDir}/ref/!{params.reference}/!{params.anno_suffix} #/encoded_ref
         mkdir -p $out_dir
         Rscript !{encode_ref_script} -r !{params.reference} -d $out_dir
         '''
@@ -324,7 +324,7 @@ process Merging {
         
     output:
         file "*.f*q*" into merged_inputs_flat
-        file "arioc_samples.manifest" into arioc_manifest
+        file "arioc_samples.manifest" into arioc_manifest, parse_manifest
         file "preprocess_inputs.log"
 
     shell:
@@ -462,7 +462,7 @@ process Trimming {
 
     output:
         file "${fq_prefix}*_fastqc.{html,zip}" optional true
-        file "${fq_prefix}*.f*q*_trimming_report.txt" optional true
+        file "${fq_prefix}*.f*q*_trimming_report.txt" optional true into trim_reports_out
         file "${fq_prefix}*.fq" into trimming_outputs
 
     shell:
@@ -641,7 +641,7 @@ process AlignReads {
     output:
         file "${prefix}.[dru].sam" optional true
         file "${prefix}.c.sam" into concordant_sams_out
-        file "${prefix}_alignment.log" into arioc_logs_out
+        file "${prefix}_alignment.log" into arioc_reports_out
         
     shell:
         if (params.sample == "paired") {
@@ -667,25 +667,6 @@ concordant_sams_out
     .map{ file -> tuple(get_prefix(file), file) }
     .ifEmpty{ error "Concordant sams missing from input to 'FilterSam' process." }
     .set{ concordant_sams_in }
-    
-
-//  Extracting alignment information from the AriocP or AriocU logs
-process ParseAriocLogs {
-
-    publishDir "${params.output}/Arioc/", mode:'copy'
-    
-    input:
-        file parse_script from file("${workflow.projectDir}/scripts/parse_arioc_logs.R")
-        file arioc_logs_in from arioc_logs_out.collect()
-        
-    output:
-        file "alignment_results.rda"
-        
-    shell:
-        '''
-        Rscript !{parse_script}
-        '''
-}
     
 
 //  To be specific, this process takes the sam file of concordant reads from
@@ -746,7 +727,7 @@ if (params.use_bme) {
             
         output:
             file "${prefix}/" into BME_outputs
-            file "BME_${prefix}.log" into BME_logs_out
+            file "BME_${prefix}.log" into bme_reports_out
             
         shell:
             // BME needs path to samtools if samtools isn't on the PATH
@@ -775,26 +756,6 @@ if (params.use_bme) {
             cp .command.log BME_!{prefix}.log
             '''
     }
-    
-    
-    //  Aggregate methylation info from BME logs for all samples, into a single .rda file
-    process ParseBMELogs {
-    
-        publishDir "${params.output}/", mode:'copy'
-        
-        input:
-            file BME_logs_in from BME_logs_out.collect()
-            file parse_BME_script from file("${workflow.projectDir}/scripts/parse_bme_logs.R")
-            
-        output:
-            file "BME_metrics.rda"
-            
-        shell:
-            '''
-            Rscript !{parse_BME_script}
-            '''
-    }
-    
     
     BME_outputs
         .flatten()
@@ -905,6 +866,8 @@ if (params.use_bme) {
             cp .command.log methyl_extraction_!{prefix}.log
             '''
     }
+    
+    bme_reports_out = Channel.value()
 }
 
 //  Group reports for each chromosome into one channel (each)
@@ -914,6 +877,34 @@ cytosine_reports
     .map{ file -> tuple(get_chromosome_name(file), file) }
     .groupTuple()
     .set{ cytosine_reports_by_chr }
+    
+
+//  Take reports and logs from Arioc and optionally Trim Galore, BME, and
+//  lambda pseudoalignment (if applicable); aggregate relevant metrics/
+//  QC-related stats into a data frame.
+process ParseReports {
+
+    publishDir "${params.output}/metrics", mode:'copy'
+    
+    input:
+        file trim_reports_in from trim_reports_out.collect()
+        file bme_reports_in from bme_reports_out.collect()
+        file arioc_reports_in from arioc_reports_out.collect()
+        file lambda_reports_in from lambda_reports_out.collect()
+        
+        file parse_reports_script from file("${workflow.projectDir}/scripts/parse_reports.R")
+        file parse_manifest
+        
+    output:
+        file "metrics.rda"
+        file "metrics.log"
+        
+    shell:
+        '''
+        Rscript !{parse_reports_script}
+        cp .command.log metrics.log
+        '''
+}
 
 
 process FormBsseqObjects {
