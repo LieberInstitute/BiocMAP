@@ -168,6 +168,29 @@ def get_context(f) {
 }
 
 
+// ------------------------------------------------------------
+//  Print all parameters to log
+// ------------------------------------------------------------
+
+log.info "=================================="
+log.info " WGBS Pipeline"
+log.info "=================================="
+def summary = [:]
+summary['All alignments'] = params.all_alignments
+summary['Annotation release'] = params.anno_version
+summary['Annotation build'] = params.anno_build
+summary['Input dir'] = params.input
+summary['Has lambda spike-ins'] = params.with_lambda
+summary['Output dir'] = params.output
+summary['Reference'] = params.reference
+summary['Sample']	= params.sample
+summary['Trim mode'] = params.trim_mode
+summary['Working dir'] = workflow.workDir
+summary['Use BME'] = params.use_bme
+summary['Current user']		= "$USER"
+log.info summary.collect { k,v -> "${k.padRight(20)}: $v" }.join("\n")
+log.info "==========================================="
+
 // ######################################################
 //    Pre-processing steps 
 // ######################################################
@@ -228,6 +251,9 @@ process PrepareReference {
             #  Make a file containing a list of seqnames
             grep ">" !{mainName} | cut -d " " -f 1 | cut -d ">" -f 2 > chr_names_!{params.anno_suffix}
             
+            #  Split by sequence, to prepare for encoding reference with Arioc
+            bash !{split_fasta_script} !{mainName}
+            
             #  Create a link in an isolated directory for compatibility with bismark genome preparation
             mkdir main
             cd main
@@ -242,15 +268,15 @@ process PrepareReference {
             
             #  Make a file containing a list of seqnames
             grep ">" !{primaryName} | cut -d " " -f 1 | cut -d ">" -f 2 > chr_names_!{params.anno_suffix}
+            
+            #  Split by sequence, to prepare for encoding reference with Arioc
+            bash !{split_fasta_script} !{primaryName}
         fi
                     
         #  Build the bisulfite genome, needed for bismark (and copy it to publishDir,
         #  circumventing Nextflow's inability to recursively copy)
         !{params.bismark_genome_preparation} --hisat2 --path_to_aligner !{params.hisat2} ./!{params.anno_build}
         cp -R !{params.anno_build}/Bisulfite_Genome !{workflow.projectDir}/ref/!{params.reference}/!{params.anno_suffix}/
-        
-        #  Split by sequence, to prepare for encoding reference with Arioc
-        bash !{split_fasta_script} !{baseName}
         
         #  Write the Arioc configs for encoding the reference
         out_dir=!{workflow.projectDir}/ref/!{params.reference}/!{params.anno_suffix} #/encoded_ref
