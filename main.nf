@@ -593,8 +593,7 @@ process WriteAriocConfigs {
         
     shell:
         '''
-        refDir=!{workflow.projectDir}/Arioc/encoded_ref/!{params.reference}
-        mkdir -p $refDir/temp_encoded_reads
+        refSuffix=ref/!{params.reference}/!{params.anno_suffix}
         Rscript !{encode_reads_script} \
             -p !{params.sample} \
             -d !{workflow.projectDir}/Arioc/temp_encoded_reads \
@@ -602,7 +601,7 @@ process WriteAriocConfigs {
         Rscript !{align_reads_script} \
             -p !{params.sample} \
             -d !{workflow.projectDir} \
-            -r !{params.reference} \
+            -r ${refSuffix} \
             -b !{params.AriocBatchSize} \
             -a !{params.all_alignments} \
             -x !{fq_prefix}
@@ -864,7 +863,7 @@ if (params.use_bme) {
         tag "$prefix"
         
         input:
-            set val(prefix), file(bam_file), file(bam_index) from processed_alignments_in
+            set val(prefix), file(bam_pair) from processed_alignments_in
             file MD_genome
             file meth_count_script from file("${workflow.projectDir}/scripts/meth_count.R")
             
@@ -876,15 +875,18 @@ if (params.use_bme) {
             '''
             #  Run methylation extraction
             echo "Running 'MethylDackel extract' on the sorted bam..."
-            !{params.MethylDackel} extract --cytosine_report --CHG --CHH !{MD_genome} !{bam_file}
+            !{params.MethylDackel} extract --cytosine_report -o !{prefix} --CHG --CHH !{MD_genome} *.bam
             
             echo "Summary stats for !{prefix}:"
-            Rscript !{meth_count_script} -t !{params.data_table_threads}
-            
+            c_contexts=("CG" "CHG" "CHH")
+            for context in ${c_contexts[@]}; do
+                m_perc=$(awk -v ctxt=$context '{if ($6 == ctxt) {U += $4; M += $5}}END{print 100*M/(U+M)}' !{prefix}.cytosine_report.txt)
+                echo "C methylated in $context context: ${m_perc}%"
+            done
             
             #  Split reports by sequence (pulled from BAM header)
             echo "Splitting cytosine report by sequence..."
-            for SN in $(!{params.samtools} view -H !{bam_file} | cut -f 2 | grep "SN:" | cut -d ":" -f 2); do
+            for SN in $(!{params.samtools} view -H *.bam | cut -f 2 | grep "SN:" | cut -d ":" -f 2); do
                 awk -v sn=$SN '$1 == sn' !{prefix}.cytosine_report.txt > !{prefix}.$SN.CX_report.txt
             done
             

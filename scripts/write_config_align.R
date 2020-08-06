@@ -4,7 +4,7 @@ spec <- matrix(c('paired', 'p', 1, 'character', '"single" or "paired"',
                  'prefix', 'x', 1, 'character', 'prefix to uniquely identify sample',
                  'batchSize', 'b', 1, 'character', 'GPU batch size for Arioc',
                  'repoDir', 'd', 1, 'character', 'base path to repo',
-                 'ref', 'r', 1, 'character', 'reference genome',
+                 'ref', 'r', 1, 'character', 'reference suffix',
                  'allAlign', 'a', 1, 'logical', 'whether to output nonconcordant alignments'),
                byrow=TRUE, ncol=5)
 opt <- getopt(spec)
@@ -40,7 +40,7 @@ if (opt$allAlign) {
 #  Lines related to alignment settings
 config_lines = c('<?xml version="1.0" encoding="utf-8"?>',
                  paste0('<', exec_name, ' gpuMask="0x00000001" batchSize="', opt$batchSize, '" verboseMask="0xE0000007">'),
-                 paste0('  <R>', opt$repoDir, '/ref/', opt$ref, '/encoded_ref</R>'), '',
+                 paste0('  <R>', opt$repoDir, '/', opt$ref, '</R>'), '',
                  '  <nongapped seed="ssi84_2_30_CT" maxJ="200" maxMismatches="5"/>',
                  '  <gapped seed="hsi25_0_32_CT" Wmxgs="2,6,5,3" Vt="L,0,1" maxJ="20" seedDepth="4"/>',
                  '  <X watchdogInterval="60" cgaReserved="24M" useHinGmem="1" useJinGmem="0" useHJinGPmem="0" serialLUTinit="1" />', '',
