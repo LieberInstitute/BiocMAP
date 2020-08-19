@@ -121,12 +121,13 @@ if (length(filepaths) > 0) {
         trim_metrics = matrix(sapply(filepaths, parse_report), 
                               byrow = TRUE,
                               nrow = length(ids),
-                              dimnames = list(ids, col_names)
+                              dimnames = list(ids, col_names))
         
         #  Fix the data type (most columns are integers)
         trim_metrics = as.data.frame(trim_metrics)
         for (i in 1:(ncol(trim_metrics) - 1)) {
-            if (i %% ncol(trim_metrics) < ncol(trim_metrics) - 1) {
+            if (i != (ncol(trim_metrics) / 2)) {
+            #if (i %% ncol(trim_metrics) < ncol(trim_metrics) - 1) {
                 trim_metrics[,i] = as.numeric(trim_metrics[,i])
             }
         }
