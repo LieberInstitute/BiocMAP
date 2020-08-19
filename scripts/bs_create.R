@@ -71,7 +71,8 @@ print('Subsetting to CpG context, strand collapsing, and saving...')
 BS_CpG = strandCollapse(realize(BSobj[which(rowRanges(BSobj)$c_context == 'CG'),]))
 BS_CpG = saveHDF5SummarizedExperiment(BS_CpG,
                                       dir=paste0(opt$dir, '/', opt$chr), 
-                                      prefix='CpG')
+                                      prefix='CpG',
+                                      replace=TRUE)
 gc()
 
 #  Direct 'BSmooth' to the proper on-disk realization (does not seem to work
@@ -99,7 +100,8 @@ setRealizationBackend(NULL)
 print('Subsetting to CpH context, sorting ranges, and saving...')
 BS_CpH = BSobj[which(rowRanges(BSobj)$c_context != 'CG'),]
 BS_CpH = BS_CpH[order(ranges(BS_CpH)),]
-saveHDF5SummarizedExperiment(BS_CpH, dir=paste0(opt$dir, '/', opt$chr), prefix='CpH')
+saveHDF5SummarizedExperiment(BS_CpH, dir=paste0(opt$dir, '/', opt$chr),
+                             prefix='CpH', replace=TRUE)
 
 print('Done with all tasks.')
 
