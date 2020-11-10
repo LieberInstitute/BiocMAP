@@ -314,7 +314,6 @@ if (params.with_lambda) {
             file lambda_indices_in from lambda_indices_out.collect()
             file lambda_genomes_in from lambda_genomes_out.collect()
             set val(prefix), file(fq_file) from fastq_in
-            file rules from file("${params.input}/rules.txt")
             
         output:
             file "${prefix}_lambda_pseudo.log" into lambda_reports_out
@@ -322,17 +321,19 @@ if (params.with_lambda) {
         shell:
             '''
             #  This assumes paired-end samples!! (change later)
-            fq1=!{prefix}_1.f*q*
-            fq2=!{prefix}_2.f*q*
+            if [ !{params.sample} == 'paired' ]; then
+                command_args='!{prefix}_1.f*q* !{prefix}_2.f*q*'
+            else
+                command_args='--single !{prefix}.f*q*'
+            fi
             
             #  Perform pseudoalignment to original and bisulfite-converted genomes
-            !{params.kallisto} quant -i lambda_normal.idx -o ./orig $fq1 $fq2
-            !{params.kallisto} quant -i lambda_bs_artificial.idx -o ./bs $fq1 $fq2
+            kallisto quant -t !{task.cpus} -i lambda_normal.idx -o ./orig $command_args
+            kallisto quant -t !{task.cpus} -i lambda_bs_artificial.idx -o ./bs $command_args
             
             #  Get the counts for number of successfully "aligned" reads
             orig_count=$(sed -n '2p' orig/abundance.tsv | cut -f 4)
             bs_count=$(sed -n '2p' bs/abundance.tsv | cut -f 4)
-
             #  Write the estimated conversion efficiency to the log
             conv_eff=$(Rscript -e "100 * $bs_count/($orig_count + $bs_count)" | cut -d ']' -f 2)
             echo "Conversion efficiency:${conv_eff}%."
@@ -609,8 +610,8 @@ bs_tokens_out
     .groupTuple()
     .set{ bs_tokens_in }
 
-//  Combine Bsseq objects and their HDF5-backed assays into two .rda files
-//  (one for CpG context, the other for CpH) and a single .h5 file
+//  Combine Bsseq objects and their HDF5-backed assays into two HDF5-backed
+//  summarized experiments (directories)- one for each cytosine context
 process MergeBsseqObjects {
 
     publishDir "${params.output}/BSobjects/logs", mode:'copy'
