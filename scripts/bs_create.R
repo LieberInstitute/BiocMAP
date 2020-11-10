@@ -68,17 +68,12 @@ print('Done.')
 #  Note the entire CpG object is realized into memory- at the time of writing
 #  this script, strand collapsing takes an unreasonable time to block process
 print('Subsetting to CpG context, strand collapsing, and saving...')
+dir.create(file.path(opt$dir, opt$chr, 'CpG'), recursive=TRUE)
 BS_CpG = strandCollapse(realize(BSobj[which(rowRanges(BSobj)$c_context == 'CG'),]))
 BS_CpG = saveHDF5SummarizedExperiment(BS_CpG,
-                                      dir=paste0(opt$dir, '/', opt$chr), 
-                                      prefix='CpG')
+                                      dir=file.path(opt$dir, opt$chr, 'CpG'),
+                                      replace=TRUE)
 gc()
-
-#  Direct 'BSmooth' to the proper on-disk realization (does not seem to work
-#  automatically)
-setRealizationBackend("HDF5Array")
-setHDF5DumpFile(paste0(opt$dir, '/', opt$chr, '/CpGassays.h5'))
-setHDF5DumpName('coef')
 
 #  Perform smoothing and assign to dummy object
 print('Smoothing HDF5-backed CpG object...')
@@ -86,20 +81,15 @@ bs_smooth = BSmooth(BS_CpG,
                     BPPARAM = MulticoreParam(opt$cores), 
                     verbose = TRUE)
 
-#  Explicitly point 'BS_CpG' to the new 'coef' assay, and reserialize to the
-#  existing RDS file
-coef_CpG = HDF5Array(paste0(opt$dir, '/', opt$chr, '/CpGassays.h5'), 'coef')
-assays(BS_CpG, withDimnames=FALSE)$coef = coef_CpG
-quickResaveHDF5SummarizedExperiment(BS_CpG, verbose=TRUE)
-
-rm(BS_CpG, bs_smooth, coef_CpG)
+rm(BS_CpG, bs_smooth)
 gc()
-setRealizationBackend(NULL)
 
 print('Subsetting to CpH context, sorting ranges, and saving...')
+dir.create(file.path(opt$dir, opt$chr, 'CpH'), recursive=TRUE)
 BS_CpH = BSobj[which(rowRanges(BSobj)$c_context != 'CG'),]
 BS_CpH = BS_CpH[order(ranges(BS_CpH)),]
-saveHDF5SummarizedExperiment(BS_CpH, dir=paste0(opt$dir, '/', opt$chr), prefix='CpH')
+saveHDF5SummarizedExperiment(BS_CpH, dir=file.path(opt$dir, opt$chr, 'CpH'),
+                             replace=TRUE)
 
 print('Done with all tasks.')
 
