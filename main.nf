@@ -34,6 +34,11 @@ def helpMessage() {
                        used for alignment and methylation extraction
     
     Optional flags:
+        --annotation [path]: the path to the directory to store annotation-
+                          related files
+        --custom_anno [name]: use the FASTA present in the annotation
+                          directory, and associate it with a name for future
+                          runs
         --input [path]:   the path to the directory containing the rules.txt file
         --output [path]:  the path to the directory to contain pipeline outputs
         --use_bme:        include this flag to perform methylation extraction-
@@ -51,13 +56,15 @@ def helpMessage() {
 //   Define default values for params
 // -------------------------------------
 
-params.reference = ""
-params.sample = ""
+params.annotation = "${workflow.projectDir}/ref"
+params.custom_anno = ""
 params.input = "${workflow.projectDir}/test"
 params.output = "${workflow.projectDir}/out"
-params.work = "${workflow.projectDir}/work"
+params.reference = ""
+params.sample = ""
 params.use_bme = false
 params.with_lambda = false
+params.work = "${workflow.projectDir}/work"
 
 // -------------------------------------
 //   Validate Inputs
@@ -75,7 +82,10 @@ if (params.reference != "hg19" && params.reference != "hg38" && params.reference
 //   Construct convenience variables (dependent on reference)
 // ------------------------------------------------------------
 
-if (params.reference == "hg38") {
+if (params.custom_anno != "") {
+    params.anno_version = "custom"
+    params.anno_suffix = params.custom_anno + "_custom_build"
+} else if (params.reference == "hg38") {
     params.anno_version = params.gencode_version_human
     params.anno_suffix = params.reference + '_gencode_v' + params.gencode_version_human + '_' + params.anno_build
     params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_${params.gencode_version_human}/GRCh38.primary_assembly.genome.fa.gz"
@@ -133,6 +143,7 @@ log.info "=================================="
 def summary = [:]
 summary['Sample']	= params.sample
 summary['Reference'] = params.reference
+summary['Annotation dir'] = params.annotation
 summary['Annotation release'] = params.anno_version
 summary['Annotation build'] = params.anno_build
 summary['Input dir'] = params.input
@@ -149,82 +160,103 @@ log.info "==========================================="
 //    Pre-processing steps 
 // ######################################################
 
-// Pull the reference fasta for the given reference; build the bisulfite-converted
-// genome required by Bismark tools
-process PrepareReference {
-    storeDir "${workflow.projectDir}/ref/${params.reference}/${params.anno_suffix}"
-    
-    input:
-        file split_fasta_script from file("${workflow.projectDir}/scripts/split_fasta.sh")
-        file encode_ref_script from file("${workflow.projectDir}/scripts/write_configs_encode_ref.R")
-    
-    output:
-        file "$out_fasta" into BME_genome, MD_genome
-        file "chr_names_${params.anno_suffix}" into chr_names
+
+if (params.custom_anno == "") {
+    // Pull the reference fasta for the given reference; subset to "main" sequences
+    // if necessary
+    process PullReference {
+        storeDir "${params.annotation}/${params.anno_suffix}"
         
-    shell:
-        //  Name of the primary assembly fasta after being downloaded and unzipped
-        baseName = file("${params.ref_fasta_link}").getName() - ".gz"
+        input:
+            file split_fasta_script from file("${workflow.projectDir}/scripts/split_fasta.sh")
+        output:
+            file "$out_fasta" into raw_genome, MD_genome, BME_genome
             
-        //  Name the pipeline will use for the primary and main assembly fastas, respectively
-        primaryName = "assembly_${params.anno_suffix}.fa".replaceAll("main", "primary")
-        mainName = "assembly_${params.anno_suffix}.fa".replaceAll("primary", "main")
+        shell:
+            //  Name of the primary assembly fasta after being downloaded and unzipped
+            baseName = file("${params.ref_fasta_link}").getName() - ".gz"
+                
+            //  Name the pipeline will use for the primary and main assembly fastas, respectively
+            primaryName = "assembly_${params.anno_suffix}.fa".replaceAll("main", "primary")
+            mainName = "assembly_${params.anno_suffix}.fa".replaceAll("primary", "main")
+                
+            //  Name of fasta to use for this pipeline execution instance
+            out_fasta = "assembly_${params.anno_suffix}.fa"
+            '''
+            mkdir -p !{params.annotation}/!{params.anno_suffix}
             
-        //  Name of fasta to use for this pipeline execution instance
-        out_fasta = "assembly_${params.anno_suffix}.fa"
-        '''
-        mkdir -p !{workflow.projectDir}/ref/!{params.reference}/!{params.anno_suffix}
-        
-        #  Pull fasta from GENCODE
-        wget !{params.ref_fasta_link}
-        gunzip !{baseName}.gz
-        mv !{baseName} !{primaryName} # rename for consistency with pipeline naming conventions
-        
-        #######################################################################
-        #  Create the "main" fasta of canonical seqs only
-        #######################################################################
-        
-        if [ !{params.anno_build} == "main" ]; then
-            #  Determine how many chromosomes/seqs to keep
-            if [ !{params.reference} == "mm10" ]; then
-                num_chrs=22
-            else
-                num_chrs=25
+            #  Pull fasta from GENCODE
+            wget !{params.ref_fasta_link}
+            gunzip !{baseName}.gz
+            mv !{baseName} !{primaryName} # rename for consistency with pipeline naming conventions
+            
+            #######################################################################
+            #  Create the "main" fasta of canonical seqs only
+            #######################################################################
+            
+            if [ !{params.anno_build} == "main" ]; then
+                #  Determine how many chromosomes/seqs to keep
+                if [ !{params.reference} == "mm10" ]; then
+                    num_chrs=22
+                else
+                    num_chrs=25
+                fi
+                #  Find the line of the header for the first extra contig (to not
+                #  include in the "main" annotation fasta
+                first_bad_line=$(grep -n ">" !{primaryName} | cut -d : -f 1 | paste -s | cut -f $(($num_chrs + 1)))
+                
+                #  Make a new file out of all the lines up and not including that
+                sed -n "1,$(($first_bad_line - 1))p;${first_bad_line}q" !{primaryName} > !{mainName}
             fi
-            #  Find the line of the header for the first extra contig (to not
-            #  include in the "main" annotation fasta
-            first_bad_line=$(grep -n ">" !{primaryName} | cut -d : -f 1 | paste -s | cut -f $(($num_chrs + 1)))
-            
-            #  Make a new file out of all the lines up and not including that
-            sed -n "1,$(($first_bad_line - 1))p;${first_bad_line}q" !{primaryName} > !{mainName}
-            
-            #  Make a file containing a list of seqnames
-            grep ">" !{mainName} | cut -d " " -f 1 | cut -d ">" -f 2 > chr_names_!{params.anno_suffix}
-            
-            #  Create a link in an isolated directory for compatibility with bismark genome preparation
-            mkdir main
-            cd main
-            ln -s  ../!{mainName} !{mainName}
-            cd ..
-        else
-            #  Create a link in an isolated directory for compatibility with bismark genome preparation
-            mkdir primary
-            cd primary
-            ln -s ../!{primaryName} !{primaryName}
-            cd ..
-            
-            #  Make a file containing a list of seqnames
-            grep ">" !{primaryName} | cut -d " " -f 1 | cut -d ">" -f 2 > chr_names_!{params.anno_suffix}
-        fi
-                    
-        #  Build the bisulfite genome, needed for bismark (and copy it to publishDir,
-        #  circumventing Nextflow's inability to recursively copy)
-        !{params.bismark_genome_preparation} --hisat2 --path_to_aligner !{params.hisat2} ./!{params.anno_build}
-        cp -R !{params.anno_build}/Bisulfite_Genome !{workflow.projectDir}/ref/!{params.reference}/!{params.anno_suffix}/
-        '''
+            '''
+    }
+} else {
+    Channel.fromPath("${params.annotation}/*.fa")
+        .ifEmpty{ error "Cannot find FASTA in annotation directory (and --custom_anno was specified)" }
+        .first()  // This proves to nextflow that the channel will always hold one value/file
+        .into{ raw_genome; MD_genome; BME_genome }
 }
 
 
+// Create 'chr_names' file for the current FASTA; prepare genome for bismark
+process PrepareReference {
+    storeDir "${params.annotation}/${params.anno_suffix}"
+    
+    input:
+        file raw_genome
+        
+    output:
+        file "chr_names_${params.anno_suffix}" into chr_names
+        file "prepare_ref.log"
+        
+    shell:
+        if (params.custom_anno != "") {
+            genome_dirname = params.custom_anno
+        } else {
+            genome_dirname = params.anno_build
+        }
+        '''
+        #  Make a file containing a list of seqnames
+        grep ">" !{raw_genome} | cut -d " " -f 1 | cut -d ">" -f 2 > chr_names_!{params.anno_suffix}
+        
+        #  Create a link in an isolated directory for compatibility with 
+        #  bismark genome preparation
+        mkdir !{genome_dirname}
+        cd !{genome_dirname}
+        ln -s ../!{raw_genome} !{raw_genome}
+        cd ..
+        
+        #  Build the bisulfite genome, needed for bismark (and copy it to publishDir,
+        #  circumventing Nextflow's inability to recursively copy)
+        !{params.bismark_genome_preparation} --hisat2 --path_to_aligner !{params.hisat2} ./!{genome_dirname}
+        cp -R !{genome_dirname}/Bisulfite_Genome !{params.annotation}/!{params.anno_suffix}
+        
+        #  Keep a log of what happened so far
+        cp .command.log prepare_ref.log
+        '''
+}
+        
+        
 if (params.with_lambda) {
     process PrepareLambda {
         storeDir "${workflow.projectDir}/ref/lambda"
