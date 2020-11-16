@@ -9,7 +9,7 @@ spec <- matrix(c('dir', 'd', 1, 'character', 'base directory containing objects'
 opt <- getopt(spec)
 
 chrs = readLines(list.files(pattern='chr_names_.*'))
-bs_dirs = paste0(opt$dir, '/', chrs)
+bs_dirs = file.path(opt$dir, chrs, opt$context)
 
 #  jhpce-specific requirements
 BiocParallel::register(MulticoreParam(1))
@@ -24,10 +24,12 @@ setAutoBlockSize(1e9)  # not required; slower default is 1e8
 r_time = proc.time()
 
 #  Load objects (minus their assays) into memory
+print(paste("Beginning merging for", opt$context, "context..."))
+    
 bs_list = list()
 for (i in 1:length(chrs)) {
     print(paste0("Loading ", chrs[i], "..."))
-    bs_list[[i]] = loadHDF5SummarizedExperiment(bs_dirs[i], prefix=opt$context)
+    bs_list[[i]] = loadHDF5SummarizedExperiment(bs_dirs[i])
 }
 gc()
 
@@ -39,7 +41,7 @@ gc()
 #  Save the combined result
 print("Saving...")
 saveHDF5SummarizedExperiment(bs_big, dir=paste0(opt$dir, '/combined'),
-                             prefix=opt$context, verbose=TRUE)
+                             prefix=opt$context, verbose=TRUE, replace=TRUE)
 print("Done.")
 
 proc.time() - r_time
