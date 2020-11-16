@@ -45,6 +45,8 @@ form_links = function(rules, key, ids, end_name) {
 ###################################################
 
 rules = readLines('rules.txt')
+rules = rules[-grep('#', rules)]
+
 manifest = read.table(get_value(rules, 'manifest'), header = FALSE,
                       stringsAsFactors = FALSE)
 ids = manifest[,ncol(manifest)]
