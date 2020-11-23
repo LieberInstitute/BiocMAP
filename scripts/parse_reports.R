@@ -73,87 +73,59 @@ if (file.exists(filenames[1])) {
 #  Trimming Reports
 ######################################################
     
-#  String patterns to remove via gsub for every value to put in a data frame:
-#  note that patterns are removed in order of occurrence in this list
-blacklist = c(" ", "bp", ",", ";Type", "(\\(.*\\))")
-cleanseVec <- function(vec) {
-    #  Remove blacklisted characters
-    for (i in 1:length(blacklist)) {
-        vec <- sapply(vec, function(x) gsub(blacklist[i],"",x, perl=TRUE))
-    }
-    return(vec)
-}
-    
-# Form vectors of filepaths (each element corresponding to a sample)
-f1 = paste0(ids, '_trim_report_r1.txt')
-f2 = paste0(ids, '_trim_report_r2.txt')
+#  Form vectors of filepaths (each element corresponding to a sample)
+f = paste0(ids, '_trim_report.log')
 
-if (file.exists(f1[1]) && file.exists(f2[1])) {
+if (file.exists(f[1])) {
     print('Extracting trimming metrics...')
     
-    # The lines that precede important segments in the files
-    flagRows = c("=== Summary ===","=== Adapter 1 ===") 
-    sectLens = c(6,1)   # number of important lines after respective flagged rows
+    df_entries = c()
+    
+    is_first_iter = TRUE
+    for (filename in f) {
+        a = readLines(filename)
+        starts = which(a == '=== Summary ===')
         
-    # Given two lists of relevant lines in a single file, forms a merged list
-    # of extracted values (each line is a key: value pair). Removes unwanted string patterns.
-    rowMerge = function(piece1,piece2) c(as.numeric(cleanseVec(ss(piece1,":", 2))),
-                                            cleanseVec(ss(piece2,":", 2)))     
-        
-    #-----------------------------------------------------------------------------
-    # Read the text file, isolate the relevant sections, and form
-    # a data frame for the first read
-    #-----------------------------------------------------------------------------
-    r1 = lapply(f1, function(x) scan(x, what="character", sep="\n", quiet=TRUE, strip.white=TRUE) )
-        
-    sectStarts = c(1,1) + c(match(flagRows[1], r1[[1]]),
-                            match(flagRows[2], r1[[1]])) # assumes all first read files have same format
-        
-    summary1 = lapply(r1, function(x) x[sectStarts[1]:(sectStarts[1]+sectLens[1]-1)])
-    adapter1 = lapply(r1, function(x) x[sectStarts[2]:(sectStarts[2]+sectLens[2]-1)])
-        
-    rowRead1 = mapply(rowMerge, summary1, adapter1)   # forms a row for each file
-        
-    #-----------------------------------------------------------------------------
-    # Read the text file, isolate the relevant sections, and form
-    # a data frame for the second read
-    #-----------------------------------------------------------------------------
-    r2 = lapply(f2, function(x) scan(x, what="character", sep="\n", quiet=TRUE, strip.white=TRUE) )
-    sectStarts = c(1,1) + c(match(flagRows[1], r2[[1]]),
-                            match(flagRows[2], r2[[1]])) # assumes all second read files have same format
-    summary2 = lapply(r2, function(x) x[sectStarts[1]:(sectStarts[1]+sectLens[1]-1)])
-    adapter2 = lapply(r2, function(x) x[sectStarts[2]:(sectStarts[2]+sectLens[2]-1)])
-        
-    #  Fill data frame with rows (1 row per file/ sample)
-    rowRead2 = mapply(rowMerge, summary2, adapter2)   # forms a row for each file
-        
-    col_names = c(gsub(" ", "_", ss(summary1[[1]],":")),
-                  gsub(" ", "_", ss(adapter1[[1]],":"))) # use the first file's keys
-    col_names = c(paste0(col_names, "_R1"), paste0(col_names, "_R2"))
-                      
-    #  Combine rows for each read into a single long row
-    rows = list()
-    for (i in 1:length(ids)) {
-        rows[[i]] = c(rowRead1[,i], rowRead2[,i])
+        for (start_index in starts) {
+            #  Subset to nonempty lines in the relevant section of the log
+            b = a[(start_index+1):(start_index+12)]
+            b = b[b != '' & b != "=== Adapter 1 ==="]
+            
+            #  Form appropriate column names from the lines
+            if (is_first_iter) {
+                col_names = gsub('[ -]', '_', ss(b, ':'))
+                col_names = gsub('[()]', '', col_names)
+                is_first_iter = FALSE
+            }
+
+            #  Cut and format lines to extract values
+            b_values = ss(b, ':', 2)
+            b_values = ss(b_values, '[b;\\(]')
+            b_values = gsub('[ ,]', '', b_values)
+            
+            #  Append to ongoing vector of values
+            df_entries = c(df_entries, b_values)
+        }
     }
-          
-    #  Form an empty data frame then fill it with rows
-    data2 = data.frame(matrix(vector(), 0, length(col_names),
-                        dimnames=list(c(), col_names)),
-                        stringsAsFactors=F)
-        
-    for (i in c(1:length(rows))) {
-        data2[i,] = rows[[i]]
+    
+    #  Use the correct colnames for paired-end reads
+    if (nrow(manifest) > 3) {
+        col_names = as.vector(outer(col_names, c('_R1', '_R2'), paste0))
     }
-        
-    #  Fix data type
-    numeric_names = colnames(data2)
-    numeric_names = numeric_names[c(-sum(sectLens),-(sum(sectLens)*2))]
-    for (name in numeric_names) {
-        data2[[name]] = as.numeric(data2[[name]])
+    
+    #  Form a data frame
+    temp_df = matrix(df_entries, ncol=length(col_names), byrow=TRUE)
+    temp_df = as.data.frame(temp_df)
+    colnames(temp_df) = col_names
+    
+    #  Make the integer-containing columns numeric
+    numeric_cols = which(!grepl('Sequence', col_names))
+    for (i in numeric_cols) {
+        temp_df[,i] = as.numeric(temp_df[,i])
     }
-        
-    metrics = cbind(metrics, data2)
+    
+    metrics = cbind(metrics, temp_df)
+
 } else {
     print("Skipping trimming metrics (no files specified)...")
 }

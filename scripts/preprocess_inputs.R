@@ -64,8 +64,7 @@ form_links(rules, 'xmc_log', ids, '_xmc.log')
 form_links(rules, 'bme_log', ids, '_bme.log')
 
 #  Trim Galore reports
-form_links(rules, 'trim_report_r1', ids, '_trim_report_r1.txt')
-form_links(rules, 'trim_report_r2', ids, '_trim_report_r2.txt')
+form_links(rules, 'trim_report', ids, '_trim_report.log')
 
 
 ############################################################
