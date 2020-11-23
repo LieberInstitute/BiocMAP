@@ -300,10 +300,8 @@ process PreprocessInputs {
         
     output:
         file "*.sam" into concordant_sams_out
-        file "*_arioc.log" into arioc_reports_out
-        file "*_trim_report_r*.txt" optional true into trim_reports_out
-        file "*_xmc.log" optional true into xmc_reports_out
         file "*_bme.log" optional true into bme_reports_out
+        file "*_{arioc,trim_report,xmc}.log" into misc_reports_out
         file "*.f*q*" optional true into fastq_out
         file "preprocess_inputs.log"
         
@@ -571,7 +569,7 @@ if (params.use_bme) {
 //  Group reports for each chromosome into one channel (each)
 cytosine_reports
     .flatten()
-    .filter{ get_chromosome_name(it).length() <= 5 } // take only canonical seqs
+    .filter{ get_chromosome_name(it).length() <= 5 && !get_chromosome_name(it).equals('lambda') && !get_chromosome_name(it).equals('phiX') } // take only canonical seqs
     .map{ file -> tuple(get_chromosome_name(file), file) }
     .groupTuple()
     .set{ cytosine_reports_by_chr }
@@ -585,10 +583,8 @@ process ParseReports {
     publishDir "${params.output}/metrics", mode:'copy'
     
     input:
-        file trim_reports_in from trim_reports_out.collect()
-        file xmc_reports_in from xmc_reports_out.collect()
+        file misc_reports_in from misc_reports_out.collect()
         file bme_reports_in from bme_reports_out.collect()
-        file arioc_reports_in from arioc_reports_out.collect()
         file lambda_reports_in from lambda_reports_out.collect()
         
         file parse_reports_script from file("${workflow.projectDir}/scripts/parse_reports.R")
