@@ -550,7 +550,7 @@ if (params.use_bme) {
             echo "Summary stats for !{prefix}:"
             c_contexts=("CG" "CHG" "CHH")
             for context in ${c_contexts[@]}; do
-                m_perc=$(awk -v ctxt=$context '{if ($6 == ctxt) {U += $4; M += $5}}END{print 100*M/(U+M)}' !{prefix}.cytosine_report.txt)
+                m_perc=$(awk -v ctxt=$context '{if ($6 == ctxt) {M += $4; U += $5}}END{print 100*M/(U+M)}' !{prefix}.cytosine_report.txt)
                 echo "C methylated in $context context: ${m_perc}%"
             done
             
