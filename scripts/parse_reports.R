@@ -63,90 +63,57 @@ if (file.exists(filenames[1])) {
 #  Trimming Reports
 ######################################################
     
-#  String patterns to remove via gsub for every value to put in a data frame:
-#  note that patterns are removed in order of occurrence in this list
-blacklist = c(" ", "bp", ",", ";Type", "(\\(.*\\))")
-cleanseVec <- function(vec) {
-    #  Remove blacklisted characters
-    for (i in 1:length(blacklist)) {
-        vec <- sapply(vec, function(x) gsub(blacklist[i],"",x, perl=TRUE))
-    }
-    return(vec)
-}
-    
 filepaths = list.files(pattern='.*\\.f.*q.*_trimming_report\\.txt')
 
 if (length(filepaths) > 0) {
-    row_starts = c("Total reads processed:",
-                   "Reads with adapters:",
-                   "Reads written (passing filters):",
-                   "Total basepairs processed:",
-                   "Quality-trimmed:",
-                   "Total written (filtered):",
-                   "Sequence:")
+    print('Extracting trimming metrics...')
     
-    clean = function(text_line) {
-        text_line = ss(text_line, ":", 2)
+    df_entries = c()
+    
+    is_first_iter = TRUE
+    for (filename in filepaths) {
+        a = readLines(filename)
+        starts = which(a == '=== Summary ===')
         
-        #  Remove anything following ";" or "("
-        for (flag in c("(", ";")) {
-            if (grepl(flag, text_line, fixed=TRUE)) {
-                text_line = ss(text_line, flag, fixed=TRUE)
+        for (start_index in starts) {
+            #  Subset to nonempty lines in the relevant section of the log
+            b = a[(start_index+1):(start_index+12)]
+            b = b[b != '' & b != "=== Adapter 1 ==="]
+            
+            #  Form appropriate column names from the lines
+            if (is_first_iter) {
+                col_names = gsub('[ -]', '_', ss(b, ':'))
+                col_names = gsub('[()]', '', col_names)
+                is_first_iter = FALSE
             }
-        }
-        
-        #  Remove these phrases
-        for (phrase in c(" ", "bp", ",")) {
-            text_line = gsub(phrase, "", text_line)
-        }
-        
-        return(text_line)
-    }
-    
-    parse_report = function(path) {
-        report_lines = readLines(path)
-        
-        return(sapply(row_starts, function(flag) clean(report_lines[grep(flag, report_lines, fixed=TRUE)])))
-    }
-    
-    
-    paired = ncol(manifest) > 3
-    col_names = gsub(" ", "_", row_starts)
-    col_names = sub(":", "", col_names)
-    
-    if (paired) {
-        col_names = as.vector(outer(col_names,
-                                    c("_R1", "_R2"),
-                                    FUN=paste0))
-        trim_metrics = matrix(sapply(filepaths, parse_report), 
-                              byrow = TRUE,
-                              nrow = length(ids),
-                              dimnames = list(ids, col_names))
-        
-        #  Fix the data type (most columns are integers)
-        trim_metrics = as.data.frame(trim_metrics)
-        for (i in 1:(ncol(trim_metrics) - 1)) {
-            if (i != (ncol(trim_metrics) / 2)) {
-            #if (i %% ncol(trim_metrics) < ncol(trim_metrics) - 1) {
-                trim_metrics[,i] = as.numeric(trim_metrics[,i])
-            }
-        }
-        
-    } else {
-        #  Form the matrix of metrics
-        trim_metrics = matrix(sapply(filepaths, parse_report), 
-                              byrow = TRUE,
-                              nrow = length(ids),
-                              dimnames = list(ids, col_names))
-                              
-        #  Fix the data type (most columns are integers)
-        trim_metrics = as.data.frame(trim_metrics)
-        for (i in 1:(ncol(trim_metrics) - 1)) {
-            trim_metrics[,i] = as.numeric(trim_metrics[,i])
+
+            #  Cut and format lines to extract values
+            b_values = ss(b, ':', 2)
+            b_values = ss(b_values, '[b;\\(]')
+            b_values = gsub('[ ,]', '', b_values)
+            
+            #  Append to ongoing vector of values
+            df_entries = c(df_entries, b_values)
         }
     }
     
-    metrics = cbind(metrics, trim_metrics)
+    #  Use the correct colnames for paired-end reads
+    if (nrow(manifest) > 3) {
+        col_names = as.vector(outer(col_names, c('_R1', '_R2'), paste0))
+    }
+    
+    #  Form a data frame
+    temp_df = matrix(df_entries, ncol=length(col_names), byrow=TRUE)
+    temp_df = as.data.frame(temp_df)
+    colnames(temp_df) = col_names
+    
+    #  Make the integer-containing columns numeric
+    numeric_cols = which(!grepl('Sequence', col_names))
+    for (i in numeric_cols) {
+        temp_df[,i] = as.numeric(temp_df[,i])
+    }
+    
+    metrics = cbind(metrics, temp_df)
 } else {
     print("Skipping trimming metrics (no samples appeared to be trimmed)...")
 }
