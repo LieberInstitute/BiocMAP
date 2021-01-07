@@ -204,7 +204,7 @@ if (params.custom_anno == "") {
         input:
             file split_fasta_script from file("${workflow.projectDir}/scripts/split_fasta.sh")
         output:
-            file "$out_fasta" into raw_genome, MD_genome, BME_genome
+            file "$out_fasta" into raw_genome
 
         shell:
             //  Name of the primary assembly fasta after being downloaded and unzipped
@@ -251,8 +251,7 @@ if (params.custom_anno == "") {
         .into{ raw_genome; MD_genome; BME_genome }
 }
 
-//  Create 'chr_names' file for the current FASTA; prepare genome for bismark; 
-//  split the fasta into individual files (1 per canonical sequence) and write
+//  Split the fasta into individual files (1 per canonical sequence) and write
 //  the configs for encoding the reference with AriocE
 process PrepareReference {
     storeDir "${params.annotation}/${params.anno_suffix}"
@@ -264,7 +263,6 @@ process PrepareReference {
     
     output:
         file "$out_fasta" into BME_genome, MD_genome
-        file "chr_names_${params.anno_suffix}" into chr_names
         file "encode_ref_gap.cfg" into encode_ref_gap_cfg
         file "encode_ref_nongap.cfg" into encode_ref_nongap_cfg
         file "prepare_ref.log"
@@ -276,21 +274,6 @@ process PrepareReference {
             genome_dirname = params.anno_build
         }
         '''
-        #  Make a file containing a list of seqnames
-        grep ">" !{raw_genome} | cut -d " " -f 1 | cut -d ">" -f 2 > chr_names_!{params.anno_suffix}
-        
-        #  Create a link in an isolated directory for compatibility with 
-        #  bismark genome preparation
-        mkdir !{genome_dirname}
-        cd !{genome_dirname}
-        ln -s ../!{raw_genome} !{raw_genome}
-        cd ..
-        
-        #  Build the bisulfite genome, needed for bismark (and copy it to publishDir,
-        #  circumventing Nextflow's inability to recursively copy)
-        !{params.bismark_genome_preparation} --hisat2 --path_to_aligner !{params.hisat2} ./!{genome_dirname}
-        cp -R !{genome_dirname}/Bisulfite_Genome !{params.annotation}/!{params.anno_suffix}
-        
         #  Split by sequence, to prepare for encoding reference with Arioc
         bash !{split_fasta_script} !{raw_genome}
         
