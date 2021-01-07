@@ -65,13 +65,6 @@ def helpMessage() {
                           outputs. By default, only concordant reads are used
                           for later processing (methylation extraction and
                           beyond)
-        --use_bme:        include this flag to perform methylation extraction-
-                          related processes with Bismark utilities, rather than
-                          the default of MethylDackel
-        --with_lambda:    include this flag if all samples have spike-ins with
-                          the lambda bacteriophage genome. Pseudoalignment will
-                          then be performed to estimate bisulfite conversion
-                          efficiency
     """.stripIndent()
 }
 
@@ -131,8 +124,6 @@ if (params.custom_anno != "") {
     params.ref_fasta_link = "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_${params.gencode_version_mouse}/GRCm38.primary_assembly.genome.fa.gz"
 }
 
-params.lambda_link = "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/840/245/GCA_000840245.1_ViralProj14204/GCA_000840245.1_ViralProj14204_genomic.fna.gz"
-
 
 // ------------------------------------------------------------
 //   Utilities for retrieving info from filenames
@@ -191,13 +182,11 @@ summary['Annotation dir'] = params.annotation
 summary['Annotation release'] = params.anno_version
 summary['Annotation build'] = params.anno_build
 summary['Input dir'] = params.input
-summary['Has lambda spike-ins'] = params.with_lambda
 summary['Output dir'] = params.output
 summary['Reference'] = params.reference
 summary['Sample']	= params.sample
 summary['Trim mode'] = params.trim_mode
 summary['Working dir'] = workflow.workDir
-summary['Use BME'] = params.use_bme
 summary['Current user']		= "$USER"
 log.info summary.collect { k,v -> "${k.padRight(20)}: $v" }.join("\n")
 log.info "==========================================="
@@ -337,38 +326,6 @@ process EncodeReference {
 }
 
 
-if (params.with_lambda) {
-    process PrepareLambda {
-        storeDir "${workflow.projectDir}/ref/lambda"
-        
-        input:
-            file convert_script from file("${workflow.projectDir}/scripts/bisulfite_convert.R")
-            
-        output:
-            file "lambda*.idx" into lambda_indices_out
-            file "lambda*.fa" into lambda_genomes_out
-            file "prepare_lambda.log"
-            
-        shell:
-            baseName = file("${params.lambda_link}").getName() - ".gz"
-            '''
-            #  Pull, unzip, and simplify sequence name to 'lambda'
-            wget !{params.lambda_link}
-            gunzip -c !{baseName}.gz | sed '1s/>.*Es/>lambda Es/' > lambda.fa
-            
-            #  Artificially create a "perfectly bisulfite-converted" fasta
-            Rscript !{convert_script}
-            
-            #  Create a kallisto index for each version of the genome
-            kallisto index -i lambda_normal.idx lambda.fa
-            kallisto index -i lambda_bs_artificial.idx lambda_bs_artificial.fa
-            
-            cp .command.log prepare_lambda.log
-            '''
-    }
-}
-
-
 process Merging {
 
     publishDir "${params.output}", mode:'copy', pattern:'*.log'
@@ -411,45 +368,6 @@ if (params.sample == "single") {
 // ######################################################
 //    Begin pipeline
 // ######################################################
-
-if (params.with_lambda) {
-    process LambdaPseudo {
-        
-        tag "$prefix"
-        publishDir "${params.output}/lambda", mode:'copy'
-        
-        input:
-            file lambda_indices_in from lambda_indices_out.collect()
-            file lambda_genomes_in from lambda_genomes_out.collect()
-            set val(prefix), file(fq_file) from lambda_inputs
-            
-        output:
-            file "${prefix}_lambda_pseudo.log" into lambda_reports_out
-            
-        shell:
-            '''
-            #  This assumes paired-end samples!! (change later)
-            if [ !{params.sample} == 'paired' ]; then
-                command_args='!{prefix}_1.f*q* !{prefix}_2.f*q*'
-            else
-                command_args='--single !{prefix}.f*q*'
-            fi
-            
-            #  Perform pseudoalignment to original and bisulfite-converted genomes
-            kallisto quant -t !{task.cpus} -i lambda_normal.idx -o ./orig $command_args
-            kallisto quant -t !{task.cpus} -i lambda_bs_artificial.idx -o ./bs $command_args
-            
-            #  Get the counts for number of successfully "aligned" reads
-            orig_count=$(sed -n '2p' orig/abundance.tsv | cut -f 4)
-            bs_count=$(sed -n '2p' bs/abundance.tsv | cut -f 4)
-
-            #  Write the estimated conversion efficiency to the log
-            conv_eff=$(Rscript -e "100 * $bs_count/($orig_count + $bs_count)" | cut -d ']' -f 2)
-            echo "Conversion efficiency:${conv_eff}%."
-            cp .command.log !{prefix}_lambda_pseudo.log
-            '''
-    }
-}
 
 
 //  -----------------------------------------
@@ -728,298 +646,23 @@ concordant_sams_out
 //  Arioc, filters by mapping quality, and removes duplicate mappings.
 process FilterAlignments {
 
-    publishDir "${params.output}/logs/", mode:'copy', pattern:'*.log'
+    publishDir "${params.output}/FilteredAlignments/logs/", mode:'copy', pattern:'*.log'
+    publishDir "${params.output}/FilteredAlignments/sams/", mode:'copy', pattern:'*.sam'
     tag "$prefix"
     
     input:
         set val(prefix), file(sam_file) from concordant_sams_in
         
     output:
-        file "${prefix}.cfu.sam" optional true into processed_sams_out
-        file "${prefix}.cfu.sorted.bam*" optional true into processed_alignments_out
+        file "${prefix}.cfu.sam"
         file "filter_sam_${prefix}.log"
         
     shell:
         '''
-        if [ !{params.use_bme} == "true" ]; then
-            #  Quality-filter and deduplicate
-            !{params.samtools} view -q 5 -F 0x100 -h !{sam_file} \
-                | !{params.samblaster} -r -o !{prefix}.cfu.sam
-        else
-            #  Quality-filter, deduplicate, compress, and sort
-            !{params.samtools} view -q 5 -F 0x100 -h !{sam_file} \
-                | !{params.samblaster} -r \
-                | !{params.samtools} sort -@ !{task.cpus} -o !{prefix}.cfu.sorted.bam -
-                
-            #  Index the sorted BAM
-            !{params.samtools} index !{prefix}.cfu.sorted.bam
-        fi
+        #  Quality-filter and deduplicate
+        !{params.samtools} view -q 5 -F 0x100 -h !{sam_file} \
+            | !{params.samblaster} -r -o !{prefix}.cfu.sam
             
         cp .command.log filter_sam_!{prefix}.log
-        '''
-}
-
-// ############################################################################
-//  The following are methylation extraction processes when Bismark Methylation
-//  Extractor is selected (via --use_bme)
-// ############################################################################
-
-if (params.use_bme) {
-    processed_sams_out
-        .flatten()
-        .map{ file -> tuple(get_prefix(file), file) }
-        .ifEmpty{ error "Filtered/ deduplicated sams missing from input to 'BME' process." }
-        .set{ processed_sams_in }
-    
-    //  Bismark Methylation Extractor on the quality-filtered, deduplicated sams
-    process BME {
-    
-        publishDir "${params.output}/BME/", mode:'copy'
-        tag "$prefix"
-        
-        input:
-            set val(prefix), file(sam_file) from processed_sams_in
-            
-        output:
-            file "${prefix}/" into BME_outputs
-            file "BME_${prefix}.log" into bme_reports_out
-            
-        shell:
-            // BME needs path to samtools if samtools isn't on the PATH
-            if (params.samtools != "samtools") {
-                flags = "--samtools_path=${params.samtools}"
-            } else {
-                flags = ""
-            }
-            
-            // paired vs single-end flag
-            if (params.sample == "paired") {
-                flags += " --paired-end"
-            } else {
-                flags += " --single-end"
-            }
-            
-            // on multiple cores? BME runs N *additional* threads with the flag
-            // "--multicore N", hence the subtraction by 1
-            if (task.cpus > 1) {
-                flags += " --multicore " + (task.cpus - 1)
-            }
-            '''
-            mkdir !{prefix}
-            !{params.BME} !{flags} --gzip -o !{prefix}/ !{sam_file}
-            
-            cp .command.log BME_!{prefix}.log
-            '''
-    }
-    
-    BME_outputs
-        .flatten()
-        .map{ file -> tuple(get_prefix(file), file) }
-        .groupTuple()
-        .ifEmpty{ error "BME outputs missing from input to 'Bismark2Bedgraph' process." }
-        .set{ bedgraph_in }
-    
-    //  bismark2bedraph on BME outputs. This is done separately because this utility,
-    //  BME, and coverage2cytosine all have significantly different hardware resource
-    //  requirements. Thus to run the pipeline at maximum speed, while minimizing
-    //  wasted resources, the 3 utilities should be separated.
-    process Bismark2Bedgraph {
-    
-        publishDir "${params.output}/Reports/$prefix", mode:'copy'
-        tag "$prefix"
-        
-        input:
-            set val(prefix), file(BME_dir) from bedgraph_in
-            
-        output:
-            file "*_bedgraph_merged*"
-            file "${prefix}_bedgraph_merged.gz.bismark.cov.gz" into bedgraph_outputs
-            file "bismark2bedgraph_${prefix}.log"
-            
-        shell:
-            '''
-            !{params.bismark2bedGraph} -o !{prefix}_bedgraph_merged ./!{BME_dir}/*_!{prefix}.cfu.txt.gz
-            
-            cp .command.log bismark2bedgraph_!{prefix}.log
-            '''
-    }
-    
-    
-    bedgraph_outputs
-        .flatten()
-        .map{ file -> tuple(get_prefix(file), file) }
-        .ifEmpty{ error "Bedgraphs missing from input to 'Coverage2Cytosine' process." }
-        .set{ c2c_in }
-    
-    process Coverage2Cytosine {
-    
-        publishDir "${params.output}/Reports/$prefix", mode:'copy'
-        tag "$prefix"
-        
-        input:
-            set val(prefix), file(bedgraph_file) from c2c_in
-            
-        output:
-            file "*.CX_report.txt" into cytosine_reports
-            file "C2C_${prefix}.log"
-            
-        shell:
-            '''
-            !{params.coverage2cytosine} \
-                --split_by_chromosome \
-                --CX \
-                --genome_folder !{workflow.projectDir}/ref/!{params.reference}/ \
-                -o !{prefix} \
-                !{bedgraph_file}
-                
-            cp .command.log C2C_!{prefix}.log
-            '''
-    }
-
-// ############################################################################
-//  The alternative is MethylDackel for methylation extraction
-// ############################################################################
-
-} else {
-    processed_alignments_out
-        .flatten()
-        .map{ file -> tuple(get_prefix(file), file) }
-        .groupTuple()
-        .ifEmpty{ error "Processed/ sorted BAMs missing from input to 'MethylationExtraction' process." }
-        .set{ processed_alignments_in }
-        
-    process MethylationExtraction {
-        publishDir "${params.output}/MethylDackel/", mode:'copy'
-        tag "$prefix"
-        
-        input:
-            set val(prefix), file(bam_pair) from processed_alignments_in
-            file MD_genome
-            file meth_count_script from file("${workflow.projectDir}/scripts/meth_count.R")
-            
-        output:
-            file "methyl_extraction_${prefix}.log"
-            file "${prefix}*.CX_report.txt" into cytosine_reports
-            
-        shell:
-            '''
-            #  Run methylation extraction
-            echo "Running 'MethylDackel extract' on the sorted bam..."
-            !{params.MethylDackel} extract --cytosine_report -o !{prefix} --CHG --CHH !{MD_genome} *.bam
-            
-            echo "Summary stats for !{prefix}:"
-            c_contexts=("CG" "CHG" "CHH")
-            for context in ${c_contexts[@]}; do
-                m_perc=$(awk -v ctxt=$context '{if ($6 == ctxt) {M += $4; U += $5}}END{print 100*M/(U+M)}' !{prefix}.cytosine_report.txt)
-                echo "C methylated in $context context: ${m_perc}%"
-            done
-            
-            #  Split reports by sequence (pulled from BAM header)
-            echo "Splitting cytosine report by sequence..."
-            for SN in $(!{params.samtools} view -H *.bam | cut -f 2 | grep "SN:" | cut -d ":" -f 2); do
-                awk -v sn=$SN '$1 == sn' !{prefix}.cytosine_report.txt > !{prefix}.$SN.CX_report.txt
-            done
-            
-            echo "Done."
-            cp .command.log methyl_extraction_!{prefix}.log
-            '''
-    }
-    
-    bme_reports_out = Channel.value()
-}
-
-//  Group reports for each chromosome into one channel (each)
-cytosine_reports
-    .flatten()
-    .filter{ get_chromosome_name(it).length() <= 5 } // take only canonical seqs
-    .map{ file -> tuple(get_chromosome_name(file), file) }
-    .groupTuple()
-    .set{ cytosine_reports_by_chr }
-    
-
-//  Take reports and logs from Arioc and optionally Trim Galore, BME, and
-//  lambda pseudoalignment (if applicable); aggregate relevant metrics/
-//  QC-related stats into a data frame.
-process ParseReports {
-
-    publishDir "${params.output}/metrics", mode:'copy'
-    
-    input:
-        file trim_reports_in from trim_reports_out.collect()
-        file bme_reports_in from bme_reports_out.collect()
-        file arioc_reports_in from arioc_reports_out.collect()
-        file lambda_reports_in from lambda_reports_out.collect()
-        
-        file parse_reports_script from file("${workflow.projectDir}/scripts/parse_reports.R")
-        file parse_manifest
-        
-    output:
-        file "metrics.rda"
-        file "metrics.log"
-        
-    shell:
-        '''
-        Rscript !{parse_reports_script}
-        cp .command.log metrics.log
-        '''
-}
-
-
-process FormBsseqObjects {
-
-    publishDir "${params.output}/BSobjects/logs", mode:'copy', pattern:'*.log'
-    tag "$chr"
-        
-    input:
-        set val(chr), file(reports) from cytosine_reports_by_chr
-        file bs_creation_script from file("${workflow.projectDir}/scripts/bs_create.R")
-        
-    output:
-        file "${chr}_Cp*.success" into bs_tokens_out
-        file "create_bs_${chr}.log"
-        
-    shell:
-        '''
-        mkdir -p !{params.output}/BSobjects/objects
-        Rscript !{bs_creation_script} \
-            -s !{chr} \
-            -c !{task.cpus} \
-            -d !{params.output}/BSobjects/objects
-        if [ "$?" == "0" ]; then
-            touch !{chr}_CpG.success
-            touch !{chr}_CpH.success
-        fi
-        cp .command.log create_bs_!{chr}.log
-        '''
-}
-
-
-//  Group tokens into two elements ("CpG" context and "CpH" context)
-bs_tokens_out
-    .flatten()
-    .map{ file -> tuple(get_context(file), file) }
-    .groupTuple()
-    .set{ bs_tokens_in }
-
-//  Combine Bsseq objects and their HDF5-backed assays into two .rda files
-//  (one for CpG context, the other for CpH) and a single .h5 file
-process MergeBsseqObjects {
-
-    publishDir "${params.output}/BSobjects/logs", mode:'copy'
-    
-    input:
-        set val(context), file(token) from bs_tokens_in
-        file chr_names
-        file combine_script from file("${workflow.projectDir}/scripts/bs_merge.R")
-        
-    output:
-        file "merge_objects_${context}.log"
-        
-    shell:
-        '''
-        #  This script actually writes result files directly to publishDir
-        Rscript !{combine_script} -d !{params.output}/BSobjects/objects -c !{context}
-        
-        cp .command.log merge_objects_!{context}.log
         '''
 }
