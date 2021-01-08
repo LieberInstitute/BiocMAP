@@ -1,15 +1,18 @@
 library('getopt')
 
 spec <- matrix(c('paired', 'p', 1, 'character', '"single" or "paired"',
-                 'prefix', 'x', 1, 'character', 'prefix to uniquely identify sample',
-                 'batchSize', 'b', 1, 'character', 'GPU batch size for Arioc',
-                 'repoDir', 'd', 1, 'character', 'base path to repo',
-                 'ref', 'r', 1, 'character', 'reference suffix',
-                 'allAlign', 'a', 1, 'logical', 'whether to output nonconcordant alignments'),
+                 'prefix', 'f', 1, 'character', 'prefix to uniquely identify sample',
+                 'allAlign', 'a', 1, 'logical', 'whether to output nonconcordant alignments',
+                 'arioc_opts', 'o', 1, 'character', 'main alignment options',
+                 'gapped_opts', 'g', 1, 'character', 'gapped seed options',
+                 'nongapped_opts', 'n', 1, 'character', 'nongapped seed options',
+                 'r_opts', 'r', 1, 'character', 'reference-related options',
+                 'x_opts', 'x', 1, 'character', 'opts to pass to <X>',
+                 'q_opts', 'q', 1, 'character', 'file-related options'),
                byrow=TRUE, ncol=5)
 opt <- getopt(spec)
 
-print("Writing configs for AriocP...")
+print("Writing configs for AriocP/AriocU...")
 
 if (opt$paired == "paired") {
   exec_name = 'AriocP'
@@ -39,12 +42,14 @@ if (opt$allAlign) {
 
 #  Lines related to alignment settings
 config_lines = c('<?xml version="1.0" encoding="utf-8"?>',
-                 paste0('<', exec_name, ' gpuMask="0x00000001" batchSize="', opt$batchSize, '" verboseMask="0xE0000007">'),
-                 paste0('  <R>', opt$repoDir, '/', opt$ref, '</R>'), '',
-                 '  <nongapped seed="ssi84_2_30_CT" maxJ="200" maxMismatches="5"/>',
-                 '  <gapped seed="hsi25_0_32_CT" Wmxgs="2,6,5,3" Vt="L,0,1" maxJ="20" seedDepth="4"/>',
-                 '  <X watchdogInterval="60" cgaReserved="24M" useHinGmem="1" useJinGmem="0" useHJinGPmem="0" serialLUTinit="1" />', '',
-                 paste0('  <Q filePath="', opt$repoDir, '/Arioc/temp_encoded_reads">'))
+                 opt$arioc_opts,
+                 opt$r_opts, 
+                 '',
+                 opt$nongapped_opts,
+                 opt$gapped_opts,
+                 opt$x_opts, 
+                 '',
+                 opt$q_opts)
 
 #  Lines related to the particular reads used for this alignment
 if (opt$paired == "paired") {
@@ -69,7 +74,8 @@ for (out_type in sam_outputs) {
                      paste0('    <sam report="', out_type, '">./</sam>'))
 }
 
-config_lines = c(config_lines, '  </A>', paste0('</', exec_name, '>'))
+config_lines = c(config_lines, 
+                 '  </A>', paste0('</', exec_name, '>'))
 
 #############################################################
 #    Write the config to file

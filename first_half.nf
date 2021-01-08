@@ -248,7 +248,7 @@ if (params.custom_anno == "") {
     Channel.fromPath("${params.annotation}/*.fa")
         .ifEmpty{ error "Cannot find FASTA in annotation directory (and --custom_anno was specified)" }
         .first()  // This proves to nextflow that the channel will always hold one value/file
-        .into{ raw_genome; MD_genome; BME_genome }
+        .into{ raw_genome }
 }
 
 //  Split the fasta into individual files (1 per canonical sequence) and write
@@ -262,7 +262,7 @@ process PrepareReference {
         file raw_genome
     
     output:
-        file "$out_fasta" into BME_genome, MD_genome
+        file "chr_names_${params.anno_suffix}"
         file "encode_ref_gap.cfg" into encode_ref_gap_cfg
         file "encode_ref_nongap.cfg" into encode_ref_nongap_cfg
         file "prepare_ref.log"
@@ -274,11 +274,14 @@ process PrepareReference {
             genome_dirname = params.anno_build
         }
         '''
+        #  Make a file containing a list of seqnames
+        grep ">" !{raw_genome} | cut -d " " -f 1 | cut -d ">" -f 2 > chr_names_!{params.anno_suffix}
+        
         #  Split by sequence, to prepare for encoding reference with Arioc
         bash !{split_fasta_script} !{raw_genome}
         
         #  Write the Arioc configs for encoding the reference
-        out_dir=${params.annotation}/!{params.anno_suffix}
+        out_dir=!{params.annotation}/!{params.anno_suffix}
         mkdir -p $out_dir
         Rscript !{encode_ref_script} -r !{params.reference} -d $out_dir
         
@@ -523,19 +526,42 @@ process WriteAriocConfigs {
         file "*_align_reads.cfg" into align_reads_cfgs
         
     shell:
+        if (params.sample == "paired") {
+            exec_name = "AriocP"
+        } else {
+            exec_name = "AriocU"
+        }
+        
+        encoded_dir = "${workflow.projectDir}/Arioc/temp_encoded_reads"
+        
+        //  Form strings containing lines to write in the Arioc configs, that
+        //  are dependent on parameters from the first-half config
+        arioc_opts = '<' + exec_name + ' gpuMask="' + params.gpu_mask + \
+                     '" batchSize="' + params.batch_size + \
+                     '" verboseMask="0xE0000007">'
+        r_opts = "  <R>${workflow.projectDir}/ref/${params.reference}/${params.anno_suffix}</R>"
+        nongapped_opts = '  <nongapped seed="' + params.nongapped_seed + \
+                         '" ' + params.nongapped_args + '/>'
+        gapped_opts = '  <gapped seed="' + params.gapped_seed + '" ' + \
+                      params.gapped_args + '/>'
+        x_opts = '  <X> ' + params.x_args + '/>'
+        q_opts = '  <Q filePath="' + encoded_dir + '">'
         '''
-        refSuffix=ref/!{params.reference}/!{params.anno_suffix}
         Rscript !{encode_reads_script} \
             -p !{params.sample} \
-            -d !{workflow.projectDir}/Arioc/temp_encoded_reads \
+            -d !{encoded_dir} \
             -x !{fq_prefix}
+            
         Rscript !{align_reads_script} \
             -p !{params.sample} \
-            -d !{workflow.projectDir} \
-            -r ${refSuffix} \
-            -b !{params.AriocBatchSize} \
             -a !{params.all_alignments} \
-            -x !{fq_prefix}
+            -f !{fq_prefix} \
+            -o \"!{arioc_opts}\" \
+            -g \"!{gapped_opts}\" \
+            -n \"!{nongapped_opts}\" \
+            -r \"!{r_opts}\" \
+            -x \"!{x_opts}\" \
+            -q \"!{q_opts}\"
             
         cp .command.log write_configs_!{fq_prefix}.log
         '''
