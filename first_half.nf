@@ -544,7 +544,7 @@ process WriteAriocConfigs {
                          '" ' + params.nongapped_args + '/>'
         gapped_opts = '  <gapped seed="' + params.gapped_seed + '" ' + \
                       params.gapped_args + '/>'
-        x_opts = '  <X> ' + params.x_args + '/>'
+        x_opts = '  <X ' + params.x_args + '/>'
         q_opts = '  <Q filePath="' + encoded_dir + '">'
         '''
         Rscript !{encode_reads_script} \
@@ -556,12 +556,12 @@ process WriteAriocConfigs {
             -p !{params.sample} \
             -a !{params.all_alignments} \
             -f !{fq_prefix} \
-            -o \"!{arioc_opts}\" \
-            -g \"!{gapped_opts}\" \
-            -n \"!{nongapped_opts}\" \
-            -r \"!{r_opts}\" \
-            -x \"!{x_opts}\" \
-            -q \"!{q_opts}\"
+            -o \'!{arioc_opts}\' \
+            -g \'!{gapped_opts}\' \
+            -n \'!{nongapped_opts}\' \
+            -r \'!{r_opts}\' \
+            -x \'!{x_opts}\' \
+            -q \'!{q_opts}\'
             
         cp .command.log write_configs_!{fq_prefix}.log
         '''
