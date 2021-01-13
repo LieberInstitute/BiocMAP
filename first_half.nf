@@ -323,8 +323,8 @@ process Merging {
         
     output:
         file "*.f*q*" into merged_inputs_flat
-        file "arioc_samples.manifest" into arioc_manifest, parse_manifest
-        file "preprocess_inputs.log"
+        file "arioc_samples.manifest" into arioc_manifest
+        file "preprocess_inputs.log" into rules_input
 
     shell:
         '''
@@ -673,5 +673,31 @@ process FilterAlignments {
             | !{params.samblaster} -r -o !{prefix}.cfu.sam
             
         cp .command.log filter_sam_!{prefix}.log
+        '''
+}
+
+
+//  Generate a 'rules.txt' file automatically, for use as input to the second
+//  module
+process MakeRules {
+    publishDir "${params.input}", mode:'copy'
+    
+    //  The input is just used to "connect" this process to the computational
+    //  graph, required for nextflow to know when the workflow is complete
+    input:
+        file rules_input
+        
+    output:
+        file 'rules.txt'
+        
+    shell:
+        txt = "# Automatically generated input to the second module/half\n" + \
+              "manifest = ${params.input}/samples.manifest\n" + \
+              "sam = ${params.output}/FilteredAlignments/sams/[id].cfu.sam\n" + \
+              "arioc_log = ${params.output}/Arioc/logs/[id]_alignment.log\n" + \
+              "trim_report = ${params.output}/Trimming/[id].fastq_trimming_report.txt"
+        
+        '''
+        echo -e "!{txt}" > rules.txt
         '''
 }
