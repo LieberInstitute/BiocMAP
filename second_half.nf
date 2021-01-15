@@ -292,23 +292,23 @@ if (params.with_lambda) {
 //  Place SAMs and any reports/logs into channels for use in the pipeline
 process PreprocessInputs {
     
-    publishDir "${params.output}/logs/", mode:'copy', pattern:'preprocess_inputs.log'
+    publishDir "${params.output}/logs/", mode:'copy', pattern:'preprocess_inputs_second_half.log'
     
     input:
         file rules from file("${params.input}/rules.txt")
-        file preprocess_script from file("${workflow.projectDir}/scripts/preprocess_inputs.R")
+        file preprocess_script from file("${workflow.projectDir}/scripts/preprocess_inputs_second.R")
         
     output:
         file "*.sam" into concordant_sams_out
         file "*_bme.log" optional true into bme_reports_out
         file "*_{arioc,trim_report,xmc}.log" into misc_reports_out
         file "*.f*q*" optional true into fastq_out
-        file "preprocess_inputs.log"
+        file "preprocess_inputs_second_half.log"
         
     shell:
         '''
         Rscript !{preprocess_script}
-        cp .command.log preprocess_inputs.log
+        cp .command.log preprocess_inputs_second_half.log
         '''
 }
 

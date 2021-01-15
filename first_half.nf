@@ -314,23 +314,23 @@ process EncodeReference {
 
 process Merging {
 
-    publishDir "${params.output}", mode:'copy', pattern:'*.log'
+    publishDir "${params.output}/logs", mode:'copy', pattern:'*.log'
     tag "Performing merging if/where necessary"
 
     input:
         file original_manifest from file("${params.input}/samples.manifest")
-        file merge_script from file("${workflow.projectDir}/scripts/preprocess_inputs.R")
+        file merge_script from file("${workflow.projectDir}/scripts/preprocess_inputs_first.R")
         
     output:
         file "*.f*q*" into merged_inputs_flat
         file "arioc_samples.manifest" into arioc_manifest
-        file "preprocess_inputs.log" into rules_input
+        file "preprocess_inputs_first_half.log" into rules_input
 
     shell:
         '''
         Rscript !{merge_script}
         
-        cp .command.log preprocess_inputs.log
+        cp .command.log preprocess_inputs_first_half.log
         '''
 }
 
