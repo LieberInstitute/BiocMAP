@@ -19,14 +19,14 @@ if [ -x "$(command -v java)" ]; then
         
     #  Install nextflow (latest)
     wget -qO- https://get.nextflow.io | bash
+    cd $INSTALL_DIR
     
     #  Bismark (0.23.0)
     
     wget https://github.com/FelixKrueger/Bismark/archive/0.23.0.tar.gz && \
         tar -xzf 0.23.0.tar.gz
-        cp bismark* ../bin/
-        cp coverage2cytosine ../bin/
-        cd $INSTALL_DIR/
+        cp Bismark-0.23.0/bismark* bin/
+        cp Bismark-0.23.0/coverage2cytosine bin/
     
     #  fastqc (0.11.8)  -------------------------------------------------------
     
@@ -35,7 +35,7 @@ if [ -x "$(command -v java)" ]; then
         chmod -R 775 FastQC
         cp FastQC/fastqc bin/
         
-    #  MethylDackel
+    #  MethylDackel (latest)
     
     ##  Install libBigWig, a dependency
     git clone git@github.com:dpryan79/libBigWig.git && \
@@ -53,30 +53,23 @@ if [ -x "$(command -v java)" ]; then
             cd $INSTALL_DIR
             mv htslib-1.10.2 htslib
     
-    ##  MethylDackel itself
+    ##  MethylDackel itself (latest)
     git clone https://github.com/dpryan79/MethylDackel.git && \
         cd MethylDackel && \
         make install CFLAGS="-O3 -Wall -I$INSTALL_DIR/include " LIBS="-L$INSTALL_DIR/lib" prefix=$INSTALL_DIR/bin LIBBIGWIG="$INSTALL_DIR/libBigWig/libBigWig.a"
         cd $INSTALL_DIR
-        
-    #  R (3.6.1) --------------------------------------------------------------
-        
-    #  Install R
-    wget http://cran.rstudio.com/src/base/R-3/R-3.6.1.tar.gz && \
-        tar -xf R-3.6.1.tar.gz && \
-        cd R-3.6.1 && \
-        ./configure --prefix=$INSTALL_DIR && \
-        make && \
-        make install
-        cd $INSTALL_DIR
       
     #  Install packages that will be used by the pipeline
-    ./R-3.6.1/bin/Rscript ../scripts/install_R_packages.R
+    Rscript ../scripts/install_R_packages.R
     
-    #  samblaster
+    #  samblaster (v.0.1.26)
     
     wget https://github.com/GregoryFaust/samblaster/releases/download/v.0.1.26/samblaster-v.0.1.26.tar.gz && \
-        tar -xz samblaster-v.0.1.26.tar.gz
+        tar -xzf samblaster-v.0.1.26.tar.gz && \
+        cd samblaster-v.0.1.26 && \
+        make
+        cp samblaster ../bin/
+        cd $INSTALL_DIR
     
     #  samtools (1.10)  -------------------------------------------------------
     
@@ -89,6 +82,15 @@ if [ -x "$(command -v java)" ]; then
         cd $INSTALL_DIR
         
     #  Trim Galore!
+    
+    wget https://github.com/FelixKrueger/TrimGalore/archive/0.6.6.tar.gz && \
+        tar -xzf 0.6.6.tar.gz
+        cp TrimGalore-0.6.6/trim_galore bin/
+        
+    #  Clean up compressed files
+    rm $INSTALL_DIR/*.tar.gz
+    rm $INSTALL_DIR/*.bz2
+    rm $INSTALL_DIR/*.zip
         
     #  Fix any strict permissions which would not allow sharing software
     #  (and therefore the pipeline as a whole) with those in a group
