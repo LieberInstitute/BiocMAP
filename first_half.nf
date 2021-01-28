@@ -4,11 +4,13 @@ vim: syntax=groovy
 -*- mode: groovy;-*-
 
 --------------------------------------------------------------------
-    WGBS pipeline
---------------------------------------------------------------------------
+    WGBS pipeline- First Half
+--------------------------------------------------------------------
 
-input: fastq or fastq.gz files, which should be present in ./in/
-output: bsseq objects, separated by cytosine context, to be written to ./out/ by default
+input:  "samples.manifest", pointing to fastq or fastq.gz files
+output: quality-filtered, deduplicated alignments in SAM format for each
+        sample. Also, the file "rules.txt" required for running the second
+        half/ module.
 
 processes:
     A. Pre-processing on input FASTQ files- this involves decompressing any gzipped
@@ -17,26 +19,22 @@ processes:
     
     1. FastQC on FASTQ files
     2. Trimming FASTQ files (by default based on adapter content FastQC metric)
-    3. FastQC on any trimmed files, to confirm trimming achieved its goal
-    4. Alignment with Arioc
-    5. Filter to high quality, unique reads, and convert sam to bam
-    6. Bismark methylation extraction
-    7. bismark2bedgraph on BME outputs
-    8. coverage2cytosine on bismark2bedgraph outputs
-    9. HDF5-backed bsseq object creation 
+    3. Alignment with Arioc
+    4. Filter to high quality, unique alignments
 */
 
 def helpMessage() {
     log.info"""
-    =========================
-        WGBS pipeline
-    =========================
+    =================================
+        WGBS pipeline- First Half
+    =================================
     
     Usage:
-        nextflow main.nf [options]
+        nextflow first_half.nf [options]
     
     Typical use case:
-        nextflow main.nf --sample "paired" -profile jhpce
+        nextflow first_half.nf --sample "paired" --reference "hg38" \\
+                               -profile jhpce
         
     Required flags:
         --sample:      "single" or "paired", depending on your FASTQ reads
@@ -174,7 +172,7 @@ def get_context(f) {
 // ------------------------------------------------------------
 
 log.info "=================================="
-log.info " WGBS Pipeline"
+log.info " WGBS Pipeline- First Half"
 log.info "=================================="
 def summary = [:]
 summary['All alignments'] = params.all_alignments

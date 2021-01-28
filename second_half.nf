@@ -4,34 +4,35 @@ vim: syntax=groovy
 -*- mode: groovy;-*-
 
 --------------------------------------------------------------------
-    WGBS pipeline
---------------------------------------------------------------------------
+    WGBS pipeline- Second Half
+--------------------------------------------------------------------
 
 input: SAM files, whose paths are specified in rules.txt
 output: bsseq objects, separated by cytosine context
 
 processes:
-    1. convert sam to bam
-    2. methylation extraction via MethylDackel
+    1. sort and compress SAM alignments into BAM format
+    2. methylation extraction via MethylDackel/ Bismark
     3. HDF5-backed bsseq object creation
 */
 
 def helpMessage() {
     log.info"""
-    =========================
-        WGBS pipeline
-    =========================
+    =================================
+        WGBS pipeline- Second Half
+    =================================
     
     Usage:
-        nextflow main.nf [options]
+        nextflow second_half.nf [options]
     
     Typical use case:
-        nextflow main.nf --sample "paired" -profile jhpce
+        nextflow second_half.nf --sample "paired" --reference "hg38" \\
+                                -profile jhpce
         
     Required flags:
         --sample:      "single" or "paired", depending on your FASTQ reads
         --reference:   "hg38", "hg19", or "mm10". The reference genome to be
-                       used for alignment and methylation extraction
+                       used for methylation extraction
     
     Optional flags:
         --annotation [path]: the path to the directory to store annotation-
@@ -138,7 +139,7 @@ def get_context(f) {
 
 //  Write run info to output
 log.info "=================================="
-log.info " WGBS Pipeline"
+log.info " WGBS Pipeline- Second Half"
 log.info "=================================="
 def summary = [:]
 summary['Sample']	= params.sample
