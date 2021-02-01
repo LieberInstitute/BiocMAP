@@ -1,7 +1,7 @@
 #	Nextflow-related hidden/ log/ temp files
 .nextflow*
 work/*
-run_*_half_jhpce.log
+run_*_half_*.log
 Arioc/temp_encoded_reads*
 
 #	Personal data- related
