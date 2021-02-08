@@ -67,3 +67,26 @@ Because all cytosines in the genome are included in the output objects, the data
 #### R data frame
 
 [TODO!!] rows are sample names, and columns must be individually described here.
+
+## Get started
+
+### Requirements
+
+[INSERT PIPELINE NAME HERE] is available on Linux and Unix-like operating systems (such as MacOS).
+
+Java 8 or later, R (tested with R 3.6-4.0), and [Arioc](https://github.com/RWilton/Arioc) are required dependencies which should be available for execution (on the PATH) when running [INSERT PIPELINE NAME HERE].
+
+Additionally, installation makes use of GNU make and requires a C compiler, such as GCC. Both of these tools come by default with most Unix-like operating systems/ distributions.
+
+### Installation
+
+```
+#  Clone this repository
+git clone git@github.com:LieberInstitute/WGBS-Pipeline.git
+
+#  Install dependencies
+cd WGBS-Pipeline
+bash install_software.sh
+```
+
+[TODO: DESCRIBE HOW TO EDIT CONFIGURATION TO RUN ARIOC-RELATED PROCESSES]
