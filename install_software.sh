@@ -1,11 +1,9 @@
 #!/bin/bash
 
-#  IMPORTANT: run this script inside the repository directory to ensure 
-#             software locations are properly linked. See
-#             conf/command_path_long.config if you are interested in manually
-#             configuring different software paths.
+#  IMPORTANT: run this script inside the base repository directory to ensure 
+#             software locations are properly linked.
 #
-#  Usage:  bash install_software.sh [installation_type]
+#  Usage:  bash install_software.sh
 
 set -e
 
