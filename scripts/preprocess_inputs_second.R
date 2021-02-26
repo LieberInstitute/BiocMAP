@@ -10,18 +10,24 @@ run_command = function(command) {
     print("Done.")
 }
 
-get_value = function(rules, key) {
+get_value = function(rules, key, required) {
     this_line = rules[grep(key, ss(rules, '='))]
-    if (length(this_line) != 1) {
+    if (length(this_line) == 0) {
+        if (required) {
+            stop(paste0('"', key, '" is a required key in "rules.txt", but was not found.'))
+        } else {
+            return(NA)
+        }
+    } else if (length(this_line) > 1) {
         stop(paste0("Key '", key, "' had ", length(this_line), " values in rules.txt."))
     }
     
     return(gsub(' ', '', ss(this_line, '=', 2)))
 }
 
-form_links = function(rules, key, ids, end_name) {
-    value = get_value(rules, key)
-    if (value != "NA") {
+form_links = function(rules, key, ids, end_name, required) {
+    value = get_value(rules, key, required)
+    if (!is.na(value)) {
         pieces = strsplit(value, '[id]', fixed=TRUE)[[1]]
         
         #  Get the paths, substituting in actual ids for each '[id]'
@@ -54,17 +60,17 @@ paired = ncol(manifest) > 3
 
 
 #  Arioc SAMs and logs
-form_links(rules, 'sam', ids, '.sam')
-form_links(rules, 'arioc_log', ids, '_arioc.log')
+form_links(rules, 'sam', ids, '.sam', TRUE)
+form_links(rules, 'arioc_log', ids, '_arioc.log', TRUE)
 
 #  XMC logs
-form_links(rules, 'xmc_log', ids, '_xmc.log')
+form_links(rules, 'xmc_log', ids, '_xmc.log', FALSE)
 
 #  BME logs
-form_links(rules, 'bme_log', ids, '_bme.log')
+form_links(rules, 'bme_log', ids, '_bme.log', FALSE)
 
 #  Trim Galore reports
-form_links(rules, 'trim_report', ids, '_trim_report.log')
+form_links(rules, 'trim_report', ids, '_trim_report.log', TRUE)
 
 
 ############################################################
