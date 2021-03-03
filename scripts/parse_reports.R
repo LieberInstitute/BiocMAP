@@ -1,7 +1,17 @@
 library('jaffelab')
 
+get_value = function(rules, key, required) {
+    this_line = rules[grep(key, ss(rules, '='))]
+    
+    return(gsub(' ', '', ss(this_line, '=', 2)))
+}
+
 #  Get sample IDs
-manifest = read.table('arioc_samples.manifest', header = FALSE, stringsAsFactors = FALSE)
+rules = readLines('rules.txt')
+rules = rules[-grep('#', rules)]
+
+manifest = read.table(get_value(rules, 'manifest'), header = FALSE,
+                      stringsAsFactors = FALSE)
 ids = manifest[,ncol(manifest)]
 
 ######################################################
@@ -26,7 +36,7 @@ col_names = c("pairs", "conc_pairs_total", "conc_pairs_1_mapping", "conc_pairs_m
               "mates_NIPM_with_no_maps", "mates_NIPM_with_1_map", "mates_NIPM_with_many_maps",
               "total_mapped_mates", "duplicate_maps", "maxQlen", "max_diag_band_width", "TLEN mean")
               
-f = paste0(ids, '_alignment.log')
+f = paste0(ids, '_arioc.log')
 stopifnot(file.exists(f[1]))
 
 row_data = lapply(f, function(filename) {
@@ -44,7 +54,7 @@ colnames(metrics) = col_names
 #  BME logs
 ######################################################
 
-filenames = paste0('BME_', ids, '.log')
+filenames = paste0(ids, '_bme.log')
 if (file.exists(filenames[1])) {
     print('Extracting BME metrics...')
     
@@ -63,7 +73,7 @@ if (file.exists(filenames[1])) {
 #  Trimming Reports
 ######################################################
     
-filepaths = list.files(pattern='.*\\.f.*q.*_trimming_report\\.txt')
+filepaths = paste0(ids, '_trim_report.log')
 
 if (length(filepaths) > 0) {
     print('Extracting trimming metrics...')
