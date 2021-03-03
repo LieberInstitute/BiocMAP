@@ -301,8 +301,7 @@ process PreprocessInputs {
         
     output:
         file "*.sam" into concordant_sams_out
-        file "*_bme.log" optional true into bme_reports_out
-        file "*_{arioc,trim_report,xmc}.log" into misc_reports_out
+        file "*_{arioc,trim_report,xmc,bme}.log" into misc_reports_out
         file "*.f*q*" optional true into fastq_out
         file "preprocess_inputs_second_half.log"
         
@@ -347,7 +346,7 @@ if (params.with_lambda) {
             set val(prefix), file(fq_file) from fastq_in
             
         output:
-            file "${prefix}_lambda_pseudo.log" into lambda_reports_out
+            file "${prefix}_lambda_pseudo.log" into lambda_reports_temp
             
         shell:
             '''
@@ -371,8 +370,11 @@ if (params.with_lambda) {
             cp .command.log !{prefix}_lambda_pseudo.log
             '''
     }
+} else {
+    lambda_reports_temp = Channel.empty()
 }
 
+lambda_reports_temp.ifEmpty('').set{lambda_reports_out}
 
 concordant_sams_out
     .flatten()
@@ -424,7 +426,7 @@ if (params.use_bme) {
             
         output:
             file "${prefix}/" into BME_outputs
-            file "BME_${prefix}.log" into BME_reports
+            file "BME_${prefix}.log" into bme_reports_temp
             
         shell:
             // BME needs path to samtools if samtools isn't on the PATH
@@ -565,7 +567,12 @@ if (params.use_bme) {
             cp .command.log methyl_extraction_!{prefix}.log
             '''
     }
+    
+    bme_reports_temp = Channel.empty()
 }
+
+bme_reports_temp.ifEmpty('').set{bme_reports_out}
+
 
 //  Group reports for each chromosome into one channel (each)
 cytosine_reports
