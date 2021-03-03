@@ -36,7 +36,12 @@ form_links = function(rules, key, ids, end_name, required) {
             paths = paste0(paths, pieces[i], ids)
         }
         paths = paste0(paths, pieces[length(pieces)])
+        
+        #  Verify legitimacy of paths
         stopifnot(length(paths) == length(ids))
+        if (! all(file.exists(paths))) {
+            stop(paste0('Some or all files for key "', key, '" do not exist.'))
+        }
         
         #  Symbolically link each file into the current working directory
         for (i in 1:length(ids)) {
