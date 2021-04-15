@@ -19,14 +19,26 @@ if [ -x "$(command -v java)" ]; then
     wget -qO- https://get.nextflow.io | bash
     cd $INSTALL_DIR
     
-    #  Bismark (0.23.0)
+    #  Bismark (0.23.0) -------------------------------------------------------
+    
+    ##  hisat2 (2.2.1), required for bismark_genome_preparation
+    
+    wget https://github.com/DaehwanKimLab/hisat2/archive/v2.2.1.tar.gz
+    tar -xzf v2.2.1.tar.gz
+    cd hisat2-2.2.1
+    cp hisat2 $INSTALL_DIR/bin/
+    cp hisat2-align* $INSTALL_DIR/bin/
+    cp hisat2-build* $INSTALL_DIR/bin/
+    cp hisat2-inspect* $INSTALL_DIR/bin/
+    cp *.py $INSTALL_DIR/bin/
+    cd $INSTALL_DIR
     
     wget https://github.com/FelixKrueger/Bismark/archive/0.23.0.tar.gz
     tar -xzf 0.23.0.tar.gz
     cp Bismark-0.23.0/bismark* bin/
     cp Bismark-0.23.0/coverage2cytosine bin/
     
-    #  cmake, which kallisto need to build
+    #  cmake, which kallisto need to build ------------------------------------
     git clone https://gitlab.kitware.com/cmake/cmake.git
     cd cmake
     ./bootstrap --prefix=$INSTALL_DIR
