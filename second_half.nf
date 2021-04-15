@@ -281,8 +281,8 @@ if (params.with_lambda) {
             Rscript !{convert_script}
             
             #  Create a kallisto index for each version of the genome
-            !{params.kallisto} index -i lambda_normal.idx lambda.fa
-            !{params.kallisto} index -i lambda_bs_artificial.idx lambda_bs_artificial.fa
+            kallisto index -i lambda_normal.idx lambda.fa
+            kallisto index -i lambda_bs_artificial.idx lambda_bs_artificial.fa
             
             cp .command.log prepare_lambda.log
             '''
@@ -541,7 +541,7 @@ if (params.use_bme) {
             '''
             #  Run methylation extraction
             echo "Running 'MethylDackel extract' on the sorted bam..."
-            !{params.MethylDackel} extract --cytosine_report -o !{prefix} --CHG --CHH !{MD_genome} *.bam
+            MethylDackel extract --cytosine_report -o !{prefix} --CHG --CHH !{MD_genome} *.bam
             
             echo "Summary stats for !{prefix}:"
             c_contexts=("CG" "CHG" "CHH")
