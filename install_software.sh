@@ -33,6 +33,8 @@ if [ -x "$(command -v java)" ]; then
     cp *.py $INSTALL_DIR/bin/
     cd $INSTALL_DIR
     
+    ##  bismark itself (0.23.0)
+    
     wget https://github.com/FelixKrueger/Bismark/archive/0.23.0.tar.gz
     tar -xzf 0.23.0.tar.gz
     cp Bismark-0.23.0/bismark* bin/
