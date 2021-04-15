@@ -249,7 +249,7 @@ process PrepareReference {
         
         #  Build the bisulfite genome, needed for bismark (and copy it to publishDir,
         #  circumventing Nextflow's inability to recursively copy)
-        !{params.bismark_genome_preparation} --hisat2 --path_to_aligner !{params.hisat2} ./!{genome_dirname}
+        bismark_genome_preparation --hisat2 ./!{genome_dirname}
         cp -R !{genome_dirname}/Bisulfite_Genome !{params.annotation}/!{params.anno_suffix}
         
         #  Keep a log of what happened so far
@@ -443,7 +443,7 @@ if (params.use_bme) {
             }
             '''
             mkdir !{prefix}
-            !{params.BME} !{flags} --gzip -o !{prefix}/ !{sam_file}
+            bismark_methylation_extractor !{flags} --gzip -o !{prefix}/ !{sam_file}
             
             cp .command.log BME_!{prefix}.log
             '''
@@ -475,7 +475,7 @@ if (params.use_bme) {
             
         shell:
             '''
-            !{params.bismark2bedGraph} -o !{prefix}_bedgraph_merged ./!{BME_dir}/*_!{prefix}.cfu.txt.gz
+            bismark2bedGraph -o !{prefix}_bedgraph_merged ./!{BME_dir}/*_!{prefix}.cfu.txt.gz
             
             cp .command.log bismark2bedgraph_!{prefix}.log
             '''
@@ -502,7 +502,7 @@ if (params.use_bme) {
             
         shell:
             '''
-            !{params.coverage2cytosine} \
+            coverage2cytosine \
                 --split_by_chromosome \
                 --CX \
                 --genome_folder !{workflow.projectDir}/ref/!{params.reference}/ \
