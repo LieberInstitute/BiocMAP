@@ -378,7 +378,7 @@ process FastQC_Untrimmed {
             data_command = "cp ${fq_prefix}_1_fastqc/fastqc_data.txt ${fq_prefix}_1_fastqc_data.txt && cp ${fq_prefix}_2_fastqc/fastqc_data.txt ${fq_prefix}_2_fastqc_data.txt"
         }
         '''
-        !{params.fastqc} -t !{task.cpus} *.f*q* --extract
+        fastqc -t !{task.cpus} *.f*q* --extract
         !{copy_command}
         !{data_command}
         '''
@@ -667,8 +667,8 @@ process FilterAlignments {
     shell:
         '''
         #  Quality-filter and deduplicate
-        !{params.samtools} view -q 5 -F 0x100 -h !{sam_file} \
-            | !{params.samblaster} -r -o !{prefix}.cfu.sam
+        samtools view -q 5 -F 0x100 -h !{sam_file} \
+            | samblaster -r -o !{prefix}.cfu.sam
             
         cp .command.log filter_sam_!{prefix}.log
         '''

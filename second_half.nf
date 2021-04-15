@@ -399,10 +399,10 @@ process SamToBam {
     shell:
         '''
         # Sort and compress
-        !{params.samtools} sort -@ !{task.cpus} -o !{prefix}.cfu.sorted.bam !{prefix}.sam
+        samtools sort -@ !{task.cpus} -o !{prefix}.cfu.sorted.bam !{prefix}.sam
                 
         #  Index the sorted BAM
-        !{params.samtools} index !{prefix}.cfu.sorted.bam
+        samtools index !{prefix}.cfu.sorted.bam
             
         cp .command.log sam_to_bam_!{prefix}.log
         '''
@@ -428,19 +428,12 @@ if (params.use_bme) {
             file "${prefix}/" into BME_outputs
             file "BME_${prefix}.log" into bme_reports_temp
             
-        shell:
-            // BME needs path to samtools if samtools isn't on the PATH
-            if (params.samtools != "samtools") {
-                flags = "--samtools_path=${params.samtools}"
-            } else {
-                flags = ""
-            }
-            
+        shell:            
             // paired vs single-end flag
             if (params.sample == "paired") {
-                flags += " --paired-end"
+                flags = " --paired-end"
             } else {
-                flags += " --single-end"
+                flags = " --single-end"
             }
             
             // on multiple cores? BME runs N *additional* threads with the flag
