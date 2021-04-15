@@ -55,26 +55,28 @@ if [ -x "$(command -v java)" ]; then
         
     #  MethylDackel (latest)
     
-    ##  Install libBigWig, a dependency
-    git clone git@github.com:dpryan79/libBigWig.git
-    cd libBigWig
+    ##  Install libBigWig (0.4.6), a dependency
+    wget https://github.com/dpryan79/libBigWig/archive/refs/tags/0.4.6.tar.gz
+    tar -xzf 0.4.6.tar.gz
+    cd libBigWig-0.4.6
     make prefix=$INSTALL_DIR install
     cd $INSTALL_DIR
       
-    ##  Install htslib (1.10.2), a dependency     
-    wget https://github.com/samtools/htslib/releases/download/1.10.2/htslib-1.10.2.tar.bz2 -O htslib.tar.bz2
-    tar -xjf htslib.tar.bz2
-    cd htslib-1.10.2
-    ./configure prefix=$INSTALL_DIR
-    make
-    make install
+    ##  Install htslib (1.12), a dependency
+    wget https://github.com/samtools/htslib/releases/download/1.12/htslib-1.12.tar.bz2
+    tar -xjf htslib-1.12.tar.bz2
+    cd htslib-1.12
+    ./configure
+    make prefix=$INSTALL_DIR
+    make prefix=$INSTALL_DIR install
     cd $INSTALL_DIR
-    mv htslib-1.10.2 htslib
     
-    ##  MethylDackel itself (latest)
-    git clone https://github.com/dpryan79/MethylDackel.git
-    cd MethylDackel
-    make install CFLAGS="-O3 -Wall -I$INSTALL_DIR/include " LIBS="-L$INSTALL_DIR/lib" prefix=$INSTALL_DIR/bin LIBBIGWIG="$INSTALL_DIR/libBigWig/libBigWig.a"
+    ##  MethylDackel itself (0.5.2)
+    wget https://github.com/dpryan79/MethylDackel/archive/refs/tags/0.5.2.tar.gz
+    tar -xzf 0.5.2.tar.gz
+    cd MethylDackel-0.5.2
+    make CFLAGS="-O3 -Wall -I${INSTALL_DIR}/include " LIBS="-L${INSTALL_DIR}/lib" LIBBIGWIG="${INSTALL_DIR}/lib/libBigWig.a"
+    make install prefix=${INSTALL_DIR} CFLAGS="-O3 -Wall -I${INSTALL_DIR}/include " LIBS="-L${INSTALL_DIR}/lib" LIBBIGWIG="${INSTALL_DIR}/lib/libBigWig.a"
     cd $INSTALL_DIR
       
     #  Install packages that will be used by the pipeline
