@@ -26,12 +26,32 @@ if [ -x "$(command -v java)" ]; then
     cp Bismark-0.23.0/bismark* bin/
     cp Bismark-0.23.0/coverage2cytosine bin/
     
+    #  cmake, which kallisto need to build
+    git clone https://gitlab.kitware.com/cmake/cmake.git
+    cd cmake
+    ./bootstrap --prefix=$INSTALL_DIR
+    make
+    make install
+    cd $INSTALL_DIR
+    
     #  fastqc (0.11.8)  -------------------------------------------------------
     
     wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.8.zip
     unzip fastqc_v0.11.8.zip
     chmod -R 775 FastQC
     cp FastQC/fastqc bin/
+    
+    #  kallisto (0.46.1)  -------------------------------------------------------------
+                
+    wget https://github.com/pachterlab/kallisto/archive/v0.46.1.tar.gz
+    tar -xzf v0.46.1.tar.gz
+    cd kallisto-0.46.1
+    mkdir build
+    cd build
+    $INSTALL_DIR/bin/cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR ..
+    make
+    make prefix=$INSTALL_DIR install
+    cd $INSTALL_DIR
         
     #  MethylDackel (latest)
     
