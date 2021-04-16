@@ -75,42 +75,60 @@ if (file.exists(filenames[1])) {
     
 filepaths = paste0(ids, '_trim_report.log')
 
-if (length(filepaths) > 0) {
+if (length(which(file.exists(filepaths))) > 0) {
     print('Extracting trimming metrics...')
     
     df_entries = c()
     
     is_first_iter = TRUE
     for (filename in filepaths) {
-        a = readLines(filename)
-        starts = which(a == '=== Summary ===')
-        
-        for (start_index in starts) {
-            #  Subset to nonempty lines in the relevant section of the log
-            b = a[(start_index+1):(start_index+12)]
-            b = b[b != '' & b != "=== Adapter 1 ==="]
+        if (file.exists(filename)) {
+            a = readLines(filename)
+            starts = which(a == '=== Summary ===')
             
-            #  Form appropriate column names from the lines
-            if (is_first_iter) {
-                col_names = gsub('[ -]', '_', ss(b, ':'))
-                col_names = gsub('[()]', '', col_names)
-                is_first_iter = FALSE
+            for (start_index in starts) {
+                #  Subset to nonempty lines in the relevant section of the log
+                b = a[(start_index+1):(start_index+12)]
+                b = b[b != '' & b != "=== Adapter 1 ==="]
+                
+                #  Form appropriate column names from the lines
+                if (is_first_iter) {
+                    col_names = gsub('[ -]', '_', ss(b, ':'))
+                    col_names = gsub('[()]', '', col_names)
+                    is_first_iter = FALSE
+                }
+    
+                #  Cut and format lines to extract values
+                b_values = ss(b, ':', 2)
+                b_values = ss(b_values, '[b;\\(]')
+                b_values = gsub('[ ,]', '', b_values)
+                
+                #  Append to ongoing vector of values
+                df_entries = c(df_entries, b_values)
             }
-
-            #  Cut and format lines to extract values
-            b_values = ss(b, ':', 2)
-            b_values = ss(b_values, '[b;\\(]')
-            b_values = gsub('[ ,]', '', b_values)
             
-            #  Append to ongoing vector of values
-            df_entries = c(df_entries, b_values)
+            #  The last column indicates that this sample was trimmed
+            df_entries = c(df_entries, 'TRUE')
+        } else {
+            #  Fill in NAs for samples that weren't trimmed
+            if (ncol(manifest) > 3) {
+                col_len = 14
+            } else {
+                col_len = 7
+            }
+            
+            #  The last column indicates that this sample wasn't trimmed
+            df_entries = c(df_entries, rep(NA, col_len), 'FALSE')
         }
     }
     
     #  Use the correct colnames for paired-end reads
-    if (nrow(manifest) > 3) {
+    if (ncol(manifest) > 3) {
         col_names = as.vector(outer(col_names, c('_R1', '_R2'), paste0))
     }
+    
+    #  Account for the last column indicating if the sample was trimmed
+    col_names = c(col_names, 'was_trimmed')
     
     #  Form a data frame
     temp_df = matrix(df_entries, ncol=length(col_names), byrow=TRUE)
@@ -118,14 +136,16 @@ if (length(filepaths) > 0) {
     colnames(temp_df) = col_names
     
     #  Make the integer-containing columns numeric
-    numeric_cols = which(!grepl('Sequence', col_names))
+    numeric_cols = which(!grepl('Sequence|was_trimmed', col_names))
     for (i in numeric_cols) {
         temp_df[,i] = as.numeric(temp_df[,i])
     }
+    temp_df[,'was_trimmed'] = as.logical(temp_df[,'was_trimmed'])
     
     metrics = cbind(metrics, temp_df)
 } else {
     print("Skipping trimming metrics (no samples appeared to be trimmed)...")
+    metrics = cbind(metrics, data.frame('was_trimmed'=rep(FALSE, length(ids))))
 }
 
 ######################################################
