@@ -420,7 +420,7 @@ process Trimming {
 
     output:
         file "${fq_prefix}*_fastqc.{html,zip}" optional true
-        file "${fq_prefix}*.f*q*_trimming_report.txt" optional true into trim_reports_out
+        file "${fq_prefix}_*_trimmed.log"
         file "${fq_prefix}*.fq" into trimming_outputs
 
     shell:
@@ -458,6 +458,8 @@ process Trimming {
         #  Run trimming if required
         if [ "$do_trim" == true ]; then
             trim_galore !{trim_args} *.f*q*
+            
+            cp .command.log !{fq_prefix}_was_trimmed.log
         else
             #  Otherwise rename files (for compatibility downnstream, and to signal to
             #  nextflow to output these files) and decompress as necessary
@@ -476,9 +478,9 @@ process Trimming {
                     mv !{fq_prefix}_2!{file_ext} !{fq_prefix}_untrimmed_2.fq
                 fi
             fi
-        fi
-        
-        cp .command.log trimming_!{fq_prefix}.log
+            
+            cp .command.log !{fq_prefix}_not_trimmed.log
+        fi      
         '''
 }
 
@@ -693,7 +695,7 @@ process MakeRules {
               "manifest = ${params.input}/samples.manifest\n" + \
               "sam = ${params.output}/FilteredAlignments/sams/[id].cfu.sam\n" + \
               "arioc_log = ${params.output}/Arioc/logs/[id]_alignment.log\n" + \
-              "trim_report = ${params.output}/Trimming/[id].fastq_trimming_report.txt"
+              "trim_report = ${params.output}/Trimming/[id]_was_trimmed.log"
         
         '''
         echo -e "!{txt}" > rules.txt
