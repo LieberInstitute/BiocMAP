@@ -39,8 +39,8 @@ if (!all(actual_exts %in% valid_exts)) {
     stop("Unrecognized fastq filename extension. Should be fastq.gz, fq.gz, fastq or fq")
 }
 
-if (paired && any(actual_exts[1:nrow(manifest)] != actual_exts[(nrow(manifest)+1):length(actual_exts)])) {
-    stop("A given pair of reads must have the same file extensions.")
+if (length(unique(actual_exts)) > 1) {
+    stop("We require consistent file extensions for FASTQ files among samples and between reads. The extensions 'fastq.gz', 'fq.gz', 'fastq' or 'fq' are all accepted, but all files must use the same extension.")
 }
 
 ####################################################################
