@@ -38,6 +38,12 @@ print("Merging objects (assay merging delayed)...")
 bs_big = do.call(rbind, bs_list)
 gc()
 
+#  Add colData
+print("Adding colData...")
+load('metrics.rda')
+metrics = metrics[colnames(bs_big), ]
+colData(bs_big) = DataFrame(metrics)
+
 #  Save the combined result
 print("Saving...")
 saveHDF5SummarizedExperiment(bs_big, dir=paste0(opt$dir, '/combined'),

@@ -592,7 +592,7 @@ process ParseReports {
         file rules from file("${params.input}/rules.txt")
         
     output:
-        file "metrics.rda"
+        file "metrics.rda" into metrics
         file "metrics.log"
         
     shell:
@@ -648,6 +648,7 @@ process MergeBsseqObjects {
     input:
         set val(context), file(token) from bs_tokens_in
         file chr_names
+        file metrics
         file combine_script from file("${workflow.projectDir}/scripts/bs_merge.R")
         
     output:
