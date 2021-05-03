@@ -25,28 +25,62 @@ get_value = function(rules, key, required) {
     return(gsub(' ', '', ss(this_line, '=', 2)))
 }
 
+#  Given an absolute file path (character vector of length 1) as a glob
+#  expression, return a vector of corresponding filepaths. Don't directly
+#  invoke 'ls' so as to avoid needing to handle missing files or other
+#  system errors.
+process_glob = function(path) {
+    if (grepl('*', path, fixed=TRUE)) {
+        path = gsub('.', '\\.', path, fixed=TRUE)
+        path = gsub('*', '.*', path, fixed=TRUE)
+        
+        final_paths = file.path(dirname(path),
+                               list.files(dirname(path), pattern=basename(path)))
+        if (length(final_paths) > 2) {
+            stop("Glob expression in 'rules.txt' more than 2 files.")
+        }
+        
+        return(final_paths)
+    } else {
+        return(path)
+    }
+}
+
 form_links = function(rules, key, ids, end_name, required) {
     value = get_value(rules, key, required)
     if (!is.na(value)) {
         pieces = strsplit(value, '[id]', fixed=TRUE)[[1]]
         
-        #  Get the paths, substituting in actual ids for each '[id]'
+        #  Get the paths, substituting in actual ids for each '[id]', and
+        #  evaluating any wildcards
         paths = ''
         for (i in 1:(length(pieces)-1)) {
             paths = paste0(paths, pieces[i], ids)
         }
         paths = paste0(paths, pieces[length(pieces)])
+        paths = unlist(lapply(paths, process_glob))
         
         #  Verify legitimacy of paths
-        stopifnot(length(paths) == length(ids))
+        if (length(paths) != length(ids) && length(paths) != 2 * length(ids)) {
+            stop('Improper number of total logs found for key "', key, '".')
+        }
         if (! all(file.exists(paths))) {
             stop(paste0('Some or all files for key "', key, '" do not exist.'))
         }
         
+        paired = length(paths) == 2 * length(ids)
         #  Symbolically link each file into the current working directory
         for (i in 1:length(ids)) {
-            command = paste0('ln -s ', paths[i], ' ', ids[i], end_name)
-            run_command(command)
+            if (paired) {
+                command = paste0('ln -s ', paths[i], ' ', ids[i], '_1', end_name)
+                run_command(command)
+                
+                command = paste0('ln -s ', paths[i], ' ', ids[i], '_2', end_name)
+                run_command(command)
+            } else {
+                command = paste0('ln -s ', paths[i], ' ', ids[i], end_name)
+                run_command(command)
+            }
         }
     }
 }
@@ -58,7 +92,7 @@ form_links = function(rules, key, ids, end_name, required) {
 rules = readLines('rules.txt')
 rules = rules[-grep('#', rules)]
 
-manifest = read.table(get_value(rules, 'manifest'), header = FALSE,
+manifest = read.table(get_value(rules, 'manifest', TRUE), header = FALSE,
                       stringsAsFactors = FALSE)
 ids = manifest[,ncol(manifest)]
 paired = ncol(manifest) > 3
@@ -76,6 +110,9 @@ form_links(rules, 'bme_log', ids, '_bme.log', FALSE)
 
 #  Trim Galore reports
 form_links(rules, 'trim_report', ids, '_trim_report.log', TRUE)
+
+#  FastQC logs
+form_links(rules, 'fastqc_log', ids, '_fastqc.log', FALSE)
 
 
 ############################################################

@@ -301,7 +301,7 @@ process PreprocessInputs {
         
     output:
         file "*.sam" into concordant_sams_out
-        file "*_{arioc,trim_report,xmc,bme}.log" into misc_reports_out
+        file "*_{arioc,trim_report,xmc,bme,fastqc}.log" into misc_reports_out
         file "*.f*q*" optional true into fastq_out
         file "preprocess_inputs_second_half.log"
         

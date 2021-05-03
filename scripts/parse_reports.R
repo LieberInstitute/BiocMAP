@@ -167,6 +167,45 @@ if (file.exists(f[1])) {
     print("Skipping BS-conversion efficiency estimate via lambda alignment ('--with_lambda' not specified)...")
 }
 
+######################################################
+#  FastQC metrics (pre-trimming)
+######################################################
+
+#  Shortened metric names to collect
+key_names = c("FQCbasicStats","perBaseQual","perTileQual","perSeqQual",
+              "perBaseContent","GCcontent","Ncontent","SeqLengthDist",
+              "SeqDuplication","OverrepSeqs","AdapterContent","KmerContent")
+                                                                              
+#  Get filenames for the FastQC logs (2 per ID for paired-end samples)
+if (ncol(manifest) > 3) {
+    f = c()
+    for (i in 1:length(ids)) {
+        f = c(f, 
+              paste0(ids[i], '_1_fastqc.log'), 
+              paste0(ids[i], '_2_fastqc.log'))
+    }
+    
+    key_names = as.vector(outer(key_names, c('R1', 'R2'), FUN=paste0))
+} else {
+    f = paste0(ids, '_fastqc.log')
+}
+
+if (file.exists(f[1])) {
+    print("Adding FastQC metrics (from before any trimming)...")
+    
+    #  Get the first "column" in each log, and use this ugly code to form it into
+    #  a data frame where rows are samples and columns are FastQC metrics
+    #  (paired-end samples have one column per read per metric)
+    temp_df = data.frame(matrix(unlist(lapply(f, function(x) read.table(x, sep='\t')[,1])),
+                                nrow=length(ids),
+                                byrow=TRUE))
+    colnames(temp_df) = key_names
+    
+    metrics = cbind(metrics, temp_df)
+} else {
+    print("Skipping FastQC metrics (no files specified)...")
+}
+
 rownames(metrics) = ids
 save(metrics, file='metrics.rda')
 print("Metrics saved as 'metrics.rda'.")

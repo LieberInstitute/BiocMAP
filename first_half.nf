@@ -366,7 +366,8 @@ process FastQC_Untrimmed {
         set val(fq_prefix), file(fq_file) from fastqc_untrimmed_inputs 
 
     output:
-        file "*"
+        file "*_fastqc_data.txt"
+        file "*.html"
         file "*_summary.txt" into fastq_summaries_untrimmed
 
     shell:
@@ -695,9 +696,10 @@ process MakeRules {
               "manifest = ${params.input}/samples.manifest\n" + \
               "sam = ${params.output}/FilteredAlignments/sams/[id].cfu.sam\n" + \
               "arioc_log = ${params.output}/Arioc/logs/[id]_alignment.log\n" + \
-              "trim_report = ${params.output}/Trimming/[id]_was_trimmed.log"
+              "trim_report = ${params.output}/Trimming/[id]_was_trimmed.log" + \
+              "fastqc_log = ${params.output}/FastQC/Untrimmed/[id]_*_summary.txt"
         
         '''
-        echo -e "!{txt}" > rules.txt
+        echo -e '!{txt}' > rules.txt
         '''
 }
