@@ -105,9 +105,6 @@ form_links(rules, 'arioc_log', ids, '_arioc.log', TRUE)
 #  XMC logs
 form_links(rules, 'xmc_log', ids, '_xmc.log', FALSE)
 
-#  BME logs
-form_links(rules, 'bme_log', ids, '_bme.log', FALSE)
-
 #  Trim Galore reports
 form_links(rules, 'trim_report', ids, '_trim_report.log', TRUE)
 

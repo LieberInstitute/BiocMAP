@@ -51,23 +51,20 @@ metrics = as.data.frame(matrix(unlist(row_data), nrow=length(row_data), byrow=TR
 colnames(metrics) = col_names
 
 ######################################################
-#  BME logs
+#  MethylDackel or BME logs
 ######################################################
 
-filenames = paste0(ids, '_bme.log')
-if (file.exists(filenames[1])) {
-    print('Extracting BME metrics...')
-    
-    percs = lapply(filenames, function(f) {
-        raw_chars = system(paste0('cat ', f, ' | grep "C methylated in C.. context:" | cut -d ":" -f 2'), intern=TRUE)
-        return(as.numeric(sub("[:space:]|%", "", raw_chars)))
-    })
-    mat = matrix(unlist(percs), dimnames = list(ids, c("perc_M_CpG", "perc_M_CHG", "perc_M_CHH")), byrow=TRUE, ncol=3)
-    
-    metrics = cbind(metrics, mat)
-} else {
-    print('Skipping BME metrics (no files specified)...')
-}
+print('Extracting methylation extraction metrics...')
+filenames = paste0('methyl_extraction_', ids, '.log')
+stopifnot(all(file.exists(filenames)))
+
+percs = lapply(filenames, function(f) {
+    raw_chars = system(paste0('cat ', f, ' | grep -E "C methylated in C[pH]?. context:" | cut -d ":" -f 2'), intern=TRUE)
+    return(as.numeric(sub("[:space:]|%", "", raw_chars)))
+})
+mat = matrix(unlist(percs), dimnames = list(ids, c("perc_M_CpG", "perc_M_CHG", "perc_M_CHH")), byrow=TRUE, ncol=3)
+
+metrics = cbind(metrics, mat)
 
 ######################################################
 #  Trimming Reports

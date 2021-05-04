@@ -301,7 +301,7 @@ process PreprocessInputs {
         
     output:
         file "*.sam" into concordant_sams_out
-        file "*_{arioc,trim_report,xmc,bme,fastqc}.log" into misc_reports_out
+        file "*_{arioc,trim_report,xmc,fastqc}.log" into misc_reports_out
         file "*.f*q*" optional true into fastq_out
         file "preprocess_inputs_second_half.log"
         
@@ -426,7 +426,7 @@ if (params.use_bme) {
             
         output:
             file "${prefix}/" into BME_outputs
-            file "BME_${prefix}.log" into bme_reports_temp
+            file "methyl_extraction_${prefix}.log" into methyl_reports_out
             
         shell:            
             // paired vs single-end flag
@@ -445,7 +445,7 @@ if (params.use_bme) {
             mkdir !{prefix}
             bismark_methylation_extractor !{flags} --gzip -o !{prefix}/ !{sam_file}
             
-            cp .command.log BME_!{prefix}.log
+            cp .command.log methyl_extraction_!{prefix}.log
             '''
     }
     
@@ -534,7 +534,7 @@ if (params.use_bme) {
             file MD_genome
             
         output:
-            file "methyl_extraction_${prefix}.log"
+            file "methyl_extraction_${prefix}.log" into methyl_reports_out
             file "${prefix}*.CX_report.txt" into cytosine_reports
             
         shell:
@@ -560,11 +560,7 @@ if (params.use_bme) {
             cp .command.log methyl_extraction_!{prefix}.log
             '''
     }
-    
-    bme_reports_temp = Channel.empty()
 }
-
-bme_reports_temp.ifEmpty('').set{bme_reports_out}
 
 
 //  Group reports for each chromosome into one channel (each)
@@ -585,7 +581,7 @@ process ParseReports {
     
     input:
         file misc_reports_in from misc_reports_out.collect()
-        file bme_reports_in from bme_reports_out.collect()
+        file methyl_reports_in from methyl_reports_out.collect()
         file lambda_reports_in from lambda_reports_out.collect()
         
         file parse_reports_script from file("${workflow.projectDir}/scripts/parse_reports.R")

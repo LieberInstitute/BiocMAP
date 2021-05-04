@@ -36,16 +36,20 @@ At the end of the processing done by the first module, deduplicated and quality-
 manifest = /users/nick/samples.manifest
 sam = /users/nick/Arioc/[id]/sams/[id].cfu.sam
 arioc_log = /users/nick/Arioc/[id]/log/AriocP.[id].log
-bme_log = /users/nick/Arioc/[id]/log/[id].cfu.BME.log
 xmc_log = /users/nick/Arioc/[id]/log/[id].cfu.XMC.log
 trim_report = /users/nick/trim_galore/[id]/[id].fastq.gz_trimming_report.txt
+fastqc_log = /users/nick/FastQC/[id]_*_fastqc.txt
 ```
 
 - This file consists of several lines of key-value pairs, where keys and values are separated by an equals sign ("=") and optionally spaces.
 - Lines without "=" are ignored, and can be used as comments. The above example starts such lines with "#" for clarity.
 - The required keys to include in a valid `rules.txt` file include "manifest", "sam", "arioc_log", and "trim_report". The associated values for these keys are the paths to the `samples.manifest` file, the filtered/deduplicated alignment SAMs, verbose output logs from Arioc alignment, and output logs from `TrimGalore!`, respectively.
-- Optional keys accepted in a `rules.txt` file include "bme_log" and "xmc_log". Associated values are paths to logs from Bismark Methylation Extractor and logs from XMC [CLARIFICATION NEEDED!], respectively. Typically, methylation extraction is done in the second module, and these options are only included for compatibility with a previous WGBS processing approach. Information from these logs will be included in the R data frame output from the second module, if these logs are present and specified in `rules.txt`.
+- Optional keys accepted in a `rules.txt` file include "xmc_log" and "fastqc_log". Associated values are paths to logs from XMC [CLARIFICATION NEEDED!], and `*summary.txt` logs from FastQC, respectively. Typically, methylation extraction is done in the second module, and the "xmc_log" option is only included for compatibility with a previous WGBS processing approach. Information from these logs will be included in the R data frame output from the second module, if these logs are present and specified in `rules.txt`.
 - Since exact paths are different between samples, including "[id]" in the value field in a line of `rules.txt` indicates that the path for any particular sample can be found by replacing "[id]" with its sample ID. Otherwise, paths are interpreted literally.
+- For paired-end experiments, there will be two summary logs from FastQC. To correctly describe this in `rules.txt`, a glob expression may be used, provided the logs are present in the same directory for each sample. As an example, suppose we have FastQC summary logs for a sample called `sample1`, given by the paths `/some_dir/fastqc/sample1_1_summary.txt` and `/some_dir/fastqc/sample1_2_summary.txt`. The following line in `rules.txt` would be appropriate:
+```{bash, eval=FALSE}
+fastqc_log = /some_dir/fastqc/[id]_*_summary.txt
+```
 - The `--input [dir]` argument to the `nextflow` command in `run_second_half_*.sh` scripts specifies the directory containing the `rules.txt` file, and is a required argument.
 
 ### Outputs
