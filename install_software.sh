@@ -19,6 +19,23 @@ if [ -x "$(command -v java)" ]; then
     wget -qO- https://get.nextflow.io | bash
     cd $INSTALL_DIR
     
+    #  Arioc (1.43) -----------------------------------------------------------
+    
+    mkdir arioc
+    cd arioc
+    
+    wget https://github.com/RWilton/Arioc/releases/download/v1.43/Arioc.x.143.zip
+    unzip Arioc.x.143.zip
+    
+    cd src
+    make clean
+    make AriocE
+    make AriocU
+    make AriocP
+    
+    cd $INSTALL_DIR
+    cp arioc/bin/* bin/
+    
     #  Bismark (0.23.0) -------------------------------------------------------
     
     ##  hisat2 (2.2.1), required for bismark_genome_preparation
@@ -55,7 +72,7 @@ if [ -x "$(command -v java)" ]; then
     chmod -R 775 FastQC
     cp FastQC/fastqc bin/
     
-    #  kallisto (0.46.1)  -------------------------------------------------------------
+    #  kallisto (0.46.1)  -----------------------------------------------------
                 
     wget https://github.com/pachterlab/kallisto/archive/v0.46.1.tar.gz
     tar -xzf v0.46.1.tar.gz
@@ -67,7 +84,7 @@ if [ -x "$(command -v java)" ]; then
     make prefix=$INSTALL_DIR install
     cd $INSTALL_DIR
         
-    #  MethylDackel (latest)
+    #  MethylDackel (0.5.2) ---------------------------------------------------
     
     ##  Install libBigWig (0.4.6), a dependency
     wget https://github.com/dpryan79/libBigWig/archive/refs/tags/0.4.6.tar.gz
@@ -96,7 +113,7 @@ if [ -x "$(command -v java)" ]; then
     #  Install packages that will be used by the pipeline
     Rscript ../scripts/install_R_packages.R
     
-    #  samblaster (v.0.1.26)
+    #  samblaster (v.0.1.26) --------------------------------------------------
     
     wget https://github.com/GregoryFaust/samblaster/releases/download/v.0.1.26/samblaster-v.0.1.26.tar.gz
     tar -xzf samblaster-v.0.1.26.tar.gz
@@ -115,7 +132,7 @@ if [ -x "$(command -v java)" ]; then
     make install
     cd $INSTALL_DIR
         
-    #  Trim Galore!
+    #  Trim Galore! (0.6.6) ---------------------------------------------------
     
     wget https://github.com/FelixKrueger/TrimGalore/archive/0.6.6.tar.gz
     tar -xzf 0.6.6.tar.gz
