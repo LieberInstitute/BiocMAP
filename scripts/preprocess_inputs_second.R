@@ -26,24 +26,26 @@ get_value = function(rules, key, required) {
 }
 
 #  Given an absolute file path (character vector of length 1) as a glob
-#  expression, return a vector of corresponding filepaths. Don't directly
-#  invoke 'ls' so as to avoid needing to handle missing files or other
-#  system errors.
-process_glob = function(path) {
-    if (grepl('*', path, fixed=TRUE)) {
-        path = gsub('.', '\\.', path, fixed=TRUE)
-        path = gsub('*', '.*', path, fixed=TRUE)
-        
-        final_paths = file.path(dirname(path),
-                               list.files(dirname(path), pattern=basename(path)))
-        if (length(final_paths) > 2) {
-            stop("Glob expression in 'rules.txt' more than 2 files.")
-        }
-        
-        return(final_paths)
-    } else {
-        return(path)
+#  expression, return a vector of corresponding filepaths.
+process_glob = function(path_glob, key) {
+    #  Expand glob and check that the correct number of files were matched
+    paths = Sys.glob(path_glob)
+    if (length(paths) == 0) {
+        stop(paste0('Paths for key "',
+                   key,
+                   '" in "rules.txt" matched no files.'))
+    } else if (key != 'fastqc_log' && length(paths) > 1) {
+        stop(paste0('Paths for key "',
+                   key,
+                   '" in "rules.txt" matched more than 1 file.'))
+    } else if (key == 'fastqc_log' && !(length(paths) %in% c(1, 2, 4))) {
+        stop(paste0('Paths for key "',
+                   key,
+                   '" in "rules.txt" matched an invalid number of files: ',
+                   length(paths)))
     }
+    
+    return(paths)
 }
 
 form_links = function(rules, key, ids, end_name, required) {
@@ -58,7 +60,7 @@ form_links = function(rules, key, ids, end_name, required) {
             paths = paste0(paths, pieces[i], ids)
         }
         paths = paste0(paths, pieces[length(pieces)])
-        paths = unlist(lapply(paths, process_glob))
+        paths = unlist(lapply(paths, process_glob, key))
         
         #  Verify legitimacy of paths
         if (length(paths) != length(ids) && length(paths) != 2 * length(ids)) {
