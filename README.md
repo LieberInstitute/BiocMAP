@@ -93,4 +93,14 @@ cd WGBS-Pipeline
 bash install_software.sh
 ```
 
-[TODO: DESCRIBE HOW TO EDIT CONFIGURATION TO RUN ARIOC-RELATED PROCESSES]
+For users running [INSERT PIPELINE NAME HERE] on an SGE or SLURM-managed computing cluster, the files `conf/first_half_sge.config` or `conf/first_half_slurm.config`, respectively, require a slight modification. We assume GPU resources are accessible via a particular queue (sometimes called a "partition" with SLURM); the user must provide the name of this queue in the configuration file by setting the `arioc_queue` variable. For users running the pipeline locally, it is assumed a GPU is available (note the [prerequisites for running Arioc](https://github.com/RWilton/Arioc/blob/master/Arioc.guide.pdf)).
+
+```{bash, eval=FALSE}
+//----------------------------------------------------
+//  Arioc alignment settings
+//----------------------------------------------------
+    
+// The queue containing GPU access for use with Arioc (this must be set by
+// the user!)
+arioc_queue = ""
+```
