@@ -303,8 +303,8 @@ process EncodeReference {
         
     shell:
         '''
-        !{params.AriocE} !{encode_ref_gap_cfg}
-        !{params.AriocE} !{encode_ref_nongap_cfg}
+        AriocE !{encode_ref_gap_cfg}
+        AriocE !{encode_ref_nongap_cfg}
         touch .success
         '''
 }
@@ -593,7 +593,7 @@ process EncodeReads {
         
     shell:
         '''
-        !{params.AriocE} !{fq_prefix}_encode_reads.cfg
+        AriocE !{fq_prefix}_encode_reads.cfg
         touch !{fq_prefix}_success_token
         
         cp .command.log encode_!{fq_prefix}.log
@@ -628,9 +628,9 @@ process AlignReads {
         
     shell:
         if (params.sample == "paired") {
-            exec_name = "${params.AriocP}"
+            exec_name = "AriocP"
         } else {
-            exec_name = "${params.AriocU}"
+            exec_name = "AriocU"
         }
         '''
         #  Run alignment
