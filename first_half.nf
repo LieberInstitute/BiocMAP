@@ -360,28 +360,24 @@ if (params.sample == "single") {
 
 process FastQC_Untrimmed {
     tag "$fq_prefix"
-    publishDir "${params.output}/FastQC/Untrimmed", mode:'copy'
+    publishDir "${params.output}/FastQC/Untrimmed", mode:'copy', pattern:"${fq_prefix}*_fastqc"
 
     input:
         set val(fq_prefix), file(fq_file) from fastqc_untrimmed_inputs 
 
     output:
-        file "*_fastqc_data.txt"
-        file "*.html"
+        file "${fq_prefix}*_fastqc"
         file "*_summary.txt" into fastq_summaries_untrimmed
 
     shell:
         if (params.sample == "single") {
             copy_command = "cp ${fq_prefix}_fastqc/summary.txt ${fq_prefix}_summary.txt"
-            data_command = "cp ${fq_prefix}_fastqc/fastqc_data.txt ${fq_prefix}_fastqc_data.txt"
         } else {
             copy_command = "cp ${fq_prefix}_1_fastqc/summary.txt ${fq_prefix}_1_summary.txt && cp ${fq_prefix}_2_fastqc/summary.txt ${fq_prefix}_2_summary.txt"
-            data_command = "cp ${fq_prefix}_1_fastqc/fastqc_data.txt ${fq_prefix}_1_fastqc_data.txt && cp ${fq_prefix}_2_fastqc/fastqc_data.txt ${fq_prefix}_2_fastqc_data.txt"
         }
         '''
         fastqc -t !{task.cpus} *.f*q* --extract
         !{copy_command}
-        !{data_command}
         '''
 }
 
