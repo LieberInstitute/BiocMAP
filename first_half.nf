@@ -410,19 +410,20 @@ if (params.sample == "single") {
 process Trimming {
 
     tag "Prefix: $fq_prefix"
-    publishDir "${params.output}/Trimming",mode:'copy'
+    publishDir "${params.output}/Trimming", mode:'copy', pattern:"${fq_prefix}*{.fq,_trimmed.log}"
+    publishDir "${params.output}/FastQC/Trimmed", mode:'copy', pattern:"${fq_prefix}*_fastqc"
 
     input:
         set val(fq_prefix), file(fq_summary), file(fq_file) from trimming_inputs
 
     output:
-        file "${fq_prefix}*_fastqc.{html,zip}" optional true
+        file "${fq_prefix}*_fastqc" optional true
         file "${fq_prefix}_*_trimmed.log"
         file "${fq_prefix}*.fq" into trimming_outputs
 
     shell:
         file_ext = get_file_ext(fq_file[0])
-        trim_args = "--illumina --fastqc --dont_gzip --basename ${fq_prefix}"
+        trim_args = "--illumina --fastqc --fastqc_args '--extract' --dont_gzip --basename ${fq_prefix}"
         if (params.sample == "paired") {
             trim_args = trim_args + " --paired"
         }
