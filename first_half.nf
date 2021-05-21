@@ -136,7 +136,7 @@ def replace_listed(x, pattern_list, replacement) {
 
 def get_prefix(f) {
     //  Remove these regardless of position in the string (note blackListAny is a regular expression)
-    blackListAny = [~/_[12]_(summary|fastqc_data)/, ~/_success_token/, ~/_(trimmed|untrimmed)/, ~/_(reverse|forward)/, ~/_(paired|unpaired)/, ~/_R[12]\$(a21|raw|sqm|sqq)/, ~/CH[GH]_*O[BT]_|CpG_*O[BT]_/, ~/|_bedgraph_merged/]
+    blackListAny = [~/(|_[12])_(un|)trimmed_summary/, ~/_success_token/, ~/_(trimmed|untrimmed)/, ~/_(reverse|forward)/, ~/_(paired|unpaired)/, ~/_R[12]\$(a21|raw|sqm|sqq)/, ~/CH[GH]_*O[BT]_|CpG_*O[BT]_/, ~/|_bedgraph_merged/]
     
     //  Replace these with a dot
     blackListDot = [~/(_[12]|_R[12])\./, ~/_(encode|align)_reads\./, ~/\.(c|cfu)/, ~/\.txt/, ~/\.gz/, ~/\.sorted/, ~/_val/]
@@ -322,7 +322,7 @@ process Merging {
     output:
         file "*.f*q*" into merged_inputs_flat
         file "arioc_samples.manifest" into arioc_manifest
-        file "preprocess_inputs_first_half.log" into rules_input
+        file "preprocess_inputs_first_half.log"
 
     shell:
         '''
@@ -359,21 +359,21 @@ if (params.sample == "single") {
 //  -----------------------------------------
 
 process FastQC_Untrimmed {
-    tag "$fq_prefix"
-    publishDir "${params.output}/FastQC/Untrimmed", mode:'copy', pattern:"${fq_prefix}*_fastqc"
+    tag "$prefix"
+    publishDir "${params.output}/FastQC/Untrimmed", mode:'copy', pattern:"${prefix}*_fastqc"
 
     input:
-        set val(fq_prefix), file(fq_file) from fastqc_untrimmed_inputs 
+        set val(prefix), file(fq_file) from fastqc_untrimmed_inputs 
 
     output:
-        file "${fq_prefix}*_fastqc"
-        file "*_summary.txt" into fastq_summaries_untrimmed
+        file "${prefix}*_fastqc"
+        file "*_summary.txt" into fastq_summaries_untrimmed1, fastq_summaries_untrimmed2
 
     shell:
         if (params.sample == "single") {
-            copy_command = "cp ${fq_prefix}_fastqc/summary.txt ${fq_prefix}_summary.txt"
+            copy_command = "cp ${prefix}_fastqc/summary.txt ${prefix}_untrimmed_summary.txt"
         } else {
-            copy_command = "cp ${fq_prefix}_1_fastqc/summary.txt ${fq_prefix}_1_summary.txt && cp ${fq_prefix}_2_fastqc/summary.txt ${fq_prefix}_2_summary.txt"
+            copy_command = "cp ${prefix}_1_fastqc/summary.txt ${prefix}_1_untrimmed_summary.txt && cp ${prefix}_2_fastqc/summary.txt ${prefix}_2_untrimmed_summary.txt"
         }
         '''
         fastqc -t !{task.cpus} *.f*q* --extract
@@ -384,7 +384,7 @@ process FastQC_Untrimmed {
 //  Combine FASTQ files and FastQC result summaries for each sample, to form the input channel for Trimming
 if (params.sample == "single") {
 
-    fastq_summaries_untrimmed
+    fastq_summaries_untrimmed1
         .flatten()
         .map{ file -> tuple(get_prefix(file), file) }
         .join(trimming_inputs)
@@ -393,7 +393,7 @@ if (params.sample == "single") {
         
 } else { // paired
 
-    fastq_summaries_untrimmed
+    fastq_summaries_untrimmed1
         .flatten()
         .map{ file -> tuple(get_prefix(file), file) }
         .groupTuple()
@@ -420,6 +420,7 @@ process Trimming {
         file "${fq_prefix}*_fastqc" optional true
         file "${fq_prefix}_*_trimmed.log"
         file "${fq_prefix}*.fq" into trimming_outputs
+        file "${fq_prefix}*_trimmed_summary.txt" optional true into fastq_summaries_trimmed
 
     shell:
         file_ext = get_file_ext(fq_file[0])
@@ -456,6 +457,16 @@ process Trimming {
         #  Run trimming if required
         if [ "$do_trim" == true ]; then
             trim_galore !{trim_args} *.f*q*
+            
+            if [ "!{params.sample}" == "paired" ]; then
+                mv !{fq_prefix}_val_1_fastqc !{fq_prefix}_1_fastqc
+                mv !{fq_prefix}_val_2_fastqc !{fq_prefix}_2_fastqc
+                
+                cp !{fq_prefix}_1_fastqc/summary.txt !{fq_prefix}_1_trimmed_summary.txt
+                cp !{fq_prefix}_2_fastqc/summary.txt !{fq_prefix}_2_trimmed_summary.txt
+            else
+                cp !{fq_prefix}_fastqc/summary.txt !{fq_prefix}_trimmed_summary.txt
+            fi
             
             cp .command.log !{fq_prefix}_was_trimmed.log
         else
@@ -674,16 +685,18 @@ process FilterAlignments {
         '''
 }
 
-
+fastq_summaries_untrimmed2
+    .mix(fastq_summaries_trimmed)
+    .collect()
+    .set{ fastq_summaries_all }
+    
 //  Generate a 'rules.txt' file automatically, for use as input to the second
 //  module
 process MakeRules {
     publishDir "${params.input}", mode:'copy'
     
-    //  The input is just used to "connect" this process to the computational
-    //  graph, required for nextflow to know when the workflow is complete
     input:
-        file rules_input
+        file fastq_summaries_all
         
     output:
         file 'rules.txt'
@@ -693,10 +706,19 @@ process MakeRules {
               "manifest = ${params.input}/samples.manifest\n" + \
               "sam = ${params.output}/FilteredAlignments/sams/[id].cfu.sam\n" + \
               "arioc_log = ${params.output}/Arioc/logs/[id]_alignment.log\n" + \
-              "trim_report = ${params.output}/Trimming/[id]_was_trimmed.log" + \
-              "fastqc_log = ${params.output}/FastQC/Untrimmed/[id]_*_summary.txt"
+              "trim_report = ${params.output}/Trimming/[id]_was_trimmed.log"
         
         '''
         echo -e '!{txt}' > rules.txt
+        
+        #  Define 'fastqc_log_last' and possibly 'fastqc_log_first' key(s)
+        #  depending on if any samples were trimmed (and thus have
+        #  post-trimming FastQC reports)
+        if [ $(ls -1 *_trimmed_summary.txt | wc -l) -gt 0 ]; then
+            echo 'fastqc_log_last = !{params.output}/FastQC/Trimmed/[id]*_fastqc/summary.txt' >> rules.txt
+            echo 'fastqc_log_first = !{params.output}/FastQC/Untrimmed/[id]*_fastqc/summary.txt' >> rules.txt
+        else
+            echo 'fastqc_log_last = !{params.output}/FastQC/Untrimmed/[id]*_fastqc/summary.txt' >> rules.txt
+        fi
         '''
 }
