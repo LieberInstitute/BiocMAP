@@ -715,8 +715,14 @@ process MakeRules {
         #  depending on if any samples were trimmed (and thus have
         #  post-trimming FastQC reports)
         if [ $(ls -1 *_trimmed_summary.txt | wc -l) -gt 0 ]; then
-            echo 'fastqc_log_last = !{params.output}/FastQC/Trimmed/[id]*_fastqc/summary.txt' >> rules.txt
-            echo 'fastqc_log_first = !{params.output}/FastQC/Untrimmed/[id]*_fastqc/summary.txt' >> rules.txt
+            #  If there are as many trimmed as untrimmed reports, all samples
+            #  were trimmed. Otherwise only some were
+            if [ $(ls -1 *_trimmed_summary.txt | wc -l) -eq $(ls -1 *_untrimmed_summary.txt | wc -l) ]; then
+                echo 'fastqc_log_last = !{params.output}/FastQC/Trimmed/[id]*_fastqc/summary.txt' >> rules.txt
+            else
+                echo 'fastqc_log_last = !{params.output}/FastQC/Trimmed/[id]*_fastqc/summary.txt' >> rules.txt
+                echo 'fastqc_log_first = !{params.output}/FastQC/Untrimmed/[id]*_fastqc/summary.txt' >> rules.txt
+            fi
         else
             echo 'fastqc_log_last = !{params.output}/FastQC/Untrimmed/[id]*_fastqc/summary.txt' >> rules.txt
         fi
