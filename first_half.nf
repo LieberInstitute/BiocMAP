@@ -312,7 +312,7 @@ process EncodeReference {
 
 process Merging {
 
-    publishDir "${params.output}/logs", mode:'copy', pattern:'*.log'
+    publishDir "${params.output}/preprocessing", mode:'copy', pattern:'*.log'
     tag "Performing merging if/where necessary"
 
     input:

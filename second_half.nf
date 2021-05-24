@@ -293,7 +293,7 @@ if (params.with_lambda) {
 //  Place SAMs and any reports/logs into channels for use in the pipeline
 process PreprocessInputs {
     
-    publishDir "${params.output}/logs/", mode:'copy', pattern:'preprocess_inputs_second_half.log'
+    publishDir "${params.output}/preprocessing/", mode:'copy', pattern:'preprocess_inputs_second_half.log'
     
     input:
         file rules from file("${params.input}/rules.txt")
