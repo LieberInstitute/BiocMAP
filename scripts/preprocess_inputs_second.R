@@ -34,11 +34,11 @@ process_glob = function(path_glob, key) {
         stop(paste0('Paths for key "',
                    key,
                    '" in "rules.txt" matched no files.'))
-    } else if (key != 'fastqc_log' && length(paths) > 1) {
+    } else if (key != 'fastqc_log_last' && key != 'fastqc_log_first' && length(paths) > 1) {
         stop(paste0('Paths for key "',
                    key,
                    '" in "rules.txt" matched more than 1 file.'))
-    } else if (key == 'fastqc_log' && !(length(paths) %in% c(1, 2, 4))) {
+    } else if (key != 'fastqc_log_last' && key != 'fastqc_log_first' && !(length(paths) %in% c(1, 2, 4))) {
         stop(paste0('Paths for key "',
                    key,
                    '" in "rules.txt" matched an invalid number of files: ',
@@ -48,13 +48,15 @@ process_glob = function(path_glob, key) {
     return(paths)
 }
 
-form_links = function(rules, key, ids, end_name, required) {
+get_paths = function(rules, key, ids, required) {
     value = get_value(rules, key, required)
+    
     if (!is.na(value)) {
         pieces = strsplit(value, '[id]', fixed=TRUE)[[1]]
         
         #  Get the paths, substituting in actual ids for each '[id]', and
-        #  evaluating any wildcards
+        #  evaluating any glob syntax
+        
         paths = ''
         for (i in 1:(length(pieces)-1)) {
             paths = paste0(paths, pieces[i], ids)
@@ -62,6 +64,16 @@ form_links = function(rules, key, ids, end_name, required) {
         paths = paste0(paths, pieces[length(pieces)])
         paths = unlist(lapply(paths, process_glob, key))
         
+        return(paths)
+    } else {
+        return(NA)
+    }
+}
+
+#  Given absolute paths to the logs for a particular key in 'rules.txt', stop
+#  if any files don't exist or if the wrong number of paths exist
+check_paths = function(paths, key, ids) {
+    if (!is.na(paths)) {
         #  Verify legitimacy of paths
         if (length(paths) != length(ids) && length(paths) != 2 * length(ids)) {
             stop('Improper number of total logs found for key "', key, '".')
@@ -69,22 +81,32 @@ form_links = function(rules, key, ids, end_name, required) {
         if (! all(file.exists(paths))) {
             stop(paste0('Some or all files for key "', key, '" do not exist.'))
         }
-        
-        paired = length(paths) == 2 * length(ids)
-        #  Symbolically link each file into the current working directory
-        for (i in 1:length(ids)) {
-            if (paired) {
-                command = paste0('ln -s ', paths[i], ' ', ids[i], '_1', end_name)
-                run_command(command)
-                
-                command = paste0('ln -s ', paths[i], ' ', ids[i], '_2', end_name)
-                run_command(command)
-            } else {
-                command = paste0('ln -s ', paths[i], ' ', ids[i], end_name)
-                run_command(command)
-            }
+    }
+}
+
+form_links = function(paths, ids, end_name) {
+    #  Whether 2 logs exist per ID
+    paired = length(paths) == 2 * length(ids)
+    
+    #  Symbolically link each file into the current working directory
+    for (i in 1:length(ids)) {
+        if (paired) {
+            command = paste0('ln -s ', paths[i], ' ', ids[i], '_1', end_name)
+            run_command(command)
+            
+            command = paste0('ln -s ', paths[i], ' ', ids[i], '_2', end_name)
+            run_command(command)
+        } else {
+            command = paste0('ln -s ', paths[i], ' ', ids[i], end_name)
+            run_command(command)
         }
     }
+}
+
+process_key = function(rules, key, ids, end_name, required) {
+    paths = get_paths(rules, key, ids, required)
+    check_paths(paths, key, ids)
+    form_links(paths, ids, end_name)
 }
 
 ###################################################
@@ -101,18 +123,28 @@ paired = ncol(manifest) > 3
 
 
 #  Arioc SAMs and logs
-form_links(rules, 'sam', ids, '.sam', TRUE)
-form_links(rules, 'arioc_log', ids, '_arioc.log', TRUE)
+process_key(rules, 'sam', ids, '.sam', TRUE)
+process_key(rules, 'arioc_log', ids, '_arioc.log', TRUE)
 
 #  XMC logs
-form_links(rules, 'xmc_log', ids, '_xmc.log', FALSE)
+process_key(rules, 'xmc_log', ids, '_xmc.log', FALSE)
 
 #  Trim Galore reports
-form_links(rules, 'trim_report', ids, '_trim_report.log', TRUE)
+process_key(rules, 'trim_report', ids, '_trim_report.log', TRUE)
 
 #  FastQC logs
-form_links(rules, 'fastqc_log', ids, '_fastqc.log', FALSE)
+last_paths = get_paths(rules, 'fastqc_log_last', ids, TRUE)
+first_paths = get_paths(rules, 'fastqc_log_first', ids, FALSE)
 
+if (is.na(first_paths)) {
+    combined_paths = last_paths
+    check_paths(combined_paths, 'fastqc_log_last', ids)
+} else {
+    combined_paths = c(first_paths[!(first_paths %in% last_paths)], last_paths)
+    check_paths(paths, 'combined fastqc_log_first and fastqc_log_last', ids)
+}
+
+form_links(combined_paths, ids, '_fastqc.log')
 
 ############################################################
 #  Verify the FASTQs in the manifest have known extensions

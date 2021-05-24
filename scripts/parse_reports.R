@@ -165,7 +165,7 @@ if (file.exists(f[1])) {
 }
 
 ######################################################
-#  FastQC metrics (pre-trimming)
+#  FastQC metrics (after trimming where applicable)
 ######################################################
 
 #  Shortened metric names to collect
