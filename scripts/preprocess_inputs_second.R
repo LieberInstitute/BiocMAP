@@ -34,6 +34,15 @@ process_glob = function(path_glob, key) {
         stop(paste0('Paths for key "',
                    key,
                    '" in "rules.txt" matched no files.'))
+    } else if (key == 'sam') {
+        suff = substr(basename(paths), 
+                      nchar(basename(paths)) - 3,
+                      nchar(basename(paths)))
+        using_bams = length(paths) == 2 && all(suff %in% c('.bam', '.bai'))
+        using_sams = length(paths) == 1 && all(suff == '.sam')
+        if (!using_bams && !using_sams) {
+            stop("Incorrect path specification for key 'sam'. Either specify a glob matching '.bam' and '.bam.bai' files, or just match '.sam' files.")
+        }
     } else if (key != 'fastqc_log_last' && key != 'fastqc_log_first' && length(paths) > 1) {
         stop(paste0('Paths for key "',
                    key,
@@ -122,8 +131,7 @@ ids = manifest[,ncol(manifest)]
 paired = ncol(manifest) > 3
 
 
-#  Arioc SAMs and logs
-process_key(rules, 'sam', ids, '.sam', TRUE)
+#  Arioc logs
 process_key(rules, 'arioc_log', ids, '_arioc.log', TRUE)
 
 #  XMC logs
@@ -145,6 +153,19 @@ if (is.na(first_paths)) {
 }
 
 form_links(combined_paths, ids, '_fastqc.log')
+
+#  SAM or (BAM and .bam.bai) files
+sam_paths = get_paths(rules, 'sam', ids, TRUE)
+check_paths(sam_paths, 'sam', ids)
+if (length(sam_paths) == 2 * length(ids)) {
+    suff = substr(sam_paths, nchar(sam_paths) - 3, nchar(sam_paths))
+    
+    #  Note that ids and files to link are guaranteed to be lined up correctly
+    form_links(sam_paths[suff == '.bam'], ids, '.bam')
+    form_links(sam_paths[suff == '.bai'], ids, '.bam.bai')
+} else {
+    form_links(sam_paths, ids, '.sam')
+}
 
 ############################################################
 #  Verify the FASTQs in the manifest have known extensions

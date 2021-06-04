@@ -300,7 +300,8 @@ process PreprocessInputs {
         file preprocess_script from file("${workflow.projectDir}/scripts/preprocess_inputs_second.R")
         
     output:
-        file "*.sam" into concordant_sams_out
+        file "*.{sam,bam}" into concordant_bams_out
+        file "*.bam.bai" optional true into concordant_indices_out
         file "*_{arioc,trim_report,xmc,fastqc}.log" into misc_reports_out
         file "*.f*q*" optional true into fastq_out
         file "preprocess_inputs_second_half.log"
@@ -376,37 +377,14 @@ if (params.with_lambda) {
 
 lambda_reports_temp.ifEmpty('').set{lambda_reports_out}
 
-concordant_sams_out
+concordant_bams_out
+    .mix(concordant_indices_out)
     .flatten()
     .map{ file -> tuple(get_prefix(file), file) }
-    .ifEmpty{ error "Concordant sams missing from input to 'SamToBam' and (if applicable) 'BME' processes." }
-    .into{ concordant_sams_in_stb; concordant_sams_in_bme }
+    .groupTuple()
+    .ifEmpty{ error "Concordant sams/bams missing from input to 'MethylationExtraction' or (if applicable) 'BME' processes." }
+    .set{ concordant_bams_in }
     
-
-//  Sort and compress Arioc SAMs
-process SamToBam {
-
-    publishDir "${params.output}/logs/", mode:'copy', pattern:'*.log'
-    tag "$prefix"
-    
-    input:
-        set val(prefix), file(sam_file) from concordant_sams_in_stb
-        
-    output:
-        file "${prefix}.cfu.sorted.bam*" into processed_alignments_out
-        file "sam_to_bam_${prefix}.log"
-        
-    shell:
-        '''
-        # Sort and compress
-        samtools sort -@ !{task.cpus} -o !{prefix}.cfu.sorted.bam !{prefix}.sam
-                
-        #  Index the sorted BAM
-        samtools index !{prefix}.cfu.sorted.bam
-            
-        cp .command.log sam_to_bam_!{prefix}.log
-        '''
-}
 
 // ############################################################################
 //  The following are methylation extraction processes when Bismark Methylation
@@ -422,7 +400,7 @@ if (params.use_bme) {
         tag "$prefix"
         
         input:
-            set val(prefix), file(sam_file) from concordant_sams_in_bme
+            set val(prefix), file(sam_file) from concordant_bams_in
             
         output:
             file "${prefix}/" into BME_outputs
@@ -517,20 +495,13 @@ if (params.use_bme) {
 //  The alternative is MethylDackel for methylation extraction
 // ############################################################################
 
-} else {
-    processed_alignments_out
-        .flatten()
-        .map{ file -> tuple(get_prefix(file), file) }
-        .groupTuple()
-        .ifEmpty{ error "Processed/ sorted BAMs missing from input to 'MethylationExtraction' process." }
-        .set{ processed_alignments_in }
-        
+} else {        
     process MethylationExtraction {
         publishDir "${params.output}/Reports/$prefix", mode:'copy'
         tag "$prefix"
         
         input:
-            set val(prefix), file(bam_pair) from processed_alignments_in
+            set val(prefix), file(bam_pair) from concordant_bams_in
             file MD_genome
             
         output:

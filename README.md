@@ -44,7 +44,16 @@ fastqc_log_first = /users/nick/FastQC/[id]_untrimmed_summary.txt
 
 - This file consists of several lines of key-value pairs, where keys and values are separated by an equals sign ("=") and optionally spaces.
 - Lines without "=" are ignored, and can be used as comments. The above example starts such lines with "#" for clarity.
-- The required keys to include in a valid `rules.txt` file include "manifest", "sam", "arioc_log", "trim_report", and "fastqc_log_last". The associated values for these keys are the paths to the `samples.manifest` file, the filtered/deduplicated alignment SAMs, verbose output logs from Arioc alignment, output logs from `TrimGalore!`, and logs from the latest or only run of FastQC (see the below point about optional keys), respectively.
+- The required keys to include in a valid `rules.txt` file include "manifest", "sam", "arioc_log", "trim_report", and "fastqc_log_last". The associated values for these keys are the paths to the `samples.manifest` file, the filtered/deduplicated alignment SAMs, verbose output logs from Arioc alignment, output logs from `TrimGalore!`, and logs from the latest or only run of FastQC (see the below point about optional keys), respectively. Note that users who plan to use MethylDackel for methylation extraction (the default!) should have coordinate-sorted and indexed BAM files ready, which are passed to the "sam" key using a glob expression. Otherwise, just one SAM file is expected per sample. Note this example for the former case:
+
+```{bash, eval=FALSE}
+# Suppose we have 4 files across 2 samples:
+#    /users/nick/alignments/id1_sorted.bam and /users/nick/alignments/id1_sorted.bam.bai
+#    /users/nick/alignments/id2_sorted.bam and /users/nick/alignments/id2_sorted.bam.bai
+# We can point to these files using the 'sam' key in 'rules.txt':
+sam = /users/nick/alignments/[id]_sorted.bam*
+```
+
 - Optional keys accepted in a `rules.txt` file include "xmc_log" and "fastqc_log_first". Associated values are paths to logs from XMC [CLARIFICATION NEEDED!], and `*summary.txt` logs from FastQC, respectively. The optional "fastqc_log_first" key can be used when the user runs FastQC twice (for example, before and after trimming) for at least one sample. In this case, "fastqc_log_first" refers to the pre-trimming run of FastQC. Typically, methylation extraction is done in the second module, and the "xmc_log" option is only included for compatibility with a previous WGBS processing approach. Information from these logs will be included in the R data frame output from the second module, if these logs are present and specified in `rules.txt`.
 - Since exact paths are different between samples, including "[id]" in the value field in a line of `rules.txt` indicates that the path for any particular sample can be found by replacing "[id]" with its sample ID. Otherwise, paths are interpreted literally.
 - For paired-end experiments, there will be two summary logs from FastQC. To correctly describe this in `rules.txt`, a glob expression may be used. As an example, suppose we have FastQC summary logs for a sample called `sample1`, given by the paths `/some_dir/fastqc/sample1_1_summary.txt` and `/some_dir/fastqc/sample1_2_summary.txt`. The following line in `rules.txt` would be appropriate:

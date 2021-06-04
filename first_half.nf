@@ -665,23 +665,31 @@ concordant_sams_out
 process FilterAlignments {
 
     publishDir "${params.output}/FilteredAlignments/logs/", mode:'copy', pattern:'*.log'
-    publishDir "${params.output}/FilteredAlignments/sams/", mode:'copy', pattern:'*.sam'
+    publishDir "${params.output}/FilteredAlignments/bams/", mode:'copy', pattern:'*.bam*'
     tag "$prefix"
     
     input:
         set val(prefix), file(sam_file) from concordant_sams_in
         
     output:
-        file "${prefix}.cfu.sam"
-        file "filter_sam_${prefix}.log"
+        file "${prefix}.cfu.sorted.bam*"
+        file "filter_alignments_${prefix}.log"
         
     shell:
+        // Allocate 1 thread to 'samtools view' and to 'samblaster', with the
+        // remaining used for 'samtools sort'
+        if (task.cpus < 3) {
+            sort_threads = 1
+        } else {
+            sort_threads = task.cpus - 2
+        }
         '''
         #  Quality-filter and deduplicate
         samtools view -q 5 -F 0x100 -h !{sam_file} \
-            | samblaster -r -o !{prefix}.cfu.sam
+            | samblaster -r \
+            | samtools sort -@ !{sort_threads} -o !{prefix}.cfu.sorted.bam -
             
-        cp .command.log filter_sam_!{prefix}.log
+        cp .command.log filter_alignments_!{prefix}.log
         '''
 }
 
