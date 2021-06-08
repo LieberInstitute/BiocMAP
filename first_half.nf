@@ -292,7 +292,7 @@ process PrepareReference {
 // Arioc requires an encoded reference sequence. This process builds that within the repo,
 // if the encoded sequence hasn't been built before.
 process EncodeReference {
-    storeDir "${workflow.projectDir}/ref/${params.reference}"
+    storeDir "${params.annotation}/${params.reference}"
     
     input:
         file encode_ref_gap_cfg
