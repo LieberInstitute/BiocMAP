@@ -465,7 +465,7 @@ process Trimming {
                 cp !{fq_prefix}_1_fastqc/summary.txt !{fq_prefix}_1_trimmed_summary.txt
                 cp !{fq_prefix}_2_fastqc/summary.txt !{fq_prefix}_2_trimmed_summary.txt
             else
-                cp !{fq_prefix}_fastqc/summary.txt !{fq_prefix}_trimmed_summary.txt
+                cp !{fq_prefix}_trimmed_fastqc/summary.txt !{fq_prefix}_trimmed_summary.txt
             fi
             
             cp .command.log !{fq_prefix}_was_trimmed.log
