@@ -103,6 +103,7 @@ if (opt$paired == "paired") {
     id = strsplit(list.files(pattern='.*_trimmed\\.fq'), "_trimmed.fq", fixed=TRUE)[[1]]
     qname_field = ''
     rg_line = ''
+    qbias_field = ''
 }
 
 #  The processed manifest outputted from the "Manifest" process will be in
