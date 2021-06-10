@@ -548,7 +548,7 @@ process WriteAriocConfigs {
         arioc_opts = '<' + exec_name + ' gpuMask="' + params.gpu_mask + \
                      '" batchSize="' + params.batch_size + \
                      '" verboseMask="0xE0000007">'
-        r_opts = "  <R>${workflow.projectDir}/ref/${params.reference}/${params.anno_suffix}</R>"
+        r_opts = "  <R>${params.annotation}/${params.reference}/${params.anno_suffix}</R>"
         nongapped_opts = '  <nongapped seed="' + params.nongapped_seed + \
                          '" ' + params.nongapped_args + '/>'
         gapped_opts = '  <gapped seed="' + params.gapped_seed + '" ' + \
