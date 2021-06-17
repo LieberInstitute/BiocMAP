@@ -1,0 +1,48 @@
+# Quick Start {#quick-start}
+
+A brief guide to setting up [INSERT PIPELINE NAME HERE]. A more detailed and thorough guide is [here](#setup-details).
+
+## Setup
+
+1. Clone the [INSERT PIPELINE NAME HERE] repository with `git clone git@github.com:LieberInstitute/[INSERT PIPELINE NAME HERE].git`
+2. Change directory into the repository with `cd [INSERT PIPELINE NAME HERE]`
+3. Users of the [JHPCE](https://jhpce.jhu.edu/) cluster should run `bash install_software.sh "jhpce"`. Otherwise, you can install everything required locally with `bash install_software.sh "local"`.
+
+**Note:** JHPCE users must also make an edit to their `~/.bashrc` files, described [here](#installation)
+
+## Configuration {#quick-config}
+
+### Your "main" script ###
+
+The script you will use to run the pipeline depends on the system ("executor") you wish to run the pipeline on, as well as which module you wish to run. 
+
+| Executor | Module | Script |
+| -----  | ----------- |
+| SGE cluster | first | run_first_half_sge.sh |
+| SGE cluster | second | run_second_half_sge.sh |
+| SLURM cluster | first | run_first_half_slurm.sh |
+| SLURM cluster | second | run_second_half_slurm.sh |
+| local machine | first | run_first_half_local.sh |
+| local machine | second | run_second_half_local.sh |
+| The [JHPCE](https://jhpce.jhu.edu/) cluster | first | run_first_half_jhpce.sh |
+| The JHPCE cluster | second | run_second_half_jhpce.sh |
+
+[Options included in the main script](#command-opts) should be modified as appropriate for the experiment. On SLURM and SGE clusters (including JHPCE), the main script should be submitted as a job (i.e. using `sbatch` or `qsub`). On local machines, the pipeline can be run interactively (i.e. `bash run_pipeline_local.sh`).
+
+
+### Your config file ###
+
+Your combination of "executor" (SLURM cluster, SGE cluster, or local) and "module" (first half or second half) determine the name of your configuration file. Find your file under `[INSERT PIPELINE NAME HERE]/conf/`.
+
+| Executor | Module | Config Filename |
+| -----  | --- | ----- |
+| SGE cluster | first | first_half_sge.config |
+| SGE cluster | second | second_half_sge.config |
+| SLURM cluster | first | first_half_slurm.config |
+| SLURM cluster | second | second_half_slurm.config |
+| local machine | first | first_half_local.config |
+| local machine | second | second_half_local.config |
+| The [JHPCE](https://jhpce.jhu.edu/) cluster | first | first_half_jhpce.config |
+| The JHPCE cluster | second | second_half_jhpce.config |
+
+As an example, suppose you have access to a SLURM cluster, and wish to run the second module to process existing alignments. Your config file is then `[INSERT PIPELINE NAME HERE]/conf/second_half_slurm.config`.
