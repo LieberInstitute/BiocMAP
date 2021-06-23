@@ -1,5 +1,3 @@
-library('BiocParallel')
-library('devtools')
 library('jaffelab')
 
 run_command = function(command) {

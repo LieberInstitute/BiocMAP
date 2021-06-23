@@ -1,4 +1,4 @@
-ordinary_packages = c('devtools', 'getopt', 'data.table', 'BiocManager')
+ordinary_packages = c('remotes', 'getopt', 'data.table', 'BiocManager')
 bioc_packages = c('bsseq', 'GenomicRanges', 'HDF5Array', 'BiocParallel')
 
 #  Ordinary R packages
@@ -9,9 +9,13 @@ for (p in ordinary_packages) {
 }
 
 #  Bioconductor packages
-library('BiocManager')
-BiocManager::install(bioc_packages)
+for (p in bioc_packages) {
+    if (!requireNamespace(p, quietly=TRUE)) {
+        BiocManager::install(p)
+    }
+}
 
 #  GitHub packages
-library('devtools')
-install_github('LieberInstitute/jaffelab')
+if (!requireNamespace('jaffelab', quietly=TRUE)) {
+    remotes::install_github('LieberInstitute/jaffelab')
+}
