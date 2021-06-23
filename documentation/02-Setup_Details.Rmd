@@ -1,0 +1,177 @@
+# Setup Details {#setup-details}
+
+## Requirements
+
+[INSERT PIPELINE NAME HERE] is designed for execution on Linux, and requires that the following be installed:
+
+- Java 8 or later
+- Python 3 (tested with 3.7.3), with pip
+- R (tested with R 3.6-4.0)
+
+Additionally, installation makes use of GNU make and requires a C compiler, such as GCC. Both of these tools come by default with most Linux distributions.
+
+## Installation
+
+[INSERT PIPELINE NAME HERE] makes use of a number of different additional software tools. A bash script is provided to automatically install dependencies without the need for special (root) permissions.
+
+- *Local install*: Installation is performed by running `bash install_software.sh "local"` from within the repository. This installs nextflow, several bioinformatics tools, R and packages, and sets up some test files. A full list of software used is [here](#software). The script `install_software.sh` builds each software tool from source, and hence relies on some common utilities which are often pre-installed in many unix-like systems:
+
+    * A C/C++ compiler, such as [GCC](https://gcc.gnu.org/) or [Clang](http://clang.llvm.org/index.html)
+    * The GNU `make` utility
+    * The `makeinfo` utility
+    * [git](https://git-scm.com/), for downloading some software from their GitHub repositories
+    * The `unzip` utility
+    
+**Note:** users at the JHPCE cluster do not need to worry about managing software via the above methods (required software is automatically available through modules). Simply run `bash install_software.sh "jhpce"` to install any missing R packages and set up some test files. Next, make sure you have the following lines added to your `~/.bashrc` file:
+
+```{bash, eval=FALSE}
+if [[ $HOSTNAME == compute-* ]]; then
+    module use /jhpce/shared/jhpce/modulefiles/libd
+fi
+```
+
+### Troubleshooting
+
+Some users may encounter errors during the installation process, particularly when installing software locally. We provide a list below of the most common installation-related issues.
+
+[INSERT PIPELINE NAME HERE] has been tested on:
+
+{TODO]
+
+#### Required utilities are missing
+
+This is particularly common issue for users trying to get [INSERT PIPELINE NAME HERE] running on a local machine. We will assume the user has root privileges for the solutions suggested below.
+
+```{bash,eval=FALSE}
+#  On Debian or Ubuntu:
+sudo apt install [TODO]
+#  On RedHat or CentOS:
+sudo yum install [TODO]
+```
+
+## Run the Pipeline
+
+The "main" script used to run the pipeline depends on the environment you will run it on.
+
+### Run in a SLURM environment/ cluster
+
+- (Optional) **Adjust configuration**: hardware resource usage, software versioning, and cluster option choices are specified in `conf/first_half_slurm.config` and `conf/second_half_slurm.config`.
+- **Modify the main script and run**: the main scripts are `run_first_half_slurm.sh` and `run_second_half_slurm.sh`. Each script may be submitted to the cluster as a job (e.g. `sbatch run_first_half_slurm.sh`). See the [full list of command-line options](#command-opts) for other details about modifying the script for your use-case. To run the complete workflow, it is recommended to first submit `run_first_half_slurm.sh`, then monitor the output log `run_first_half_slurm.log` so that `run_second_half_slurm.sh` may be submitted when the log indicates the first half has completed.
+
+See [here](https://www.nextflow.io/docs/latest/executor.html#slurm) for Nextflow's documentation regarding SLURM environments.
+
+### Run on a Sun Grid Engines (SGE) cluster
+
+- (Optional) **Adjust configuration**: hardware resource usage, software versioning, and cluster option choices are specified in `conf/first_half_sge.config` and `conf/second_half_sge.config`.
+- **Modify the main script and run**: the main scripts are `run_first_half_sge.sh` and `run_second_half_sge.sh`. Each script may be submitted to the cluster as a job (e.g. `qsub run_first_half_sge.sh`). See the [full list of command-line options](#command-opts) for other details about modifying the script for your use-case. To run the complete workflow, it is recommended to first submit `run_first_half_sge.sh`, then monitor the output log `run_first_half_sge.log` so that `run_second_half_sge.sh` may be submitted when the log indicates the first half has completed.
+
+See [here](https://www.nextflow.io/docs/latest/executor.html#sge) for additional information on nextflow for SGE environments.
+
+### Run locally
+
+- (Optional) **Adjust configuration**: hardware resource usage and other configurables are located in `conf/first_half_local.config` and `conf/second_half_local.config`.
+- **Modify the main script and run**: the main scripts are `run_first_half_local.sh` and `run_second_half_local.sh`. After configuring options for your use-case (See the [full list of command-line options](#command-opts)), each script may be run interactively (e.g. `bash run_first_half_local.sh`).
+
+### Run on the [JHPCE](https://jhpce.jhu.edu/) cluster
+
+- (Optional) **Adjust configuration**: default configuration with thoroughly testing hardware resource specification is described within `conf/first_half_jhpce.config` and `conf/second_half_jhpce.config`.
+- **Modify the main script and run**: the "main" scripts are `run_first_half_jhpce.sh` and `run_second_half_jhpce.sh`. Each script may be submitted to the cluster as a job (e.g. `qsub run_first_half_jhpce.sh`). See the [full list of command-line options](#command-opts) for other details about modifying the script for your use-case. To run the complete workflow, it is recommended to first submit `run_first_half_jhpce.sh`, then monitor the output log `run_first_half_jhpce.log` so that `run_second_half_jhpce.sh` may be submitted when the log indicates the first half has completed.
+
+### Example main script
+
+Below is a full example of a typical main script for the first module, modified from the `run_first_half_jhpce.sh` script. At the top are some cluster-specific options, recognized by SGE, the grid scheduler at the JHPCE cluster. These are optional, and you may consider adding appropriate options similarly, if you plan to use [INSERT PIPELINE NAME HERE] on a computing cluster.
+
+After the main command, `nextflow first_half.nf`, each command option can be described line by line:
+
+- `--sample "paired"`: input samples are paired-end
+- `--reference "hg38"`: these are human samples, to be aligned to the hg38 reference genome
+- `--input "/users/neagles/wgbs_test"`: `/users/neagles/wgbs_test` is a directory that contains the `samples.manifest` file, describing the samples.
+- `--output "/users/neagles/wgbs_test/out"`: `/users/neagles/wgbs_test/out` is the directory (which possibly exists already) where pipeline outputs should be placed.
+- `-profile jhpce`: configuration of hardware resource usage, and more detailed pipeline settings, is described at `conf/jhpce.config`, since this is a run using the JHPCE cluster
+- `-w "/fastscratch/myscratch/neagles/nextflow_work"`: this is a nextflow-specific command option (note the single dash), telling [INSERT PIPELINE NAME HERE] that temporary files for the pipeline run can be placed under `/fastscratch/myscratch/neagles/nextflow_work`.
+- `--trim_mode "force"`: this optional argument instructs [INSERT PIPELINE NAME HERE] to trim all samples. Note there are [alternative options](#command-opts).
+- `-profile first_half_jhpce`: this line, which should typically always be included, tells [INSERT PIPELINE NAME HERE] to use `conf/first_half_jhpce.config` as the configuration file applicable to this pipeline run.
+
+```{bash, eval=FALSE}
+#!/bin/bash
+#$ -l bluejay,mem_free=25G,h_vmem=25G,h_fsize=800G
+#$ -o ./run_first_half_jhpce.log
+#$ -e ./run_first_half_jhpce.log
+#$ -cwd
+
+module load nextflow
+export _JAVA_OPTIONS="-Xms8g -Xmx10g"
+
+nextflow first_half.nf \
+    --sample "paired" \
+    --reference "hg38" \
+    --input "/users/neagles/wgbs_test" \
+    --output "/users/neagles/wgbs_test/out" \
+    -w "/fastscratch/myscratch/neagles/nextflow_work" \
+    --trim_mode "force" \
+    -profile first_half_jhpce
+```
+
+## Sharing the pipeline with many users {#sharing}
+
+A single installation of [INSERT PIPELINE NAME HERE] can be shared among potentially many users. New users can simply copy the appropriate "main" script (determined above) to a different desired directory, and modify the contents as appropriate for the particular experiment. Similarly, a single user can copy the "main" script and modify the copy whenever there is a new experiment/ set of samples to process, reusing a single installation of [INSERT PIPELINE NAME HERE] arbitrarily many times.
+
+**Note** It is recommended to use a unique working directory with the `-w` [option](#next-opts) for each experiment. This ensures:
+
+- [INSERT PIPELINE NAME HERE] resumes from the correct point, if ever stopped while multiple users are running the pipeline
+- Deleting the work directory (which can take a large amount of disk space) does not affect [INSERT PIPELINE NAME HERE] execution for other users or other experiments
+
+
+### Customizing execution for each user
+
+By default, all users will share the same [configuration](#configuration). This likely suffices for many use cases, but alternatively new configuration files can be created. Below we will walk through an example where a new user of a SLURM-based cluster wishes to use an existing [INSERT PIPELINE NAME HERE] installation to run the first module, but wants a personal configuration file to specify different annotation settings.
+
+1. **Copy the existing configuration to a new file**
+
+```{bash, eval=FALSE}
+#  Verify we are in the [INSERT PIPELINE NAME HERE] repository
+pwd
+
+#  Create the new configuration file
+cp conf/first_half_slurm.config conf/my_first_half_slurm.config
+```
+
+2. **Modify the new file as desired**
+
+Below we will change the GENCODE release to the older release 25, for human, via the `gencode_version_human` variable.
+```{groovy, eval=FALSE}
+params {    
+    //----------------------------------------------------
+    //  Annotation-related settings
+    //----------------------------------------------------
+    
+    gencode_version_human = "25" // originally was "34"!
+    gencode_version_mouse = "M23"
+    anno_build = "main" // main or primary (main is canonical seqs only)
+```
+
+See [configuration](#configuration) for details on customizing [INSERT PIPELINE NAME HERE] settings.
+
+3. **Add the new file as a "profile"**
+
+This involves adding some code to `nextflow.config`, as shown below.
+
+```{groovy, eval=FALSE}
+profiles {
+    // Here we've named the new profile "my_new_config", and pointed it to the
+    // file "conf/my_first_half_slurm.config".
+    my_new_config {
+        includeConfig 'conf/my_first_half_slurm.config'
+    }
+```
+
+4. **Reference the new profile in the "main" script**
+
+Recall that new users should copy the "main" script and modify the copy as appropriate. In this case, we open a copy of the original `run_first_half_slurm.sh`:
+```{groovy, eval=FALSE}
+#  At the nextflow command, we change the '-profile' argument at the bottom
+$ORIG_DIR/Software/bin/nextflow $ORIG_DIR/first_half.nf \
+    --sample "paired" \
+    --reference "hg38" \
+    -profile my_new_config # this was changed from "-profile first_half_slurm"!
+```
