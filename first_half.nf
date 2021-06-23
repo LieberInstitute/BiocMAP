@@ -672,7 +672,7 @@ process FilterAlignments {
         set val(prefix), file(sam_file) from concordant_sams_in
         
     output:
-        file "${prefix}.cfu.sorted.bam*"
+        file "${prefix}.cfus.bam*"
         file "filter_alignments_${prefix}.log"
         
     shell:
@@ -687,7 +687,7 @@ process FilterAlignments {
         #  Quality-filter and deduplicate
         samtools view -q 5 -F 0x100 -h !{sam_file} \
             | samblaster -r \
-            | samtools sort -@ !{sort_threads} -o !{prefix}.cfu.sorted.bam -
+            | samtools sort -@ !{sort_threads} -o !{prefix}.cfus.bam -
             
         cp .command.log filter_alignments_!{prefix}.log
         '''
@@ -712,7 +712,7 @@ process MakeRules {
     shell:
         txt = "# Automatically generated input to the second module/half\n" + \
               "manifest = ${params.input}/samples.manifest\n" + \
-              "sam = ${params.output}/FilteredAlignments/sams/[id].cfu.sam\n" + \
+              "sam = ${params.output}/FilteredAlignments/bams/[id].cfus.bam*\n" + \
               "arioc_log = ${params.output}/Arioc/logs/[id]_alignment.log\n" + \
               "trim_report = ${params.output}/Trimming/[id]_was_trimmed.log"
         
