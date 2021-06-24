@@ -31,9 +31,17 @@ idRowNum = match(opt$prefix, man[,ncol(man)])
 idNum = as.integer(idRowNum / 2) + 1
 
 if (opt$allAlign) {
-    sam_outputs = c("c", "r", "d", "u")
+    if (opt$paired == "paired") {
+        sam_outputs = c("c", "r", "d", "u")
+    } else {
+        sam_outputs = c("m", "u")
+    }
 } else {
-    sam_outputs = c("c")
+    if (opt$paired == "paired") {
+        sam_outputs = "c"
+    } else {
+        sam_outputs = "m"
+    }
 }
 
 #############################################################
@@ -57,25 +65,29 @@ if (opt$paired == "paired") {
                      paste0('    <paired subId="', idNum, '">'),
                      paste0('      <file>', man[idRowNum, 5], '_val_1</file>'),
                      paste0('      <file>', man[idRowNum, 5], '_val_2</file>'),
-                     '    </paired>')
+                     '    </paired>',
+                     '  </Q>',
+                     '',
+                     '  <A overwrite="true" pairOrientation="c" pairCollision="ocd" pairFragmentLength="500" cigarFormat="MID" mapqVersion="2">')
 } else {    
     config_lines = c(config_lines,
                      paste0('    <unpaired subId="', idNum, '">'),
                      paste0('      <file>', man[idRowNum, 3], '_trimmed</file>'),
-                     '    </unpaired>')
+                     '    </unpaired>',
+                     '  </Q>',
+                     '',
+                     '  <A overwrite="true" cigarFormat="MID" mapqVersion="2">')
 }
 
 #  Lines related to sam output format(s)
-config_lines = c(config_lines,
-                 '  </Q>', '',
-                 '  <A overwrite="true" pairOrientation="c" pairCollision="ocd" pairFragmentLength="500" cigarFormat="MID" mapqVersion="2">')
 for (out_type in sam_outputs) {
     config_lines = c(config_lines,
                      paste0('    <sam report="', out_type, '">./</sam>'))
 }
 
 config_lines = c(config_lines, 
-                 '  </A>', paste0('</', exec_name, '>'))
+                 '  </A>',
+                 paste0('</', exec_name, '>'))
 
 #############################################################
 #    Write the config to file

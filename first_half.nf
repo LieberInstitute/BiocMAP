@@ -631,7 +631,7 @@ process AlignReads {
         
     output:
         file "${prefix}.[dru].sam" optional true
-        file "${prefix}.c.sam" into concordant_sams_out
+        file "${prefix}.[cm].sam" into concordant_sams_out
         file "${prefix}_alignment.log" into arioc_reports_out
         
     shell:
@@ -672,7 +672,7 @@ process FilterAlignments {
         set val(prefix), file(sam_file) from concordant_sams_in
         
     output:
-        file "${prefix}.cfus.bam*"
+        file "${prefix}.[cm]fus.bam*"
         file "filter_alignments_${prefix}.log"
         
     shell:
@@ -683,11 +683,18 @@ process FilterAlignments {
         } else {
             sort_threads = task.cpus - 2
         }
+        
+        // Appropriately name BAM files
+        if (params.sample == "paired") {
+            bam_type = "cfus"
+        } else {
+            bam_type = "mfus"
+        }
         '''
         #  Quality-filter and deduplicate
         samtools view -q 5 -F 0x100 -h !{sam_file} \
             | samblaster -r \
-            | samtools sort -@ !{sort_threads} -o !{prefix}.cfus.bam -
+            | samtools sort -@ !{sort_threads} -o !{prefix}.!{bam_type}.bam -
             
         cp .command.log filter_alignments_!{prefix}.log
         '''
@@ -710,9 +717,16 @@ process MakeRules {
         file 'rules.txt'
         
     shell:
+        // Appropriately name BAM files
+        if (params.sample == "paired") {
+            bam_type = "cfus"
+        } else {
+            bam_type = "mfus"
+        }
+        
         txt = "# Automatically generated input to the second module/half\n" + \
               "manifest = ${params.input}/samples.manifest\n" + \
-              "sam = ${params.output}/FilteredAlignments/bams/[id].cfus.bam*\n" + \
+              "sam = ${params.output}/FilteredAlignments/bams/[id].${bam_type}.bam*\n" + \
               "arioc_log = ${params.output}/Arioc/logs/[id]_alignment.log\n" + \
               "trim_report = ${params.output}/Trimming/[id]_was_trimmed.log"
         
