@@ -20,35 +20,89 @@ ids = manifest[,ncol(manifest)]
 
 print("Extracting Arioc metrics...")
 
-#  String patterns to remove via gsub for every value to put in a data frame:
-#  note that patterns are removed in order of occurrence in this list
-blacklist = c("(\\(.*\\))", "SAMrecords")
-cleanseVec <- function(vec) {
+f = paste0(ids, '_arioc.log')
+stopifnot(all(file.exists(f)))
+
+parse_rows = function(log_text, blacklist) {
+    #  Get the "value" portion of each row
+    log_text = ss(log_text, ':', 2)
+    
     #  Remove blacklisted characters
     for (b in blacklist) {
-        vec <- sapply(vec, function(x) gsub(b,"",x, perl=FALSE))
+        log_text = gsub(b, "", log_text)
     }
-    return(unname(vec))
+    
+    #  Return values in each row
+    return(as.numeric(log_text))
 }
 
-col_names = c("pairs", "conc_pairs_total", "conc_pairs_1_mapping", "conc_pairs_many_mappings",
-              "disc_pairs", "rejected_pairs", "unmapped_pairs","mates_not_in_paired_maps_total",
-              "mates_NIPM_with_no_maps", "mates_NIPM_with_1_map", "mates_NIPM_with_many_maps",
-              "total_mapped_mates", "duplicate_maps", "maxQlen", "max_diag_band_width", "TLEN mean")
-              
-f = paste0(ids, '_arioc.log')
-stopifnot(file.exists(f[1]))
-
-row_data = lapply(f, function(filename) {
-    log_text = gsub(' ', '', system(paste0('cat ', filename, ' | cut -d " " -f 3-'), intern=TRUE))
+#  Return a numeric vector of values given a single path to an alignment log
+parse_log = function(filename, expected_keys) {
+    #  Process log into a "machine-friendly" format with the relevant information
+    log_text = system(paste0('cat ', filename, ' | cut -d " " -f 3-'), intern=TRUE)
+    log_text = gsub(' ', '', log_text)
     first_row = match("SAMoutput:", log_text) + 1
-    log_text = log_text[first_row: (first_row + length(col_names) - 1)]
+    log_text = log_text[first_row: (first_row + length(expected_keys) - 1)]
     
-    as.numeric(cleanseVec(ss(log_text,":", 2)))
-})
+    #  Verify the information is as expected
+    actual_keys = ss(log_text, ":")
+    stopifnot(all(expected_keys == actual_keys))
+    
+    #  Manually parse TLEN-related metrics
+    manual_row = match("TLENmode(mean,sd,skewness)", actual_keys)
+    tlen_stats = ss(log_text[manual_row], ":", 2)
+    tlen_mode = ss(tlen_stats, '\\(', 1)
+    
+    tlen_stats = gsub('\\)', '', ss(tlen_stats, '\\(', 2))
+    tlen_mean = as.numeric(ss(tlen_stats, ',', 1))
+    tlen_sd = as.numeric(ss(tlen_stats, ',', 2))
+    tlen_skewness = as.numeric(ss(tlen_stats, ',', 3))
+    log_text = log_text[-manual_row]
+    actual_keys = actual_keys[-manual_row]
+    
+    #  Manually parse error rate
+    manual_row = match("errorrate(primarymappings)", actual_keys)
+    err_stats = ss(log_text[manual_row], ":", 2)
+    err_rate = as.numeric(gsub("%", "", err_stats)) / 100
+    log_text = log_text[-manual_row]
+    actual_keys = actual_keys[-manual_row]
+    
+    #  Parse all other keys
+    blacklist = c("\\(.*\\)")
+    values = parse_rows(log_text, blacklist)
+    
+    return(c(values, tlen_mean, tlen_sd, tlen_skewness, err_rate))
+}
 
-metrics = as.data.frame(matrix(unlist(row_data), nrow=length(row_data), byrow=TRUE))
-colnames(metrics) = col_names
+col_names = c(
+    "pairs", "conc_pairs_total", "conc_pairs_1_mapping",
+    "conc_pairs_many_mappings", "disc_pairs", "unmapped_total_pairs",
+    "unmapped_rejected_pairs", "unmapped_other_pairs",
+    "mates_not_in_paired_maps_total", "mates_NIPM_with_no_maps",
+    "mates_NIPM_with_1_map", "mates_NIPM_with_many_maps",
+    "total_mapped_mates", "duplicate_maps", "maxQlen",
+    "max_diag_band_width", "TLEN_disc_pairs", "TLEN_mean", "TLEN_sd",
+    "TLEN_skewness", "err_rate_primary_maps"
+)
+
+expected_keys = c(
+    "pairs", "concordantpairs", "with1mapping", "with2ormoremappings",
+    "discordantpairs", "unmappedpairs", "twomatesmapped(\"rejected\")",
+    "0or1matesmapped", "matesnotinpairedmappings", "withnomappings",
+    "with1mapping", "with2ormoremappings", "totalmappedmates",
+    "duplicatemappings(unreported)", "maximumQlength",
+    "maximumdiagonalbandwidth", "TLENmode(mean,sd,skewness)",
+    "TLEN-discordantpairs", "errorrate(primarymappings)"
+)
+
+metrics = as.data.frame(
+    matrix(
+        unlist(lapply(f, parse_log, expected_keys)),
+        ncol=length(col_names),
+        byrow=TRUE,
+        dimnames=list(ids, col_names)
+    )
+)
 
 ######################################################
 #  MethylDackel or BME logs
