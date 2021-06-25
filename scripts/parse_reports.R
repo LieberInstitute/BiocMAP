@@ -13,6 +13,7 @@ rules = rules[-grep('#', rules)]
 manifest = read.table(get_value(rules, 'manifest'), header = FALSE,
                       stringsAsFactors = FALSE)
 ids = manifest[,ncol(manifest)]
+paired = ncol(manifest) > 3
 
 ######################################################
 #  Arioc
@@ -48,17 +49,19 @@ parse_log = function(filename, expected_keys) {
     actual_keys = ss(log_text, ":")
     stopifnot(all(expected_keys == actual_keys))
     
-    #  Manually parse TLEN-related metrics
-    manual_row = match("TLENmode(mean,sd,skewness)", actual_keys)
-    tlen_stats = ss(log_text[manual_row], ":", 2)
-    tlen_mode = ss(tlen_stats, '\\(', 1)
-    
-    tlen_stats = gsub('\\)', '', ss(tlen_stats, '\\(', 2))
-    tlen_mean = as.numeric(ss(tlen_stats, ',', 1))
-    tlen_sd = as.numeric(ss(tlen_stats, ',', 2))
-    tlen_skewness = as.numeric(ss(tlen_stats, ',', 3))
-    log_text = log_text[-manual_row]
-    actual_keys = actual_keys[-manual_row]
+    if (paired) {
+        #  Manually parse TLEN-related metrics
+        manual_row = match("TLENmode(mean,sd,skewness)", actual_keys)
+        tlen_stats = ss(log_text[manual_row], ":", 2)
+        tlen_mode = ss(tlen_stats, '\\(', 1)
+        
+        tlen_stats = gsub('\\)', '', ss(tlen_stats, '\\(', 2))
+        tlen_mean = as.numeric(ss(tlen_stats, ',', 1))
+        tlen_sd = as.numeric(ss(tlen_stats, ',', 2))
+        tlen_skewness = as.numeric(ss(tlen_stats, ',', 3))
+        log_text = log_text[-manual_row]
+        actual_keys = actual_keys[-manual_row]
+    }
     
     #  Manually parse error rate
     manual_row = match("errorrate(primarymappings)", actual_keys)
@@ -71,29 +74,52 @@ parse_log = function(filename, expected_keys) {
     blacklist = c("\\(.*\\)")
     values = parse_rows(log_text, blacklist)
     
-    return(c(values, tlen_mean, tlen_sd, tlen_skewness, err_rate))
+    if (paired) {
+        values = c(values, tlen_mean, tlen_sd, tlen_skewness, err_rate)
+    } else {
+        values = c(values, err_rate)
+    }
+    
+    return(values)
 }
 
-col_names = c(
-    "pairs", "conc_pairs_total", "conc_pairs_1_mapping",
-    "conc_pairs_many_mappings", "disc_pairs", "unmapped_total_pairs",
-    "unmapped_rejected_pairs", "unmapped_other_pairs",
-    "mates_not_in_paired_maps_total", "mates_NIPM_with_no_maps",
-    "mates_NIPM_with_1_map", "mates_NIPM_with_many_maps",
-    "total_mapped_mates", "duplicate_maps", "maxQlen",
-    "max_diag_band_width", "TLEN_disc_pairs", "TLEN_mean", "TLEN_sd",
-    "TLEN_skewness", "err_rate_primary_maps"
-)
-
-expected_keys = c(
-    "pairs", "concordantpairs", "with1mapping", "with2ormoremappings",
-    "discordantpairs", "unmappedpairs", "twomatesmapped(\"rejected\")",
-    "0or1matesmapped", "matesnotinpairedmappings", "withnomappings",
-    "with1mapping", "with2ormoremappings", "totalmappedmates",
-    "duplicatemappings(unreported)", "maximumQlength",
-    "maximumdiagonalbandwidth", "TLENmode(mean,sd,skewness)",
-    "TLEN-discordantpairs", "errorrate(primarymappings)"
-)
+#  Define the expected literal keys to observe in the log ("expected_keys")
+#  and the name of the column we wish to associate with those keys
+#  (note some "special" columns are added in the "parse_log" function
+if (paired) {
+    col_names = c(
+        "pairs", "conc_pairs_total", "conc_pairs_1_mapping",
+        "conc_pairs_many_mappings", "disc_pairs", "unmapped_total_pairs",
+        "unmapped_rejected_pairs", "unmapped_other_pairs",
+        "mates_not_in_paired_maps_total", "mates_NIPM_with_no_maps",
+        "mates_NIPM_with_1_map", "mates_NIPM_with_many_maps",
+        "total_mapped_mates", "duplicate_maps", "maxQlen",
+        "max_diag_band_width", "TLEN_disc_pairs", "TLEN_mean", "TLEN_sd",
+        "TLEN_skewness", "err_rate_primary_maps"
+    )
+    
+    expected_keys = c(
+        "pairs", "concordantpairs", "with1mapping", "with2ormoremappings",
+        "discordantpairs", "unmappedpairs", "twomatesmapped(\"rejected\")",
+        "0or1matesmapped", "matesnotinpairedmappings", "withnomappings",
+        "with1mapping", "with2ormoremappings", "totalmappedmates",
+        "duplicatemappings(unreported)", "maximumQlength",
+        "maximumdiagonalbandwidth", "TLENmode(mean,sd,skewness)",
+        "TLEN-discordantpairs", "errorrate(primarymappings)"
+    )
+} else {
+    col_names = c(
+        "reads", "mapped_reads_total", "mapped_reads_1_map",
+        "mapped_reads_many_maps", "unmapped_reads", "duplicate_maps",
+        "err_rate_primary_maps"
+    )
+    
+    expected_keys = c(
+        "reads", "mappedreads", "with1mapping", "with2ormoremappings",
+        "unmappedreads", "duplicatemappings(unreported)",
+        "errorrate(primarymappings)"
+    )
+}
 
 metrics = as.data.frame(
     matrix(
