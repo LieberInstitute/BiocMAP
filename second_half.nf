@@ -351,11 +351,10 @@ if (params.with_lambda) {
             
         shell:
             '''
-            #  This assumes paired-end samples!! (change later)
             if [ !{params.sample} == 'paired' ]; then
                 command_args='!{prefix}_1.f*q* !{prefix}_2.f*q*'
             else
-                command_args='--single !{prefix}.f*q*'
+                command_args='!{params.kallisto_single_args} !{prefix}.f*q*'
             fi
             
             #  Perform pseudoalignment to original and bisulfite-converted genomes
