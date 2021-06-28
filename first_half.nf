@@ -310,14 +310,13 @@ process EncodeReference {
 }
 
 
-process Merging {
+process PreprocessInputs {
 
     publishDir "${params.output}/preprocessing", mode:'copy', pattern:'*.log'
-    tag "Performing merging if/where necessary"
 
     input:
         file original_manifest from file("${params.input}/samples.manifest")
-        file merge_script from file("${workflow.projectDir}/scripts/preprocess_inputs_first.R")
+        file preprocess_script from file("${workflow.projectDir}/scripts/preprocess_inputs_first.R")
         
     output:
         file "*.f*q*" into merged_inputs_flat
@@ -326,7 +325,7 @@ process Merging {
 
     shell:
         '''
-        Rscript !{merge_script}
+        Rscript !{preprocess_script}
         
         cp .command.log preprocess_inputs_first_half.log
         '''
