@@ -691,11 +691,14 @@ process FilterAlignments {
             bam_type = "mfus"
         }
         '''
-        #  Quality-filter and deduplicate
+        #  Quality-filter, deduplicate, and sort
         samtools view -q 5 -F 0x100 -h !{sam_file} \
             | samblaster -r \
             | samtools sort -@ !{sort_threads} -o !{prefix}.!{bam_type}.bam -
-            
+        
+        #  Index BAM
+        samtools index -@ !{task.cpus} !{prefix}.!{bam_type}.bam
+        
         cp .command.log filter_alignments_!{prefix}.log
         '''
 }
