@@ -248,37 +248,67 @@ if (file.exists(f[1])) {
 #  FastQC metrics (after trimming where applicable)
 ######################################################
 
-#  Shortened metric names to collect
-key_names = c("FQCbasicStats","perBaseQual","perTileQual","perSeqQual",
-              "perBaseContent","GCcontent","Ncontent","SeqLengthDist",
-              "SeqDuplication","OverrepSeqs","AdapterContent","KmerContent")
-                                                                              
-#  Get filenames for the FastQC logs (2 per ID for paired-end samples)
-if (ncol(manifest) > 3) {
-    f = c()
-    for (i in 1:length(ids)) {
-        f = c(f, 
-              paste0(ids[i], '_1_fastqc.log'), 
-              paste0(ids[i], '_2_fastqc.log'))
-    }
-    
-    key_names = as.vector(outer(key_names, c('R1', 'R2'), FUN=paste0))
-} else {
-    f = paste0(ids, '_fastqc.log')
+#  Possible columns we expect in FastQC summaries
+fastqc_stat_names = c(
+    "Basic Statistics",
+    "Per base sequence quality",
+    "Per tile sequence quality",
+    "Per sequence quality scores",
+    "Per base sequence content",
+    "Per sequence GC content",
+    "Per base N content",
+    "Sequence Length Distribution",
+    "Sequence Duplication Levels",
+    "Overrepresented sequences",
+    "Adapter Content",
+    "Kmer Content"
+)
+
+#  Parse a vector of FastQC summaries, containing each sample in the order
+#  present in 'ids'. Return a matrix of statistics
+parse_summary <- function(summary_paths, ids) {
+    temp_rows <- lapply(summary_paths, function(x) {
+        temp <- readLines(x)
+        vals <- ss(temp, "\t")
+        names(vals) <- ss(temp, "\t", 2)
+
+        stopifnot(all(names(vals) %in% fastqc_stat_names))
+        vals <- vals[fastqc_stat_names]
+    })
+
+    actual_colnames <- gsub(" ", "_", tolower(fastqc_stat_names))
+    stat_mat <- matrix(unlist(temp_rows),
+        ncol = length(fastqc_stat_names),
+        byrow = TRUE,
+        dimnames = list(ids, actual_colnames)
+    )
+
+    return(stat_mat)
 }
 
-if (file.exists(f[1])) {
+if (file.exists(paste0(ids[1], '_1_fastqc.log')) || file.exists(paste0(ids[1], '_fastqc.log'))){
     print("Adding FastQC metrics (from before any trimming)...")
     
-    #  Get the first "column" in each log, and use this ugly code to form it into
-    #  a data frame where rows are samples and columns are FastQC metrics
-    #  (paired-end samples have one column per read per metric)
-    temp_df = data.frame(matrix(unlist(lapply(f, function(x) read.table(x, sep='\t')[,1])),
-                                nrow=length(ids),
-                                byrow=TRUE))
-    colnames(temp_df) = key_names
+    if (paired) {
+        summary_paths_1 = paste0(ids, '_1_fastqc.log')
+        summary_paths_2 = paste0(ids, '_2_fastqc.log')
+        
+        #  Get stat values for each mate
+        stat_mat <- parse_summary(summary_paths_1, ids)
+        stat_mat_2 <- parse_summary(summary_paths_2, ids)
     
-    metrics = cbind(metrics, temp_df)
+        #  Combine into a single matrix and simplify some values
+        stat_mat[] <- paste(stat_mat, stat_mat_2, sep = "/")
+        stat_mat[stat_mat == "PASS/PASS"] <- "PASS"
+        stat_mat[stat_mat == "WARN/WARN"] <- "WARN"
+        stat_mat[stat_mat == "FAIL/FAIL"] <- "FAIL"
+        stat_mat[stat_mat == "NA/NA"] <- "NA"
+    
+        metrics <- cbind(metrics, stat_mat)
+    } else {
+        f = paste0(ids, '_fastqc.log')
+        metrics <- cbind(metrics, parse_summary(f, ids))
+    }
 } else {
     print("Skipping FastQC metrics (no files specified)...")
 }
