@@ -100,10 +100,10 @@ form_links = function(paths, ids, end_name) {
     #  Symbolically link each file into the current working directory
     for (i in 1:length(ids)) {
         if (paired) {
-            command = paste0('ln -s ', paths[i], ' ', ids[i], '_1', end_name)
+            command = paste0('ln -s ', paths[2*i - 1], ' ', ids[i], '_1', end_name)
             run_command(command)
             
-            command = paste0('ln -s ', paths[i], ' ', ids[i], '_2', end_name)
+            command = paste0('ln -s ', paths[2*i], ' ', ids[i], '_2', end_name)
             run_command(command)
         } else {
             command = paste0('ln -s ', paths[i], ' ', ids[i], end_name)
