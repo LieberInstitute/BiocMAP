@@ -292,7 +292,7 @@ process PrepareReference {
 // Arioc requires an encoded reference sequence. This process builds that within the repo,
 // if the encoded sequence hasn't been built before.
 process EncodeReference {
-    storeDir "${params.annotation}/${params.reference}"
+    storeDir "${params.annotation}/${params.anno_suffix}"
     
     input:
         file encode_ref_gap_cfg
@@ -547,7 +547,7 @@ process WriteAriocConfigs {
         arioc_opts = '<' + exec_name + ' gpuMask="' + params.gpu_mask + \
                      '" batchSize="' + params.batch_size + \
                      '" verboseMask="0xE0000007">'
-        r_opts = "  <R>${params.annotation}/${params.reference}/${params.anno_suffix}</R>"
+        r_opts = "  <R>${params.annotation}/${params.anno_suffix}</R>"
         nongapped_opts = '  <nongapped seed="' + params.nongapped_seed + \
                          '" ' + params.nongapped_args + '/>'
         gapped_opts = '  <gapped seed="' + params.gapped_seed + '" ' + \
