@@ -1,4 +1,4 @@
-ordinary_packages = c('remotes', 'getopt', 'data.table', 'BiocManager')
+ordinary_packages = c('remotes', 'getopt', 'data.table', 'BiocManager', 'here')
 bioc_packages = c('bsseq', 'GenomicRanges', 'HDF5Array', 'BiocParallel')
 
 #  Ordinary R packages
