@@ -1,13 +1,19 @@
 library('getopt')
 
-spec <- matrix(c('ref', 'r', 1, 'character', 'reference genome',
-                 'dir', 'd', 1, 'character', 'output directory'),
-               byrow=TRUE, ncol=5)
+spec = matrix(
+    c(
+        'ref', 'r', 1, 'character', 'reference genome',
+        'dir', 'd', 1, 'character', 'output directory',
+        'gap_seed', 'g', 1, 'character', 'gapped seed',
+        'nongap_seed', 'n', 1, 'character', 'non-gapped seed'
+    ),
+    byrow = TRUE, ncol = 5
+)
 opt <- getopt(spec)
 
 seq_names = readLines(list.files(pattern='chr_names_.*'))
 
-for (seed in c("hsi25_0_32_CT", "ssi84_2_30_CT")) {
+for (seed in c(opt$gap_seed, opt$nongap_seed)) {
     #  The beginning portion of the config
     config_lines = c('<?xml version="1.0" encoding="utf-8"?>',
                      paste0('<AriocE seed="', seed, '" maxJ="200">'),
@@ -27,11 +33,11 @@ for (seed in c("hsi25_0_32_CT", "ssi84_2_30_CT")) {
                      '</AriocE>')
     
     #  Write config for this seed type
-    if (seed == "hsi25_0_32_CT") {
+    if (seed == opt$gap_seed) {
         filename = 'encode_ref_gap.cfg'
     } else {
         filename = 'encode_ref_nongap.cfg'
     }
 
-    writeLines(config_lines, file.path(getwd(), filename))
+    writeLines(config_lines, filename)
 }

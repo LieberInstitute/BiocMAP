@@ -281,7 +281,11 @@ process PrepareReference {
         #  Write the Arioc configs for encoding the reference
         out_dir=!{params.annotation}/!{params.anno_suffix}
         mkdir -p $out_dir
-        Rscript !{encode_ref_script} -r !{params.reference} -d $out_dir
+        Rscript !{encode_ref_script} \
+            -r !{params.reference} \
+            -d $out_dir \
+            -g !{params.gapped_seed} \
+            -n !{params.nongapped_seed}
         
         #  Keep a log of what happened so far
         cp .command.log prepare_ref.log
