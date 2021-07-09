@@ -729,7 +729,7 @@ process MakeRules {
             fastqc_dir = "[id]_[12]_fastqc"
         } else {
             bam_type = "mfus"
-            fastqc_dir = "[id]_fastqc"
+            fastqc_dir = "[id]*_fastqc"
         }
         
         txt = "# Automatically generated input to the second module/half\n" + \
