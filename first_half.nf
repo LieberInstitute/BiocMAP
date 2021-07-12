@@ -544,7 +544,7 @@ process WriteAriocConfigs {
             exec_name = "AriocU"
         }
         
-        encoded_dir = "${workflow.projectDir}/Arioc/temp_encoded_reads"
+        encoded_dir = "${workflow.workDir}/temp_encoded_reads"
         
         //  Form strings containing lines to write in the Arioc configs, that
         //  are dependent on parameters from the first-half config

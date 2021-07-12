@@ -1,1 +1,0 @@
-CPPS += $(wildcard Windux/*.cpp)

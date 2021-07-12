@@ -1,1 +1,0 @@
-CPPS += $(wildcard CppCommon/*.cpp)
