@@ -97,6 +97,10 @@ if (opt$paired == "paired") {
         mess = paste(mess, "would halt analysis.")
         
         print(mess)
+        
+        qname_field = ''
+        rg_line = ''
+        qbias_field = ''
     }
     
 } else {
