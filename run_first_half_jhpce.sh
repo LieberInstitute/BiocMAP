@@ -12,5 +12,6 @@ nextflow first_half.nf \
     --reference "hg38" \
     --input "/dcl01/lieber/ajaffe/Nick/misc/manifests/WGBS_test_master" \
     --output "/dcl01/lieber/ajaffe/Nick/misc/manifests/WGBS_test_master/out" \
+    -w "/dcl01/lieber/ajaffe/Nick/misc/manifests/WGBS_test_master/work" \
     --trim_mode "force" \
     -profile first_half_jhpce
