@@ -19,11 +19,12 @@ if (opt$paired == "paired") {
     #  FASTQ sequence to AriocE.
     ###################################################################################
     
-    id1 = system(paste0('cat ', id, '_val_1.fq | grep "@" | head -n 1'), intern=TRUE)
-    id2 = system(paste0('cat ', id, '_val_2.fq | grep "@" | head -n 1'), intern=TRUE)
+    id1 = system(paste0('grep "@" ', id, '_val_1.fq | head -n 1'), intern=TRUE)
+    id2 = system(paste0('grep "@" ', id, '_val_2.fq | head -n 1'), intern=TRUE)
     
     #----------------------------------------------------------------------------------
-    #  Tries to recognize the read-ID style (checks "old illumina", "illumina casava")
+    #  Tries to recognize the read-ID style (checks "old illumina", "illumina casava",
+    #  plain SRA)
     #----------------------------------------------------------------------------------
     
     print("Examining read ID format in the FASTQ files since data is paired...")
@@ -89,6 +90,23 @@ if (opt$paired == "paired") {
         
         #  Use flowcell id and lane as the "read group"
         rg_line = '    <rg ID="*:*:(*:*):" PL="ILLUMINA" />'
+    }
+    
+    #  Check for plain SRA format
+    temp = strsplit(id1, ' ')[[1]]
+    cond1 = substr(temp[1], 1, 4) == '@SRR'
+    cond2 = substr(temp[3], 1, 7) == 'length='
+    if (cond1 & cond2) {
+        recognized = TRUE
+        print("FASTQ files appear to originate from 'fastq-dump'; assuming a 'qbias' of 33 (the default)!")
+        
+        qname_field = 'QNAME="*.* (*) " '
+        
+        # The default for SRA files from 'fastq-dump'
+        qbias_field = 'qualityScoreBias="33"'
+        
+        #rg_line = '    <rg ID="*.(*) " />'
+        rg_line = ''
     }
     
     if (!recognized) {
