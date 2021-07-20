@@ -14,9 +14,20 @@
 set -e
 
 if [ "$1" == "docker" ]; then
+
     echo "Not yet supported! Please use 'bash install_software.sh "local"'."
+    
 elif [ "$1" == "jhpce" ]; then
-    echo "Not yet supported! Please use 'bash install_software.sh "local"'."
+
+    echo "User selected set-up at JHPCE. Installing any missing R packages..."
+    module load conda_R/4.0.x
+    Rscript scripts/install_R_packages.R
+    
+    echo "Setting up test files..."
+    Rscript scripts/prepare_test_files.R
+    
+    echo "Done."
+    
 elif [ "$1" == "local" ]; then
     #  Verify java can be executed, since this is a pre-requisite
     if [ -x "$(command -v java)" ]; then

@@ -5,8 +5,9 @@ run_*_half_*.log
 Arioc/temp_encoded_reads*
 
 #	Personal data- related
-test/samples.manifest
 out/*
+test/*/*/samples.manifest
+test/*/*/rules.txt
 
 #	Large files that should be built
 ref/*
