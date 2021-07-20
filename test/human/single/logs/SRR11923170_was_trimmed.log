@@ -1,0 +1,205 @@
+Loading LIBD module for trimgalore/0.6.6
+Loading LIBD module for FastQC/0.11.8
+Multicore support not enabled. Proceeding with single-core trimming.
+Path to Cutadapt set as: 'cutadapt' (default)
+Cutadapt seems to be working fine (tested command 'cutadapt --version')
+Cutadapt version: 3.4
+single-core operation.
+No quality encoding type selected. Assuming that the data provided uses Sanger encoded Phred scores (default)
+
+Using user-specified basename (>>SRR11923170<<) instead of deriving the filename from the input file(s)
+Writing report to 'SRR11923170.fastq.gz_trimming_report.txt'
+
+SUMMARISING RUN PARAMETERS
+==========================
+Input filename: SRR11923170.fastq.gz
+Trimming mode: single-end
+Trim Galore version: 0.6.6
+Cutadapt version: 3.4
+Number of cores used for trimming: 1
+Quality Phred score cutoff: 20
+Quality encoding type selected: ASCII+33
+Adapter sequence: 'AGATCGGAAGAGC' (Illumina TruSeq, Sanger iPCR; user defined)
+Maximum trimming error rate: 0.1 (default)
+Minimum required adapter overlap (stringency): 1 bp
+Minimum required sequence length before a sequence gets removed: 20 bp
+Running FastQC on the data once trimming has completed
+Running FastQC with the following extra arguments: '--extract'
+
+Cutadapt seems to be fairly up-to-date (version 3.4). Setting -j 1
+Writing final adapter and quality trimmed output to SRR11923170_trimmed.fq
+
+
+  >>> Now performing quality (cutoff '-q 20') and adapter trimming in a single pass for the adapter sequence: 'AGATCGGAAGAGC' from file SRR11923170.fastq.gz <<< 
+This is cutadapt 3.4 with Python 3.7.3
+Command line parameters: -j 1 -e 0.1 -q 20 -O 1 -a AGATCGGAAGAGC SRR11923170.fastq.gz
+Processing reads on 1 core in single-end mode ...
+Finished in 0.39 s (16 µs/read; 3.82 M reads/minute).
+
+=== Summary ===
+
+Total reads processed:                  25,000
+Reads with adapters:                    21,225 (84.9%)
+Reads written (passing filters):        25,000 (100.0%)
+
+Total basepairs processed:     5,750,000 bp
+Quality-trimmed:                 714,613 bp (12.4%)
+Total written (filtered):      3,904,509 bp (67.9%)
+
+=== Adapter 1 ===
+
+Sequence: AGATCGGAAGAGC; Type: regular 3'; Length: 13; Trimmed: 21225 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-13 bp: 1
+
+Bases preceding removed adapters:
+  A: 30.2%
+  C: 0.2%
+  G: 19.4%
+  T: 50.2%
+  none/other: 0.0%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+1	1701	6250.0	0	1701
+2	279	1562.5	0	279
+3	145	390.6	0	145
+4	68	97.7	0	68
+5	55	24.4	0	55
+6	59	6.1	0	59
+7	115	1.5	0	115
+8	54	0.4	0	54
+9	144	0.1	0	144
+10	58	0.0	1	56 2
+11	87	0.0	1	75 12
+12	66	0.0	1	59 7
+13	45	0.0	1	38 7
+14	73	0.0	1	66 7
+15	70	0.0	1	67 3
+16	98	0.0	1	92 6
+17	253	0.0	1	243 10
+18	138	0.0	1	130 8
+19	24	0.0	1	20 4
+20	81	0.0	1	78 3
+21	91	0.0	1	85 6
+22	18	0.0	1	16 2
+23	31	0.0	1	29 2
+24	57	0.0	1	50 7
+25	120	0.0	1	108 12
+26	33	0.0	1	30 3
+27	73	0.0	1	66 7
+28	236	0.0	1	230 6
+29	333	0.0	1	307 26
+30	93	0.0	1	82 11
+31	62	0.0	1	54 8
+32	82	0.0	1	76 6
+33	77	0.0	1	69 8
+34	301	0.0	1	286 15
+35	143	0.0	1	135 8
+36	29	0.0	1	28 1
+37	121	0.0	1	104 17
+38	363	0.0	1	337 26
+39	53	0.0	1	49 4
+40	219	0.0	1	212 7
+41	58	0.0	1	55 3
+42	248	0.0	1	242 6
+43	218	0.0	1	215 3
+44	75	0.0	1	66 9
+45	274	0.0	1	262 12
+46	64	0.0	1	61 3
+47	349	0.0	1	342 7
+48	142	0.0	1	139 3
+49	62	0.0	1	59 3
+50	132	0.0	1	128 4
+51	218	0.0	1	214 4
+52	80	0.0	1	76 4
+53	150	0.0	1	142 8
+54	508	0.0	1	496 12
+55	287	0.0	1	272 15
+56	66	0.0	1	62 4
+57	232	0.0	1	227 5
+58	157	0.0	1	149 8
+59	91	0.0	1	81 10
+60	288	0.0	1	282 6
+61	259	0.0	1	254 5
+62	58	0.0	1	56 2
+63	318	0.0	1	308 10
+64	155	0.0	1	152 3
+65	119	0.0	1	115 4
+66	88	0.0	1	81 7
+67	55	0.0	1	54 1
+68	86	0.0	1	82 4
+69	101	0.0	1	99 2
+70	218	0.0	1	214 4
+71	410	0.0	1	397 13
+72	563	0.0	1	551 12
+73	838	0.0	1	816 22
+74	1705	0.0	1	1676 29
+75	2311	0.0	1	2267 44
+76	2843	0.0	1	2797 46
+77	900	0.0	1	886 14
+78	179	0.0	1	176 3
+79	59	0.0	1	59
+80	22	0.0	1	22
+81	16	0.0	1	16
+82	16	0.0	1	15 1
+83	12	0.0	1	12
+84	5	0.0	1	4 1
+85	2	0.0	1	2
+87	2	0.0	1	2
+89	1	0.0	1	1
+90	2	0.0	1	2
+91	1	0.0	1	1
+92	3	0.0	1	3
+93	5	0.0	1	5
+94	1	0.0	1	1
+95	2	0.0	1	2
+96	1	0.0	1	1
+98	1	0.0	1	1
+99	1	0.0	1	1
+100	5	0.0	1	4 1
+101	1	0.0	1	0 1
+102	1	0.0	1	0 1
+103	2	0.0	1	2
+104	2	0.0	1	2
+106	2	0.0	1	2
+107	1	0.0	1	1
+108	2	0.0	1	2
+109	1	0.0	1	1
+111	1	0.0	1	1
+112	1	0.0	1	1
+126	1	0.0	1	1
+
+RUN STATISTICS FOR INPUT FILE: SRR11923170.fastq.gz
+=============================================
+25000 sequences processed in total
+Sequences removed because they became shorter than the length cutoff of 20 bp:	84 (0.3%)
+
+Now renaming the output file SRR11923170_trimmed.fq
+
+ORIGINAL FILE 1: >>SRR11923170_trimmed.fq<<	RENAMING TO:>>SRR11923170_trimmed.fq<<
+
+  >>> Now running FastQC on the data <<<
+
+Started analysis of SRR11923170_trimmed.fq
+Approx 5% complete for SRR11923170_trimmed.fq
+Approx 10% complete for SRR11923170_trimmed.fq
+Approx 15% complete for SRR11923170_trimmed.fq
+Approx 20% complete for SRR11923170_trimmed.fq
+Approx 25% complete for SRR11923170_trimmed.fq
+Approx 30% complete for SRR11923170_trimmed.fq
+Approx 35% complete for SRR11923170_trimmed.fq
+Approx 40% complete for SRR11923170_trimmed.fq
+Approx 45% complete for SRR11923170_trimmed.fq
+Approx 50% complete for SRR11923170_trimmed.fq
+Approx 55% complete for SRR11923170_trimmed.fq
+Approx 60% complete for SRR11923170_trimmed.fq
+Approx 65% complete for SRR11923170_trimmed.fq
+Approx 70% complete for SRR11923170_trimmed.fq
+Approx 75% complete for SRR11923170_trimmed.fq
+Approx 80% complete for SRR11923170_trimmed.fq
+Approx 85% complete for SRR11923170_trimmed.fq
+Approx 90% complete for SRR11923170_trimmed.fq
+Approx 95% complete for SRR11923170_trimmed.fq
+Analysis complete for SRR11923170_trimmed.fq

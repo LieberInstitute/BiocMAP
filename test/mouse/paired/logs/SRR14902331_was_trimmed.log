@@ -1,0 +1,299 @@
+Loading LIBD module for trimgalore/0.6.6
+Loading LIBD module for FastQC/0.11.8
+Multicore support not enabled. Proceeding with single-core trimming.
+Path to Cutadapt set as: 'cutadapt' (default)
+Cutadapt seems to be working fine (tested command 'cutadapt --version')
+Cutadapt version: 3.4
+single-core operation.
+No quality encoding type selected. Assuming that the data provided uses Sanger encoded Phred scores (default)
+
+Using user-specified basename (>>SRR14902331<<) instead of deriving the filename from the input file(s)
+Writing report to 'SRR14902331_1.fastq.gz_trimming_report.txt'
+
+SUMMARISING RUN PARAMETERS
+==========================
+Input filename: SRR14902331_1.fastq.gz
+Trimming mode: paired-end
+Trim Galore version: 0.6.6
+Cutadapt version: 3.4
+Number of cores used for trimming: 1
+Quality Phred score cutoff: 20
+Quality encoding type selected: ASCII+33
+Adapter sequence: 'AGATCGGAAGAGC' (Illumina TruSeq, Sanger iPCR; user defined)
+Maximum trimming error rate: 0.1 (default)
+Minimum required adapter overlap (stringency): 1 bp
+Minimum required sequence length for both reads before a sequence pair gets removed: 20 bp
+Running FastQC on the data once trimming has completed
+Running FastQC with the following extra arguments: '--extract'
+
+Cutadapt seems to be fairly up-to-date (version 3.4). Setting -j 1
+Writing final adapter and quality trimmed output to SRR14902331_1_trimmed.fq
+
+
+  >>> Now performing quality (cutoff '-q 20') and adapter trimming in a single pass for the adapter sequence: 'AGATCGGAAGAGC' from file SRR14902331_1.fastq.gz <<< 
+This is cutadapt 3.4 with Python 3.7.3
+Command line parameters: -j 1 -e 0.1 -q 20 -O 1 -a AGATCGGAAGAGC SRR14902331_1.fastq.gz
+Processing reads on 1 core in single-end mode ...
+Finished in 0.63 s (25 µs/read; 2.37 M reads/minute).
+
+=== Summary ===
+
+Total reads processed:                  25,000
+Reads with adapters:                     4,189 (16.8%)
+Reads written (passing filters):        25,000 (100.0%)
+
+Total basepairs processed:     1,669,699 bp
+Quality-trimmed:                 118,602 bp (7.1%)
+Total written (filtered):      1,540,084 bp (92.2%)
+
+=== Adapter 1 ===
+
+Sequence: AGATCGGAAGAGC; Type: regular 3'; Length: 13; Trimmed: 4189 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-13 bp: 1
+
+Bases preceding removed adapters:
+  A: 32.6%
+  C: 5.0%
+  G: 24.2%
+  T: 38.0%
+  none/other: 0.2%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+1	3015	6250.0	0	3015
+2	613	1562.5	0	613
+3	328	390.6	0	328
+4	116	97.7	0	116
+5	4	24.4	0	4
+7	1	1.5	0	1
+11	1	0.0	1	0 1
+12	1	0.0	1	0 1
+14	1	0.0	1	0 1
+15	1	0.0	1	0 1
+16	2	0.0	1	0 2
+17	1	0.0	1	0 1
+18	2	0.0	1	1 1
+19	4	0.0	1	0 4
+20	5	0.0	1	1 4
+21	1	0.0	1	1
+22	2	0.0	1	1 1
+23	3	0.0	1	3
+24	1	0.0	1	1
+25	2	0.0	1	2
+26	2	0.0	1	1 1
+27	1	0.0	1	1
+28	1	0.0	1	0 1
+29	2	0.0	1	1 1
+30	3	0.0	1	3
+31	1	0.0	1	0 1
+32	1	0.0	1	0 1
+33	4	0.0	1	1 3
+34	3	0.0	1	3
+35	2	0.0	1	1 1
+36	1	0.0	1	1
+37	3	0.0	1	2 1
+38	1	0.0	1	0 1
+39	3	0.0	1	3
+41	1	0.0	1	1
+44	1	0.0	1	0 1
+47	1	0.0	1	1
+48	1	0.0	1	0 1
+61	1	0.0	1	0 1
+64	1	0.0	1	1
+65	1	0.0	1	1
+67	7	0.0	1	5 2
+68	12	0.0	1	5 7
+69	10	0.0	1	7 3
+70	9	0.0	1	6 3
+71	2	0.0	1	0 2
+72	4	0.0	1	4
+74	3	0.0	1	2 1
+75	3	0.0	1	2 1
+
+RUN STATISTICS FOR INPUT FILE: SRR14902331_1.fastq.gz
+=============================================
+25000 sequences processed in total
+The length threshold of paired-end sequences gets evaluated later on (in the validation step)
+
+Writing report to 'SRR14902331_2.fastq.gz_trimming_report.txt'
+
+SUMMARISING RUN PARAMETERS
+==========================
+Input filename: SRR14902331_2.fastq.gz
+Trimming mode: paired-end
+Trim Galore version: 0.6.6
+Cutadapt version: 3.4
+Number of cores used for trimming: 1
+Quality Phred score cutoff: 20
+Quality encoding type selected: ASCII+33
+Adapter sequence: 'AGATCGGAAGAGC' (Illumina TruSeq, Sanger iPCR; user defined)
+Maximum trimming error rate: 0.1 (default)
+Minimum required adapter overlap (stringency): 1 bp
+Minimum required sequence length for both reads before a sequence pair gets removed: 20 bp
+Running FastQC on the data once trimming has completed
+Running FastQC with the following extra arguments: '--extract'
+
+Cutadapt seems to be fairly up-to-date (version 3.4). Setting -j -j 1
+Writing final adapter and quality trimmed output to SRR14902331_2_trimmed.fq
+
+
+  >>> Now performing quality (cutoff '-q 20') and adapter trimming in a single pass for the adapter sequence: 'AGATCGGAAGAGC' from file SRR14902331_2.fastq.gz <<< 
+This is cutadapt 3.4 with Python 3.7.3
+Command line parameters: -j 1 -e 0.1 -q 20 -O 1 -a AGATCGGAAGAGC SRR14902331_2.fastq.gz
+Processing reads on 1 core in single-end mode ...
+Finished in 0.66 s (26 µs/read; 2.28 M reads/minute).
+
+=== Summary ===
+
+Total reads processed:                  25,000
+Reads with adapters:                     7,398 (29.6%)
+Reads written (passing filters):        25,000 (100.0%)
+
+Total basepairs processed:     1,678,044 bp
+Quality-trimmed:                 147,895 bp (8.8%)
+Total written (filtered):      1,515,296 bp (90.3%)
+
+=== Adapter 1 ===
+
+Sequence: AGATCGGAAGAGC; Type: regular 3'; Length: 13; Trimmed: 7398 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-13 bp: 1
+
+Bases preceding removed adapters:
+  A: 54.8%
+  C: 18.8%
+  G: 1.9%
+  T: 24.3%
+  none/other: 0.3%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+1	7005	6250.0	0	7005
+2	185	1562.5	0	185
+3	34	390.6	0	34
+4	12	97.7	0	12
+5	3	24.4	0	3
+6	1	6.1	0	1
+7	1	1.5	0	1
+9	2	0.1	0	1 1
+10	1	0.0	1	0 1
+11	5	0.0	1	1 4
+12	2	0.0	1	1 1
+13	1	0.0	1	0 1
+14	2	0.0	1	0 2
+15	2	0.0	1	1 1
+16	3	0.0	1	1 2
+17	4	0.0	1	2 2
+18	3	0.0	1	1 2
+19	2	0.0	1	1 1
+20	1	0.0	1	1
+21	3	0.0	1	2 1
+22	2	0.0	1	0 2
+24	2	0.0	1	1 1
+25	7	0.0	1	4 3
+27	1	0.0	1	0 1
+29	6	0.0	1	2 4
+30	4	0.0	1	2 2
+32	9	0.0	1	5 4
+33	1	0.0	1	0 1
+34	2	0.0	1	2
+36	4	0.0	1	3 1
+39	1	0.0	1	0 1
+40	2	0.0	1	1 1
+41	2	0.0	1	2
+42	1	0.0	1	0 1
+44	2	0.0	1	1 1
+48	1	0.0	1	0 1
+49	1	0.0	1	1
+51	1	0.0	1	1
+53	1	0.0	1	0 1
+56	1	0.0	1	0 1
+63	1	0.0	1	0 1
+64	1	0.0	1	0 1
+66	9	0.0	1	2 7
+67	16	0.0	1	7 9
+68	20	0.0	1	8 12
+69	14	0.0	1	7 7
+70	3	0.0	1	2 1
+71	7	0.0	1	1 6
+72	1	0.0	1	0 1
+74	1	0.0	1	1
+75	2	0.0	1	0 2
+
+RUN STATISTICS FOR INPUT FILE: SRR14902331_2.fastq.gz
+=============================================
+25000 sequences processed in total
+The length threshold of paired-end sequences gets evaluated later on (in the validation step)
+
+Validate paired-end files SRR14902331_1_trimmed.fq and SRR14902331_2_trimmed.fq
+Now renaming the output files
+
+ORIGINAL FILE 1: >>SRR14902331_1_trimmed.fq<<	RENAMING TO:>>SRR14902331_R1_trimmed.fq<<
+ORIGINAL FILE 2: >>SRR14902331_2_trimmed.fq<<	RENAMING TO:>>SRR14902331_R2_trimmed.fq<<
+file_1: SRR14902331_R1_trimmed.fq, file_2: SRR14902331_R2_trimmed.fq
+
+
+>>>>> Now validing the length of the 2 paired-end infiles: SRR14902331_R1_trimmed.fq and SRR14902331_R2_trimmed.fq <<<<<
+Renaming the output files (AGAIN).
+Writing validated paired-end Read 1 reads to SRR14902331_val_1.fq
+Writing validated paired-end Read 2 reads to SRR14902331_val_2.fq
+
+Total number of sequences analysed: 25000
+
+Number of sequence pairs removed because at least one read was shorter than the length cutoff (20 bp): 3568 (14.27%)
+
+
+  >>> Now running FastQC on the validated data SRR14902331_val_1.fq<<<
+
+Started analysis of SRR14902331_val_1.fq
+Approx 5% complete for SRR14902331_val_1.fq
+Approx 10% complete for SRR14902331_val_1.fq
+Approx 15% complete for SRR14902331_val_1.fq
+Approx 20% complete for SRR14902331_val_1.fq
+Approx 25% complete for SRR14902331_val_1.fq
+Approx 30% complete for SRR14902331_val_1.fq
+Approx 35% complete for SRR14902331_val_1.fq
+Approx 40% complete for SRR14902331_val_1.fq
+Approx 45% complete for SRR14902331_val_1.fq
+Approx 50% complete for SRR14902331_val_1.fq
+Approx 55% complete for SRR14902331_val_1.fq
+Approx 60% complete for SRR14902331_val_1.fq
+Approx 65% complete for SRR14902331_val_1.fq
+Approx 70% complete for SRR14902331_val_1.fq
+Approx 75% complete for SRR14902331_val_1.fq
+Approx 80% complete for SRR14902331_val_1.fq
+Approx 85% complete for SRR14902331_val_1.fq
+Approx 90% complete for SRR14902331_val_1.fq
+Approx 95% complete for SRR14902331_val_1.fq
+Analysis complete for SRR14902331_val_1.fq
+
+  >>> Now running FastQC on the validated data SRR14902331_val_2.fq<<<
+
+Started analysis of SRR14902331_val_2.fq
+Approx 5% complete for SRR14902331_val_2.fq
+Approx 10% complete for SRR14902331_val_2.fq
+Approx 15% complete for SRR14902331_val_2.fq
+Approx 20% complete for SRR14902331_val_2.fq
+Approx 25% complete for SRR14902331_val_2.fq
+Approx 30% complete for SRR14902331_val_2.fq
+Approx 35% complete for SRR14902331_val_2.fq
+Approx 40% complete for SRR14902331_val_2.fq
+Approx 45% complete for SRR14902331_val_2.fq
+Approx 50% complete for SRR14902331_val_2.fq
+Approx 55% complete for SRR14902331_val_2.fq
+Approx 60% complete for SRR14902331_val_2.fq
+Approx 65% complete for SRR14902331_val_2.fq
+Approx 70% complete for SRR14902331_val_2.fq
+Approx 75% complete for SRR14902331_val_2.fq
+Approx 80% complete for SRR14902331_val_2.fq
+Approx 85% complete for SRR14902331_val_2.fq
+Approx 90% complete for SRR14902331_val_2.fq
+Approx 95% complete for SRR14902331_val_2.fq
+Analysis complete for SRR14902331_val_2.fq
+Deleting both intermediate output files SRR14902331_R1_trimmed.fq and SRR14902331_R2_trimmed.fq
+
+====================================================================================================
+

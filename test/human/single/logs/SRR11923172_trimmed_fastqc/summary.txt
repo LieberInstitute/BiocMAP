@@ -1,0 +1,10 @@
+PASS	Basic Statistics	SRR11923172_trimmed.fq
+PASS	Per base sequence quality	SRR11923172_trimmed.fq
+PASS	Per sequence quality scores	SRR11923172_trimmed.fq
+FAIL	Per base sequence content	SRR11923172_trimmed.fq
+WARN	Per sequence GC content	SRR11923172_trimmed.fq
+PASS	Per base N content	SRR11923172_trimmed.fq
+WARN	Sequence Length Distribution	SRR11923172_trimmed.fq
+PASS	Sequence Duplication Levels	SRR11923172_trimmed.fq
+PASS	Overrepresented sequences	SRR11923172_trimmed.fq
+PASS	Adapter Content	SRR11923172_trimmed.fq

@@ -1,0 +1,10 @@
+PASS	Basic Statistics	SRR14902331_val_2.fq
+PASS	Per base sequence quality	SRR14902331_val_2.fq
+PASS	Per sequence quality scores	SRR14902331_val_2.fq
+FAIL	Per base sequence content	SRR14902331_val_2.fq
+PASS	Per sequence GC content	SRR14902331_val_2.fq
+PASS	Per base N content	SRR14902331_val_2.fq
+WARN	Sequence Length Distribution	SRR14902331_val_2.fq
+PASS	Sequence Duplication Levels	SRR14902331_val_2.fq
+PASS	Overrepresented sequences	SRR14902331_val_2.fq
+PASS	Adapter Content	SRR14902331_val_2.fq

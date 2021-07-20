@@ -1,0 +1,11 @@
+PASS	Basic Statistics	OLIG1_val_1.fq
+PASS	Per base sequence quality	OLIG1_val_1.fq
+PASS	Per tile sequence quality	OLIG1_val_1.fq
+PASS	Per sequence quality scores	OLIG1_val_1.fq
+FAIL	Per base sequence content	OLIG1_val_1.fq
+WARN	Per sequence GC content	OLIG1_val_1.fq
+PASS	Per base N content	OLIG1_val_1.fq
+WARN	Sequence Length Distribution	OLIG1_val_1.fq
+PASS	Sequence Duplication Levels	OLIG1_val_1.fq
+WARN	Overrepresented sequences	OLIG1_val_1.fq
+PASS	Adapter Content	OLIG1_val_1.fq

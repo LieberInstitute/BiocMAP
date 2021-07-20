@@ -1,0 +1,272 @@
+Loading LIBD module for Arioc/1.43
+
+The following have been reloaded with a version change:
+  1) gcc/4.4.7 => gcc/5.5.0
+
+183820094 [00001ebf] AriocU v1.43.2994.21109 (release) +2021-04-19T17:57:14
+183820094 [00001ebf] Copyright (c) 2015-2021 Johns Hopkins University.  All rights reserved.
+183820094 [00001ebf]  compiled             : 2021-05-06T17:18:08 (GNU g++ v5.5.0)
+183820094 [00001ebf]  data type sizes      : int=4 long=8 *=8 Jvalue5=5 Jvalue8=8 JtableHeader=5 (little-endian)
+183820094 [00001ebf]  computer name        : compute-117.cm.cluster
+183820094 [00001ebf]  executable file      : /dcl01/lieber/ajaffe/Nick/WGBS/test/work/f7/d6a95de5dfe004f4f983d63f80272b/AriocU
+183820126 [00001ebf]  configuration file   : /dcl01/lieber/ajaffe/Nick/WGBS/test/work/54/5fd61d03de26b1d0e091be8bfe17d5/SRR1536122_align_reads.cfg
+183820760 [00001ebf]  max CPU threads      : *
+183820760 [00001ebf]  number of GPUs       : 1 (mask: 0x00000001)
+183820760 [00001ebf]  batch size           : 32k (32768)
+183820760 [00001ebf]  R sequence path      : /dcl01/lieber/ajaffe/Nick/dev/WGBS-master/ref/mm10_gencode_M23_main
+183820760 [00001ebf]   DNA base conversion : CT
+183820760 [00001ebf]  nongapped aligner:
+183820760 [00001ebf]   seed                : ssi84_2_30_CT
+183820760 [00001ebf]    hashSeedWidth      : 84
+183820760 [00001ebf]    spacedSeedWeight   : 48
+183820760 [00001ebf]    maxMismatches      : 5
+183820760 [00001ebf]    hashKeyWidth       : 30
+183820760 [00001ebf]   seed                : ssi84_2_30_CT
+183820760 [00001ebf]   big-bucket threshold: 200
+183820760 [00001ebf]   maxJ                : 200
+183820760 [00001ebf]   seedCoverage        : 7
+183820760 [00001ebf]  gapped aligner:
+183820760 [00001ebf]   seed                : hsi25_0_30_CT
+183820760 [00001ebf]    hashSeedWidth      : 25
+183820760 [00001ebf]    hashKeyWidth       : 30
+183820760 [00001ebf]   mapqVersion         : 2 (Bowtie 2 MAPQ v2, modified)
+183820760 [00001ebf]   W scores/penalties  : 2,6,5,3
+183820760 [00001ebf]    Wm (match)         : 2
+183820760 [00001ebf]    Wx (mismatch)      : 6
+183820760 [00001ebf]    Wg (gap)           : 5
+183820760 [00001ebf]    Ws (gap space)     : 3
+183820760 [00001ebf]    Wn (N)             : 6
+183820760 [00001ebf]    Vt (threshold)     : 1*N + 0
+183820760 [00001ebf]   big-bucket threshold: 200
+183820760 [00001ebf]   maxJ                : 20
+183820760 [00001ebf]   AtN,AtO             : 1,1
+183820760 [00001ebf]   seedDepth           : 4
+183820760 [00001ebf]   minPosSep           : 5
+183820760 [00001ebf]  unpaired reads
+183820760 [00001ebf]   reporting           : mapped
+183820760 [00001ebf]   maxAperRead         : 1
+183820760 [00001ebf]   seed rev complement : true
+183820760 [00001ebf]  Q sequences (reads)  : (1 files, unpaired)
+183820760 [00001ebf]   nominal error rate  : (unspecified)
+183820760 [00001ebf]   00000.002           : /dcl01/lieber/ajaffe/Nick/dev/WGBS-master/Arioc/temp_encoded_reads/SRR1536122_trimmed$a21.sbf
+183820760 [00001ebf]  A (alignment output) : (1 path, 1073741824 mappings per output file, output file base name: AriocU)
+183820760 [00001ebf]   SAM                 : ./ (mapped)
+183820760 [00001ebf]   cigarFormat         : MID
+183820760 [00001ebf]   mdFormat            : standard
+183820760 [00001ebf]   XM soft clip context: excluded
+183820760 [00001ebf]  X parameters
+183820760 [00001ebf]   cgaReserved         : 25165824 (0x0000000001800000)
+183820760 [00001ebf]   serialLUTinit       : 1 (0x0000000000000001)
+183820760 [00001ebf]   useHJinGPmem        : 0 (0x0000000000000000)
+183820760 [00001ebf]   useHinGmem          : 0 (0x0000000000000000)
+183820760 [00001ebf]   useJinGmem          : 0 (0x0000000000000000)
+183820760 [00001ebf]   watchdogInterval    : 60 (0x000000000000003c)
+183820781 [00001ebf] AriocBase::loadR: load R from disk...
+183821754 [00001ebf] AriocBase::loadR: loaded 22 R sequences: 2076881496 bytes (1.9GB) from 44 files in 973ms (2035.6MB/s)
+183821754 [00001ebf] AriocBase::loadHJ: load H and J LUTs from disk...
+183821755 [00001ed3] CudaPinnedPtr<T>::Realloc: cudaHostAlloc( ..., 5368709120 bytes, ... ) on thread 7891
+183824532 [00001ed3] CudaPinnedPtr<T>::Realloc: back from cudaHostAlloc()
+183826733 [00001ed3] tuLoadLUT<T>::main: loaded 5368709120 bytes (5.0GB) in 4978ms (1028.5MB/s) from /dcl01/lieber/ajaffe/Nick/dev/WGBS-master/ref/mm10_gencode_M23_main/ssi84_2_30_CT/H230.sbf
+183826734 [00001ee5] CudaPinnedPtr<T>::Realloc: cudaHostAlloc( ..., 26491059120 bytes, ... ) on thread 7909
+183839847 [00001ee5] CudaPinnedPtr<T>::Realloc: back from cudaHostAlloc()
+183851238 [00001ee5] tuLoadLUT<T>::main: loaded 26491059120 bytes (24.7GB) in 24504ms (1031.0MB/s) from /dcl01/lieber/ajaffe/Nick/dev/WGBS-master/ref/mm10_gencode_M23_main/ssi84_2_30_CT/J230.sbf
+183851239 [00001f33] CudaPinnedPtr<T>::Realloc: cudaHostAlloc( ..., 5368709120 bytes, ... ) on thread 7987
+183853676 [00001f33] CudaPinnedPtr<T>::Realloc: back from cudaHostAlloc()
+183855908 [00001f33] tuLoadLUT<T>::main: loaded 5368709120 bytes (5.0GB) in 4669ms (1096.6MB/s) from /dcl01/lieber/ajaffe/Nick/dev/WGBS-master/ref/mm10_gencode_M23_main/hsi25_0_30_CT/H030.sbf
+183855909 [00001f40] CudaPinnedPtr<T>::Realloc: cudaHostAlloc( ..., 26505443128 bytes, ... ) on thread 8000
+183912030 [00001f40] CudaPinnedPtr<T>::Realloc: back from cudaHostAlloc()
+183946826 [00001f40] tuLoadLUT<T>::main: loaded 26505443125 bytes (24.7GB) in 50918ms (496.4MB/s) from /dcl01/lieber/ajaffe/Nick/dev/WGBS-master/ref/mm10_gencode_M23_main/hsi25_0_30_CT/J030.sbf
+183946827 [00001ebf] AriocBase::loadHJ: loaded H and J LUTs from disk in 85073ms (714.5MB/s)
+183946827 [00001ebf] AriocU::Main: BuffersPerBinding=1 ThreadsPerGPU=1
+183946828 [00001fd0] CudaDeviceBinding::CudaDeviceBinding: CUDA device 0 (Tesla V100-PCIE-32GB): CC 3.7/7.0; CPU thread 0x00001FD0
+183947309 [00001fd0] tuGpu::loadR: initialized R buffer (2076881496 bytes) at 0x00007fb8ac000000 in CUDA global memory
+183947310 [00001fd0] tuGpu::loadLUT: initialized Hn buffer (5368709120 bytes) at 0x00007fc6c0000000 for device 0 (ordinal 0) in CUDA pinned memory
+183947310 [00001fd0] tuGpu::loadLUT: initialized Jn buffer (26491059120 bytes) at 0x00007fc094000000 for device 0 (ordinal 0) in CUDA pinned memory
+183947310 [00001fd0] tuGpu::loadLUT: initialized Hg buffer (5368709120 bytes) at 0x00007fbf54000000 for device 0 (ordinal 0) in CUDA pinned memory
+183947310 [00001fd0] tuGpu::loadLUT: initialized Jg buffer (26505443128 bytes) at 0x00007fb928000000 for device 0 (ordinal 0) in CUDA pinned memory
+183947310 [00001fd0] AriocBase::UpdateProgress:   0%: 0 reads aligned
+183947599 [00001fd0] AriocBase::UpdateProgress: 100%: 24941 reads aligned
+183947921 [00001ebf] AriocBase::releaseGpuResources: GPU LUT unload starts...
+184001161 [00001ebf] AriocBase::releaseGpuResources: GPU LUT unload complete in 13240ms
+184001161 [00001ebf] 
+184001161 [00001ebf] ----------------------------
+184001161 [00001ebf] 
+184001161 [00001ebf]  Summary:
+184001161 [00001ebf]   CUDA version                    : runtime v10.1.0, driver v10.1.0
+184001161 [00001ebf]   Thrust library version          : 1.9.5
+184001164 [00001ebf]   GPU resources                   : global memory         ECC  threads  CGA total             CGA used            
+184001165 [00001ebf]     0: Tesla V100-PCIE-32GB       : 34058272768 (31.7GB)  on   163840   13335330816 (12.4GB)  13335330176 (100.0%)
+184001166 [00001ebf]     1: Tesla V100-PCIE-32GB       : (not used)
+184001167 [00001ebf]     2: TITAN V                    : (not used)
+184001167 [00001ebf]   Host (CPU) resources:
+184001167 [00001ebf]    CPU description                : Intel(R) Xeon(R) Silver 4116 CPU @ 2.10GHz
+184001167 [00001ebf]    concurrent threads             : 2
+184001167 [00001ebf]    available physical RAM         : 404338245632 (376.6GB)
+184001167 [00001ebf]   LUT memory resources:
+184001167 [00001ebf]    pinned (page-locked) RAM       : 63733920488 (59.4GB)
+184001167 [00001ebf]     H lookup table (nongapped)    :  5368709120 (5.0GB)
+184001167 [00001ebf]     H lookup table (gapped)       :  5368709120 (5.0GB)
+184001167 [00001ebf]     J lookup table (nongapped)    : 26491059120 (24.7GB) (max 6251197 J/seed, max subId 22)
+184001167 [00001ebf]     J lookup table (gapped)       : 26505443128 (24.7GB) (max 16644556 J/seed, max subId 22)
+184001167 [00001ebf]    CUDA global memory (per GPU)   :  2076881496 (1.9GB)
+184001167 [00001ebf]     R sequence data               :  2076881496 (1.9GB)
+184001167 [00001ebf]   Data transfers:
+184001167 [00001ebf]    disk --> CPU: load Q data      : 37
+184001167 [00001ebf]    CPU --> GPU: transfer Q data   :  1
+184001167 [00001ebf]    CPU --> GPU: transfer R data   :  2
+184001167 [00001ebf]    GPU --> CPU: transfer J data   :  1
+184001167 [00001ebf]    GPU --> CPU: transfer mappings :  3
+184001167 [00001ebf]    GPU --> GPU: probe H and J LUTs: 46
+184001167 [00001ebf]    CPU --> disk: write alignments : 56
+184001167 [00001ebf]   SAM output:
+184001167 [00001ebf]    reads                          : 24941 (24941 SAM records)
+184001167 [00001ebf]    mapped reads                   : 24440 (24440 SAM records) (97.99%)
+184001167 [00001ebf]     with 1 mapping                : 18260 (18260 SAM records)
+184001167 [00001ebf]     with 2 or more mappings       :  6180 ( 6180 SAM records)
+184001167 [00001ebf]    unmapped reads                 :   501 (  501 SAM records)
+184001167 [00001ebf]    duplicate mappings (unreported):  9624
+184001167 [00001ebf]    error rate (primary mappings)  :  0.96%
+184001167 [00001ebf]   Batches:
+184001167 [00001ebf]    instances                      :      2
+184001167 [00001ebf]    completed                      :      1
+184001167 [00001ebf]   Elapsed (ms):
+184001167 [00001ebf]    total                          : 100797
+184001167 [00001ebf]    initialize GPUs                :    848
+184001167 [00001ebf]    partition Q files              :     20
+184001167 [00001ebf]    load/unload R,H,J              :  99286
+184001167 [00001ebf]    aligners                       :    643 (38788 Q/second)
+184001167 [00001ebf] 
+184001167 [00001ebf]  GPU: seed-and-extend gapped aligner (with traceback):
+184001167 [00001ebf]   [baseAlignG_baseMapGc_tuAlignGs12]
+184001167 [00001ebf]    kernel                          :     29 (9750483 candidates/second)
+184001167 [00001ebf]    post-launch                     :      3
+184001167 [00001ebf]    candidate D values              : 282764
+184001167 [00001ebf]    instances                       :      4
+184001167 [00001ebf]    iterations                      :      4 (1.0 iterations/instance) (70691 candidates/iteration)
+184001167 [00001ebf]  GPU: spaced-seed nongapped aligner:
+184001167 [00001ebf]   [baseAlignN_tuAlignN20]
+184001167 [00001ebf]    pre-launch                      :     0
+184001167 [00001ebf]    kernel                          :     0 (206380952 candidates/second)
+184001167 [00001ebf]    candidate D values              : 34672
+184001167 [00001ebf]  GPU: count per-read mappings:
+184001167 [00001ebf]   [baseCountA_baseMapGc_tuAlignGs12]
+184001167 [00001ebf]    pre-launch                      :   0
+184001167 [00001ebf]    kernel                          :   0
+184001167 [00001ebf]    post-launch                     :   0
+184001167 [00001ebf]   [baseCountA_tuAlignN30]
+184001167 [00001ebf]    pre-launch                      :  0
+184001167 [00001ebf]    kernel                          :  0
+184001167 [00001ebf]  GPU: filter mapped candidate D values:
+184001167 [00001ebf]   [baseFilterD_baseMapGc_tuAlignGs12]
+184001167 [00001ebf]    elapsed                         : <1
+184001167 [00001ebf]  CPU --> GPU: J values (nongapped aligner):
+184001167 [00001ebf]   [baseLoadJn_tuSetupN20]
+184001167 [00001ebf]    pre-launch                      :        0
+184001167 [00001ebf]    kernel                          :       18 (185131654 candidates/second)
+184001167 [00001ebf]    candidate D values              :  3380504
+184001167 [00001ebf]    bytes used                      : 33150080 (0.0GB) (0.2%)
+184001167 [00001ebf]  CPU --> GPU: J values (gapped aligner):
+184001167 [00001ebf]   [baseLoadJs_baseMapGc_tuAlignGs12]
+184001167 [00001ebf]    pre-launch                      :        0
+184001167 [00001ebf]    kernel                          :        6 (166678972 candidates/second)
+184001167 [00001ebf]    candidate D values              :   979739
+184001167 [00001ebf]    bytes used                      : 10856064 (0.0GB) (0.1%)
+184001167 [00001ebf]  CPU --> GPU: load interleaved R sequence data:
+184001167 [00001ebf]   [baseLoadRi_baseMapGc_tuAlignGs12]
+184001167 [00001ebf]    pre-launch                      :   1
+184001167 [00001ebf]    kernel                          :   1
+184001167 [00001ebf]    post-launch                     :   0
+184001167 [00001ebf]   [baseLoadRi_tuAlignN10]
+184001167 [00001ebf]    pre-launch                      :   0
+184001167 [00001ebf]    kernel                          :   0
+184001167 [00001ebf]  GPU: find seed-and-extend mappings (seed coverage priority):
+184001167 [00001ebf]   [baseMapGc_tuAlignGs12]
+184001167 [00001ebf]    pre-launch                      :      1
+184001167 [00001ebf]    kernel                          :      6
+184001167 [00001ebf]    candidate D values              : 979739
+184001167 [00001ebf]    instances                       :      4
+184001167 [00001ebf]    iterations                      :      4 (1.0 iterations/instance) (244935 candidates/iteration)
+184001167 [00001ebf]  GPU: seed-and-extend gapped aligner (Vmax only):
+184001167 [00001ebf]   [baseMaxV_baseMapGc_tuAlignGs12]
+184001167 [00001ebf]    kernel                          :     20 (29082800 candidates/second)
+184001167 [00001ebf]    candidate D values              : 581656
+184001167 [00001ebf]    instances                       :      4
+184001167 [00001ebf]    iterations                      :      4 (1.0 iterations/instance) (145414 candidates/iteration)
+184001167 [00001ebf]  file --> CPU: load Q sequences (reads):
+184001167 [00001ebf]   [baseQReader]
+184001167 [00001ebf]    candidate Q sequences           : 24941
+184001167 [00001ebf]  GPU: seed-and-extend gapped aligner:
+184001167 [00001ebf]   [tuAlignGs10]
+184001167 [00001ebf]    pre-launch                      :  0
+184001167 [00001ebf]    kernel                          :  0
+184001167 [00001ebf]  GPU: spaced-seed nongapped aligner:
+184001167 [00001ebf]   [tuAlignN32]
+184001167 [00001ebf]    elapsed                         : <1
+184001167 [00001ebf]  CPU: classify unpaired mappings:
+184001167 [00001ebf]   [tuClassifyU]
+184001167 [00001ebf]    elapsed                         :    40
+184001167 [00001ebf]    candidate Q sequences           : 24941
+184001167 [00001ebf]    mapped Q sequences              : 24440 (98.0%)
+184001167 [00001ebf]  CPU: post-process gapped mappings:
+184001167 [00001ebf]   [tuFinalizeGc]
+184001167 [00001ebf]    elapsed                         : 4
+184001167 [00001ebf]  CPU: post-process nongapped mappings:
+184001167 [00001ebf]   [tuFinalizeN]
+184001167 [00001ebf]    elapsed                         :    12
+184001167 [00001ebf]    candidate Q sequences           : 24941
+184001167 [00001ebf]    candidate D values              : 34672
+184001167 [00001ebf]    mapped Q sequences              : 12947 (51.9%)
+184001167 [00001ebf]    mapped D values                 : 31794 (91.7%)
+184001167 [00001ebf]  file --> CPU: load Q-sequence metadata:
+184001167 [00001ebf]   [tuLoadM]
+184001167 [00001ebf]    elapsed                         : 123
+184001167 [00001ebf]  GPU: setup for gapped alignment:
+184001167 [00001ebf]  GPU: setup for nongapped alignment:
+184001167 [00001ebf]   [tuSetupN]
+184001167 [00001ebf]    elapsed                         : <1
+184001167 [00001ebf]   [tuSetupN10]
+184001167 [00001ebf]    elapsed                         :     0
+184001167 [00001ebf]    pre-launch                      :     0
+184001167 [00001ebf]    kernel                          :    16
+184001167 [00001ebf]    elapsed                         :     0
+184001167 [00001ebf]    candidate Q sequences           : 24941
+184001167 [00001ebf]   [tuSetupN21]
+184001167 [00001ebf]    elapsed                         :       0
+184001167 [00001ebf]    elapsed                         :       1
+184001167 [00001ebf]    candidate D values              : 3380504
+184001167 [00001ebf]   [tuSetupN22]
+184001167 [00001ebf]    elapsed                         : <1
+184001167 [00001ebf]   [tuSetupN24]
+184001167 [00001ebf]    elapsed                         :       0
+184001167 [00001ebf]    elapsed                         :       0
+184001167 [00001ebf]    candidate D values              : 3380504
+184001167 [00001ebf]   [tuSetupN26]
+184001167 [00001ebf]    elapsed                         :       0
+184001167 [00001ebf]    elapsed                         :       0
+184001167 [00001ebf]    candidate D values              : 3380504
+184001167 [00001ebf]   [tuSetupN28]
+184001167 [00001ebf]    elapsed                         :       0
+184001167 [00001ebf]    elapsed                         :       0
+184001167 [00001ebf]    candidate D values              : 3380504
+184001167 [00001ebf]  CPU: emit alignment results:
+184001167 [00001ebf]   [tuWriteSAM]
+184001167 [00001ebf]    elapsed                         : 107
+184001167 [00001ebf]  GPU: translate D values:
+184001167 [00001ebf]  GPU: kmer hashing for unmapped reads:
+184001168 [00001ebf]  Miscellaneous task unit metrics:
+184001168 [00001ebf]   [baseFilterD_baseMapGc_tuAlignGs12]
+184001168 [00001ebf]    elapsed                         : <1
+184001168 [00001ebf]   [baseSetupJn_tuSetupN15]
+184001168 [00001ebf]    pre-launch                      :   0
+184001168 [00001ebf]    kernel                          :   0
+184001168 [00001ebf]   [baseSetupJs_baseMapGc_tuAlignGs12]
+184001168 [00001ebf]    pre-launch                      :   0
+184001168 [00001ebf]    kernel                          :   0
+184001168 [00001ebf]   [tuAlignN32]
+184001168 [00001ebf]    elapsed                         : <1
+184001168 [00001ebf]   [tuSetupN]
+184001168 [00001ebf]    elapsed                         : <1
+184001168 [00001ebf]   [tuSetupN22]
+184001168 [00001ebf]    elapsed                         : <1
+184001168 [00001ebf]  Task unit metrics                 : 28
+184001175 [00001ebf] AriocU ends (0)

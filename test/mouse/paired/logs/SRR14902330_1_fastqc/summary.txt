@@ -1,0 +1,10 @@
+PASS	Basic Statistics	SRR14902330_val_1.fq
+PASS	Per base sequence quality	SRR14902330_val_1.fq
+PASS	Per sequence quality scores	SRR14902330_val_1.fq
+FAIL	Per base sequence content	SRR14902330_val_1.fq
+PASS	Per sequence GC content	SRR14902330_val_1.fq
+PASS	Per base N content	SRR14902330_val_1.fq
+WARN	Sequence Length Distribution	SRR14902330_val_1.fq
+PASS	Sequence Duplication Levels	SRR14902330_val_1.fq
+PASS	Overrepresented sequences	SRR14902330_val_1.fq
+PASS	Adapter Content	SRR14902330_val_1.fq

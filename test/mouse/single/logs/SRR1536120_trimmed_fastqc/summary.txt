@@ -1,0 +1,11 @@
+PASS	Basic Statistics	SRR1536120_trimmed.fq
+PASS	Per base sequence quality	SRR1536120_trimmed.fq
+PASS	Per tile sequence quality	SRR1536120_trimmed.fq
+PASS	Per sequence quality scores	SRR1536120_trimmed.fq
+FAIL	Per base sequence content	SRR1536120_trimmed.fq
+PASS	Per sequence GC content	SRR1536120_trimmed.fq
+PASS	Per base N content	SRR1536120_trimmed.fq
+WARN	Sequence Length Distribution	SRR1536120_trimmed.fq
+PASS	Sequence Duplication Levels	SRR1536120_trimmed.fq
+PASS	Overrepresented sequences	SRR1536120_trimmed.fq
+PASS	Adapter Content	SRR1536120_trimmed.fq

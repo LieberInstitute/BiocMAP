@@ -1,0 +1,353 @@
+Loading LIBD module for trimgalore/0.6.6
+Loading LIBD module for FastQC/0.11.8
+Multicore support not enabled. Proceeding with single-core trimming.
+Path to Cutadapt set as: 'cutadapt' (default)
+Cutadapt seems to be working fine (tested command 'cutadapt --version')
+Cutadapt version: 3.4
+single-core operation.
+No quality encoding type selected. Assuming that the data provided uses Sanger encoded Phred scores (default)
+
+Using user-specified basename (>>OLIG1<<) instead of deriving the filename from the input file(s)
+Writing report to 'OLIG1_1.fastq.gz_trimming_report.txt'
+
+SUMMARISING RUN PARAMETERS
+==========================
+Input filename: OLIG1_1.fastq.gz
+Trimming mode: paired-end
+Trim Galore version: 0.6.6
+Cutadapt version: 3.4
+Number of cores used for trimming: 1
+Quality Phred score cutoff: 20
+Quality encoding type selected: ASCII+33
+Adapter sequence: 'AGATCGGAAGAGC' (Illumina TruSeq, Sanger iPCR; user defined)
+Maximum trimming error rate: 0.1 (default)
+Minimum required adapter overlap (stringency): 1 bp
+Minimum required sequence length for both reads before a sequence pair gets removed: 20 bp
+Running FastQC on the data once trimming has completed
+Running FastQC with the following extra arguments: '--extract'
+
+Cutadapt seems to be fairly up-to-date (version 3.4). Setting -j 1
+Writing final adapter and quality trimmed output to OLIG1_1_trimmed.fq
+
+
+  >>> Now performing quality (cutoff '-q 20') and adapter trimming in a single pass for the adapter sequence: 'AGATCGGAAGAGC' from file OLIG1_1.fastq.gz <<< 
+This is cutadapt 3.4 with Python 3.7.3
+Command line parameters: -j 1 -e 0.1 -q 20 -O 1 -a AGATCGGAAGAGC OLIG1_1.fastq.gz
+Processing reads on 1 core in single-end mode ...
+Finished in 0.45 s (18 µs/read; 3.36 M reads/minute).
+
+=== Summary ===
+
+Total reads processed:                  25,000
+Reads with adapters:                    10,341 (41.4%)
+Reads written (passing filters):        25,000 (100.0%)
+
+Total basepairs processed:     2,525,000 bp
+Quality-trimmed:                  84,490 bp (3.3%)
+Total written (filtered):      2,351,016 bp (93.1%)
+
+=== Adapter 1 ===
+
+Sequence: AGATCGGAAGAGC; Type: regular 3'; Length: 13; Trimmed: 10341 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-13 bp: 1
+
+Bases preceding removed adapters:
+  A: 37.6%
+  C: 0.3%
+  G: 21.0%
+  T: 41.1%
+  none/other: 0.0%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+1	5744	6250.0	0	5744
+2	1727	1562.5	0	1727
+3	570	390.6	0	570
+4	207	97.7	0	207
+5	28	24.4	0	28
+6	36	6.1	0	36
+7	37	1.5	0	37
+8	35	0.4	0	35
+9	53	0.1	0	52 1
+10	33	0.0	1	32 1
+11	46	0.0	1	44 2
+12	47	0.0	1	45 2
+13	35	0.0	1	35
+14	39	0.0	1	37 2
+15	27	0.0	1	24 3
+16	36	0.0	1	35 1
+17	19	0.0	1	19
+18	32	0.0	1	31 1
+19	30	0.0	1	30
+20	41	0.0	1	39 2
+21	37	0.0	1	36 1
+22	28	0.0	1	28
+23	32	0.0	1	30 2
+24	41	0.0	1	40 1
+25	33	0.0	1	33
+26	31	0.0	1	31
+27	39	0.0	1	38 1
+28	26	0.0	1	25 1
+29	29	0.0	1	26 3
+30	29	0.0	1	29
+31	31	0.0	1	29 2
+32	43	0.0	1	41 2
+33	34	0.0	1	33 1
+34	41	0.0	1	40 1
+35	34	0.0	1	33 1
+36	27	0.0	1	27
+37	26	0.0	1	23 3
+38	33	0.0	1	33
+39	27	0.0	1	27
+40	22	0.0	1	22
+41	36	0.0	1	36
+42	29	0.0	1	29
+43	75	0.0	1	74 1
+44	16	0.0	1	14 2
+45	11	0.0	1	11
+46	16	0.0	1	15 1
+47	18	0.0	1	18
+48	16	0.0	1	15 1
+49	20	0.0	1	19 1
+50	27	0.0	1	25 2
+51	26	0.0	1	25 1
+52	17	0.0	1	16 1
+53	38	0.0	1	38
+54	31	0.0	1	31
+55	26	0.0	1	26
+56	21	0.0	1	21
+57	28	0.0	1	28
+58	17	0.0	1	17
+59	22	0.0	1	21 1
+60	21	0.0	1	21
+61	18	0.0	1	18
+62	12	0.0	1	12
+63	23	0.0	1	22 1
+64	20	0.0	1	20
+65	17	0.0	1	16 1
+66	11	0.0	1	10 1
+67	6	0.0	1	6
+68	14	0.0	1	14
+69	14	0.0	1	14
+70	19	0.0	1	19
+71	16	0.0	1	16
+72	16	0.0	1	16
+73	11	0.0	1	11
+74	24	0.0	1	24
+75	49	0.0	1	49
+76	85	0.0	1	85
+77	7	0.0	1	7
+78	1	0.0	1	1
+101	2	0.0	1	0 2
+
+RUN STATISTICS FOR INPUT FILE: OLIG1_1.fastq.gz
+=============================================
+25000 sequences processed in total
+The length threshold of paired-end sequences gets evaluated later on (in the validation step)
+
+Writing report to 'OLIG1_2.fastq.gz_trimming_report.txt'
+
+SUMMARISING RUN PARAMETERS
+==========================
+Input filename: OLIG1_2.fastq.gz
+Trimming mode: paired-end
+Trim Galore version: 0.6.6
+Cutadapt version: 3.4
+Number of cores used for trimming: 1
+Quality Phred score cutoff: 20
+Quality encoding type selected: ASCII+33
+Adapter sequence: 'AGATCGGAAGAGC' (Illumina TruSeq, Sanger iPCR; user defined)
+Maximum trimming error rate: 0.1 (default)
+Minimum required adapter overlap (stringency): 1 bp
+Minimum required sequence length for both reads before a sequence pair gets removed: 20 bp
+Running FastQC on the data once trimming has completed
+Running FastQC with the following extra arguments: '--extract'
+
+Cutadapt seems to be fairly up-to-date (version 3.4). Setting -j -j 1
+Writing final adapter and quality trimmed output to OLIG1_2_trimmed.fq
+
+
+  >>> Now performing quality (cutoff '-q 20') and adapter trimming in a single pass for the adapter sequence: 'AGATCGGAAGAGC' from file OLIG1_2.fastq.gz <<< 
+This is cutadapt 3.4 with Python 3.7.3
+Command line parameters: -j 1 -e 0.1 -q 20 -O 1 -a AGATCGGAAGAGC OLIG1_2.fastq.gz
+Processing reads on 1 core in single-end mode ...
+Finished in 0.40 s (16 µs/read; 3.75 M reads/minute).
+
+=== Summary ===
+
+Total reads processed:                  25,000
+Reads with adapters:                    12,965 (51.9%)
+Reads written (passing filters):        25,000 (100.0%)
+
+Total basepairs processed:     2,525,000 bp
+Quality-trimmed:                  81,388 bp (3.2%)
+Total written (filtered):      2,359,684 bp (93.5%)
+
+=== Adapter 1 ===
+
+Sequence: AGATCGGAAGAGC; Type: regular 3'; Length: 13; Trimmed: 12965 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-13 bp: 1
+
+Bases preceding removed adapters:
+  A: 56.2%
+  C: 15.2%
+  G: 1.0%
+  T: 27.6%
+  none/other: 0.0%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+1	10766	6250.0	0	10766
+2	39	1562.5	0	39
+3	58	390.6	0	58
+4	59	97.7	0	59
+5	33	24.4	0	33
+6	41	6.1	0	41
+7	24	1.5	0	24
+8	35	0.4	0	35
+9	47	0.1	0	47
+10	42	0.0	1	41 1
+11	48	0.0	1	46 2
+12	60	0.0	1	59 1
+13	30	0.0	1	28 2
+14	39	0.0	1	39
+15	28	0.0	1	28
+16	41	0.0	1	40 1
+17	42	0.0	1	41 1
+18	20	0.0	1	19 1
+19	36	0.0	1	35 1
+20	34	0.0	1	33 1
+21	25	0.0	1	25
+22	27	0.0	1	25 2
+23	36	0.0	1	36
+24	44	0.0	1	44
+25	24	0.0	1	24
+26	38	0.0	1	38
+27	35	0.0	1	33 2
+28	25	0.0	1	25
+29	27	0.0	1	26 1
+30	46	0.0	1	45 1
+31	17	0.0	1	16 1
+32	27	0.0	1	25 2
+33	33	0.0	1	33
+34	41	0.0	1	41
+35	34	0.0	1	33 1
+36	28	0.0	1	27 1
+37	36	0.0	1	36
+38	30	0.0	1	30
+39	28	0.0	1	28
+40	36	0.0	1	34 2
+41	35	0.0	1	32 3
+42	34	0.0	1	33 1
+43	22	0.0	1	21 1
+44	36	0.0	1	35 1
+45	28	0.0	1	28
+46	28	0.0	1	28
+47	10	0.0	1	10
+48	21	0.0	1	21
+49	20	0.0	1	20
+50	17	0.0	1	16 1
+51	26	0.0	1	25 1
+52	14	0.0	1	14
+53	21	0.0	1	21
+54	18	0.0	1	18
+55	23	0.0	1	22 1
+56	19	0.0	1	18 1
+57	24	0.0	1	21 3
+58	24	0.0	1	24
+59	13	0.0	1	13
+60	18	0.0	1	18
+61	17	0.0	1	17
+62	20	0.0	1	20
+63	20	0.0	1	20
+64	25	0.0	1	24 1
+65	44	0.0	1	40 4
+66	68	0.0	1	65 3
+67	50	0.0	1	48 2
+68	80	0.0	1	76 4
+69	17	0.0	1	17
+70	5	0.0	1	5
+71	4	0.0	1	2 2
+72	2	0.0	1	2
+76	1	0.0	1	1
+77	1	0.0	1	1
+96	1	0.0	1	0 1
+
+RUN STATISTICS FOR INPUT FILE: OLIG1_2.fastq.gz
+=============================================
+25000 sequences processed in total
+The length threshold of paired-end sequences gets evaluated later on (in the validation step)
+
+Validate paired-end files OLIG1_1_trimmed.fq and OLIG1_2_trimmed.fq
+Now renaming the output files
+
+ORIGINAL FILE 1: >>OLIG1_1_trimmed.fq<<	RENAMING TO:>>OLIG1_R1_trimmed.fq<<
+ORIGINAL FILE 2: >>OLIG1_2_trimmed.fq<<	RENAMING TO:>>OLIG1_R2_trimmed.fq<<
+file_1: OLIG1_R1_trimmed.fq, file_2: OLIG1_R2_trimmed.fq
+
+
+>>>>> Now validing the length of the 2 paired-end infiles: OLIG1_R1_trimmed.fq and OLIG1_R2_trimmed.fq <<<<<
+Renaming the output files (AGAIN).
+Writing validated paired-end Read 1 reads to OLIG1_val_1.fq
+Writing validated paired-end Read 2 reads to OLIG1_val_2.fq
+
+Total number of sequences analysed: 25000
+
+Number of sequence pairs removed because at least one read was shorter than the length cutoff (20 bp): 221 (0.88%)
+
+
+  >>> Now running FastQC on the validated data OLIG1_val_1.fq<<<
+
+Started analysis of OLIG1_val_1.fq
+Approx 5% complete for OLIG1_val_1.fq
+Approx 10% complete for OLIG1_val_1.fq
+Approx 15% complete for OLIG1_val_1.fq
+Approx 20% complete for OLIG1_val_1.fq
+Approx 25% complete for OLIG1_val_1.fq
+Approx 30% complete for OLIG1_val_1.fq
+Approx 35% complete for OLIG1_val_1.fq
+Approx 40% complete for OLIG1_val_1.fq
+Approx 45% complete for OLIG1_val_1.fq
+Approx 50% complete for OLIG1_val_1.fq
+Approx 55% complete for OLIG1_val_1.fq
+Approx 60% complete for OLIG1_val_1.fq
+Approx 65% complete for OLIG1_val_1.fq
+Approx 70% complete for OLIG1_val_1.fq
+Approx 75% complete for OLIG1_val_1.fq
+Approx 80% complete for OLIG1_val_1.fq
+Approx 85% complete for OLIG1_val_1.fq
+Approx 90% complete for OLIG1_val_1.fq
+Approx 95% complete for OLIG1_val_1.fq
+Analysis complete for OLIG1_val_1.fq
+
+  >>> Now running FastQC on the validated data OLIG1_val_2.fq<<<
+
+Started analysis of OLIG1_val_2.fq
+Approx 5% complete for OLIG1_val_2.fq
+Approx 10% complete for OLIG1_val_2.fq
+Approx 15% complete for OLIG1_val_2.fq
+Approx 20% complete for OLIG1_val_2.fq
+Approx 25% complete for OLIG1_val_2.fq
+Approx 30% complete for OLIG1_val_2.fq
+Approx 35% complete for OLIG1_val_2.fq
+Approx 40% complete for OLIG1_val_2.fq
+Approx 45% complete for OLIG1_val_2.fq
+Approx 50% complete for OLIG1_val_2.fq
+Approx 55% complete for OLIG1_val_2.fq
+Approx 60% complete for OLIG1_val_2.fq
+Approx 65% complete for OLIG1_val_2.fq
+Approx 70% complete for OLIG1_val_2.fq
+Approx 75% complete for OLIG1_val_2.fq
+Approx 80% complete for OLIG1_val_2.fq
+Approx 85% complete for OLIG1_val_2.fq
+Approx 90% complete for OLIG1_val_2.fq
+Approx 95% complete for OLIG1_val_2.fq
+Analysis complete for OLIG1_val_2.fq
+Deleting both intermediate output files OLIG1_R1_trimmed.fq and OLIG1_R2_trimmed.fq
+
+====================================================================================================
+

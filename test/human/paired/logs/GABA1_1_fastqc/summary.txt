@@ -1,0 +1,11 @@
+PASS	Basic Statistics	GABA1_val_1.fq
+PASS	Per base sequence quality	GABA1_val_1.fq
+PASS	Per tile sequence quality	GABA1_val_1.fq
+PASS	Per sequence quality scores	GABA1_val_1.fq
+FAIL	Per base sequence content	GABA1_val_1.fq
+WARN	Per sequence GC content	GABA1_val_1.fq
+PASS	Per base N content	GABA1_val_1.fq
+WARN	Sequence Length Distribution	GABA1_val_1.fq
+PASS	Sequence Duplication Levels	GABA1_val_1.fq
+WARN	Overrepresented sequences	GABA1_val_1.fq
+PASS	Adapter Content	GABA1_val_1.fq
