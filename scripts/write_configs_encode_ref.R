@@ -32,12 +32,6 @@ for (seed in c(opt$gap_seed, opt$nongap_seed)) {
                      '  </dataOut>',
                      '</AriocE>')
     
-    #  Write config for this seed type
-    if (seed == opt$gap_seed) {
-        filename = 'encode_ref_gap.cfg'
-    } else {
-        filename = 'encode_ref_nongap.cfg'
-    }
-
+    filename = paste0('encode_ref_', seed, '.cfg')
     writeLines(config_lines, filename)
 }

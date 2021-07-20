@@ -261,9 +261,9 @@ process PrepareReference {
     
     output:
         file "chr_names_${params.anno_suffix}"
-        file "encode_ref_gap.cfg" into encode_ref_gap_cfg
-        file "encode_ref_nongap.cfg" into encode_ref_nongap_cfg
-        file "prepare_ref.log"
+        file "encode_ref_${params.gapped_seed}.cfg" into encode_ref_gap_cfg
+        file "encode_ref_${params.nongapped_seed}.cfg" into encode_ref_nongap_cfg
+        file "prepare_ref_first_${params.gapped_seed}_${params.nongapped_seed}.log"
         
     shell:
         if (params.custom_anno != "") {
@@ -288,7 +288,7 @@ process PrepareReference {
             -n !{params.nongapped_seed}
         
         #  Keep a log of what happened so far
-        cp .command.log prepare_ref.log
+        cp .command.log prepare_ref_first_!{params.gapped_seed}_!{params.nongapped_seed}.log
         '''
 }
 
@@ -303,13 +303,15 @@ process EncodeReference {
         file encode_ref_nongap_cfg
         
     output:
-        file ".success" into success_token_ref
+        //  Both the gapped and nongapped seeds must be built to continue
+        set file("${params.gapped_seed}.success"), file("${params.nongapped_seed}.success") into success_token_ref
         
     shell:
         '''
         AriocE !{encode_ref_gap_cfg}
         AriocE !{encode_ref_nongap_cfg}
-        touch .success
+        touch !{params.gapped_seed}.success
+        touch !{params.nongapped_seed}.success
         '''
 }
 
