@@ -141,8 +141,12 @@ elif [ "$1" == "local" ]; then
         make install prefix=${INSTALL_DIR} CFLAGS="-O3 -Wall -I${INSTALL_DIR}/include " LIBS="-L${INSTALL_DIR}/lib" LIBBIGWIG="${INSTALL_DIR}/lib/libBigWig.a"
         cd $INSTALL_DIR
           
-        #  Install packages that will be used by the pipeline
+        #  Install packages and set up test files
+        echo "Installing R packages..."
         Rscript ../scripts/install_R_packages.R
+        
+        echo "Setting up test files..."
+        Rscript ../scripts/prepare_test_files.R
         
         #  samblaster (v.0.1.26) ----------------------------------------------
         
