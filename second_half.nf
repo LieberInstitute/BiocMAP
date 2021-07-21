@@ -233,7 +233,7 @@ process PrepareReference {
         
     output:
         file "chr_names_${params.anno_suffix}" into chr_names
-        file "prepare_ref_second_${params.gapped_seed}_${params.nongapped_seed}.log"
+        file "prepare_ref_second.log"
         
     shell:
         if (params.custom_anno != "") {
@@ -258,7 +258,7 @@ process PrepareReference {
         cp -R !{genome_dirname}/Bisulfite_Genome !{params.annotation}/!{params.anno_suffix}
         
         #  Keep a log of what happened so far
-        cp .command.log prepare_ref_first_!{params.gapped_seed}_!{params.nongapped_seed}.log
+        cp .command.log prepare_ref_second.log
         '''
 }
         
