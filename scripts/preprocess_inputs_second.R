@@ -123,7 +123,10 @@ process_key = function(rules, key, ids, end_name, required) {
 ###################################################
 
 rules = readLines('rules.txt')
-rules = rules[-grep('#', rules)]
+
+if (length(grep('#', rules)) > 0) {
+    rules = rules[-grep('#', rules)]
+}
 
 manifest = read.table(get_value(rules, 'manifest', TRUE), header = FALSE,
                       stringsAsFactors = FALSE)
