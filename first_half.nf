@@ -75,7 +75,6 @@ params.all_alignments = false
 params.annotation = "${workflow.projectDir}/ref"
 params.custom_anno = ""
 params.force_trim = false
-params.input = "${workflow.projectDir}/test"
 params.output = "${workflow.projectDir}/out"
 params.reference = ""
 params.sample = ""
@@ -83,6 +82,12 @@ params.trim_mode = "adaptive"
 params.use_bme = false
 params.with_lambda = false
 params.work = "${workflow.projectDir}/work"
+
+if (params.reference == "mm10") {
+    params.input = "${workflow.projectDir}/test/mouse/${params.sample}"
+} else {
+    params.input = "${workflow.projectDir}/test/human/${params.sample}"
+}
 
 // -------------------------------------
 //   Validate Inputs

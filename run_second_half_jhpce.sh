@@ -10,7 +10,4 @@ export _JAVA_OPTIONS="-Xms8g -Xmx10g"
 nextflow second_half.nf \
     --sample "paired" \
     --reference "hg38" \
-    --input "/dcl01/lieber/ajaffe/Nick/misc/manifests/WGBS_test_small" \
-    --output "/dcl01/lieber/ajaffe/Nick/misc/manifests/WGBS_test_small/out" \
-    -w "/dcl01/lieber/ajaffe/Nick/misc/manifests/WGBS_test_small/work" \
     -profile second_half_jhpce
