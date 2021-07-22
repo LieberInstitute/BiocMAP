@@ -8,7 +8,10 @@ get_value = function(rules, key, required) {
 
 #  Get sample IDs
 rules = readLines('rules.txt')
-rules = rules[-grep('#', rules)]
+
+if (length(grep('#', rules)) > 0) {
+    rules = rules[-grep('#', rules)]
+}
 
 manifest = read.table(get_value(rules, 'manifest'), header = FALSE,
                       stringsAsFactors = FALSE)
