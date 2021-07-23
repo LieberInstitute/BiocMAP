@@ -26,6 +26,9 @@ elif [ "$1" == "jhpce" ]; then
     echo "Setting up test files..."
     Rscript scripts/prepare_test_files.R
     
+    sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_first_half_jhpce.sh
+    sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_second_half_jhpce.sh
+    
     echo "Done."
     
 elif [ "$1" == "local" ]; then
