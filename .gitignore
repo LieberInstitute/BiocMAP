@@ -13,3 +13,4 @@ ref/*
 Software/*
 test/*/*/samples.manifest
 test/*/*/rules.txt
+conda/pipeline_env

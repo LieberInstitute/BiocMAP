@@ -6,10 +6,13 @@
 #  Usage:  bash install_software.sh [installation_type]
 #
 #    installation_type may be "docker", "local", or "jhpce":
-#        docker:    user plans to run pipeline with docker to manage software dependencies
-#        local:     user wishes to install all dependencies locally (regardless of whether
-#                   the pipeline will be run on a cluster or with local resources) 
-#        jhpce:     user is setting up the pipeline on the JHPCE cluster
+#        docker:   user plans to run pipeline with docker to manage software
+#                  dependencies
+#        local:    user wishes to install all dependencies locally (regardless
+#                  of whether the pipeline will be run on a cluster or with
+#                  local resources)
+#        conda:    required software is installed within a conda environment
+#        jhpce:    user is setting up the pipeline on the JHPCE cluster
 
 set -e
 
@@ -28,6 +31,30 @@ elif [ "$1" == "jhpce" ]; then
     
     sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_first_half_jhpce.sh
     sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_second_half_jhpce.sh
+    
+    echo "Done."
+    
+elif [ "$1" == "conda" ]; then
+
+    echo "Creating a conda environment containing required software..."
+    conda env create -f conda/environment.yml -p $PWD/conda/pipeline_env
+    conda activate $PWD/conda/pipeline_env
+    Rscript scripts/install_R_packages.R
+    
+    echo "Setting up test files..."
+    Rscript scripts/prepare_test_files.R
+    conda deactivate
+    
+    echo "Configuring main and config files..."
+    
+    #  Point to original repo's main script to facilitate pipeline sharing
+    sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_*_half_*.sh
+    
+    #  Add 'conda' specification to generic process scope; remove use of
+    #  modules in JHPCE configs
+    git checkout conf
+    sed -i "s|cache = 'lenient'|cache = 'lenient'\n    conda = '$PWD/conda/pipeline_env'|" conf/*_half_*.config
+    sed -i "/module = '.*\/.*'/d" conf/*_half_jhpce.config
     
     echo "Done."
     
@@ -189,9 +216,9 @@ elif [ "$1" == "local" ]; then
         echo "A java runtime could not be found or accessed. Is it installed and on the PATH? You can install it by running 'apt install default-jre', which requires sudo/ root privileges."
         echo "After installing Java, rerun this script to finish the installation procedure."
     fi
-else # neither "docker", "local", nor "jhpce" were chosen
+else # neither "docker", "local", "conda", nor "jhpce" were chosen
     
-    echo 'Error: please specify "docker", "local", or "jhpce" and rerun this script.'
+    echo 'Error: please specify "docker", "local", "conda", or "jhpce" and rerun this script.'
     echo '    eg. bash install_software.sh "local"'
     exit 1
     
