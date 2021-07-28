@@ -19,6 +19,40 @@ set -e
 if [ "$1" == "docker" ]; then
 
     echo "Not yet supported! Please use 'bash install_software.sh "local"'."
+    exit 1
+    
+    #  This is the docker image to be used for execution of R via docker (with
+    #  docker mode)
+    R_container="libddocker/bioc_kallisto:3.11"
+    
+    #  Point to original repo's main script to facilitate pipeline sharing
+    sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_*_half_*.sh
+    
+    INSTALL_DIR=$(pwd)/Software
+    mkdir -p $INSTALL_DIR
+    cd $INSTALL_DIR/bin
+    
+    #  Install nextflow (latest)
+    echo "Installing nextflow..."
+    wget -qO- https://get.nextflow.io | bash
+    cd ..
+        
+    ###########################################################################
+    #  Create the 'samples.manifest' and 'rules.txt' files for test samples
+    ###########################################################################
+    
+    echo "Setting up test files..."
+    
+    #  Grab the container
+    docker pull $R_container
+    
+    docker run \
+        -v $(pwd)/scripts:/scripts/ \
+        -v $(pwd)/test:/test \
+        $R_container \
+        Rscript scripts/prepare_test_files.R
+        
+    echo "Done."
     
 elif [ "$1" == "jhpce" ]; then
 
