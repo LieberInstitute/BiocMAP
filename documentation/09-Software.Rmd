@@ -26,11 +26,15 @@ Software | Version | Command used by the pipeline |
 
 ## Docker Images {#docker-images}
 
-The following container versions are used in this pipeline. These are automatically managed by [INSERT PIPELINE NAME HERE].
+The following image versions are used in this pipeline. These are automatically managed by [INSERT PIPELINE NAME HERE].
 
 | Image | Tag | Software |
 |:-------------:| -----:| -----: |
-| libddocker/r_3.6.1_bioc | latest | R and Bioconductor 3.10 |
-| libddocker/ubuntu16.04_base | 1_v3 | Ubuntu Base |
+| libddocker/arioc | 1.43 | Arioc |
+| libddocker/bioc_kallisto | 3.11 | R 4.1.0, Bioconductor 3.11, Kallisto 0.46.1 |
+| libddocker/bismark | 0.23.0 | Bismark |
+| libddocker/filter_alignments | 1.0 | samtools 1.10, samblaster v.0.1.26 |
 | libddocker/kallisto | 0.46.1 | Kallisto |
-[TODO]
+| libddocker/methyldackel | 0.5.2 | MethylDackel, samtools 1.10 |
+| libddocker/quality_and_trim | 0.6.6 | FastQC 0.11.8, Cutadapt (latest), Trim Galore 0.6.6 |
+| libddocker/ubuntu16.04_base | 1_v3 | Ubuntu Base |
