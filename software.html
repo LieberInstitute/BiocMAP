@@ -354,8 +354,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="docker-images" class="section level2" number="9.2">
 <h2><span class="header-section-number">9.2</span> Docker Images</h2>
-<p>The following container versions are used in this pipeline. These are automatically managed by [INSERT PIPELINE NAME HERE].</p>
+<p>The following image versions are used in this pipeline. These are automatically managed by [INSERT PIPELINE NAME HERE].</p>
 <table>
+<colgroup>
+<col width="55%" />
+<col width="22%" />
+<col width="22%" />
+</colgroup>
 <thead>
 <tr class="header">
 <th align="center">Image</th>
@@ -365,23 +370,47 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </thead>
 <tbody>
 <tr class="odd">
-<td align="center">libddocker/r_3.6.1_bioc</td>
-<td align="right">latest</td>
-<td align="right">R and Bioconductor 3.10</td>
+<td align="center">libddocker/arioc</td>
+<td align="right">1.43</td>
+<td align="right">Arioc</td>
 </tr>
 <tr class="even">
-<td align="center">libddocker/ubuntu16.04_base</td>
-<td align="right">1_v3</td>
-<td align="right">Ubuntu Base</td>
+<td align="center">libddocker/bioc_kallisto</td>
+<td align="right">3.11</td>
+<td align="right">R 4.1.0, Bioconductor 3.11, Kallisto 0.46.1</td>
+</tr>
+<tr class="odd">
+<td align="center">libddocker/bismark</td>
+<td align="right">0.23.0</td>
+<td align="right">Bismark</td>
+</tr>
+<tr class="even">
+<td align="center">libddocker/filter_alignments</td>
+<td align="right">1.0</td>
+<td align="right">samtools 1.10, samblaster v.0.1.26</td>
 </tr>
 <tr class="odd">
 <td align="center">libddocker/kallisto</td>
 <td align="right">0.46.1</td>
 <td align="right">Kallisto</td>
 </tr>
+<tr class="even">
+<td align="center">libddocker/methyldackel</td>
+<td align="right">0.5.2</td>
+<td align="right">MethylDackel, samtools 1.10</td>
+</tr>
+<tr class="odd">
+<td align="center">libddocker/quality_and_trim</td>
+<td align="right">0.6.6</td>
+<td align="right">FastQC 0.11.8, Cutadapt (latest), Trim Galore 0.6.6</td>
+</tr>
+<tr class="even">
+<td align="center">libddocker/ubuntu16.04_base</td>
+<td align="right">1_v3</td>
+<td align="right">Ubuntu Base</td>
+</tr>
 </tbody>
 </table>
-<p>[TODO]</p>
 
 </div>
 </div>
