@@ -1,13 +1,19 @@
-FROM libddocker/ubuntu16.04_base:latest
+FROM ubuntu:20.04
+
+#  Bypass user input prompts during installation of java
+ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /usr/local/src
+
+RUN apt-get update
+RUN apt-get install -y wget make zip perl default-jre python3-dev python3-pip python3-setuptools
 
 #  Install FastQC
 RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.8.zip && \
     unzip fastqc_v0.11.8.zip && \
     chmod -R 775 FastQC && \
     cp FastQC/fastqc /usr/local/bin/
-
+    
 #  Install cutadapt
 RUN pip install cutadapt
 
