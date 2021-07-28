@@ -23,7 +23,7 @@ if [ "$1" == "docker" ]; then
 elif [ "$1" == "jhpce" ]; then
 
     echo "User selected set-up at JHPCE. Installing any missing R packages..."
-    module load conda_R/4.0.x
+    module load conda_R/4.1
     Rscript scripts/install_R_packages.R
     
     echo "Setting up test files..."
