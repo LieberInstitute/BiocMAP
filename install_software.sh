@@ -16,26 +16,32 @@
 
 set -e
 
+#rm -r Software
+#rm -f test/*/*/samples.manifest
+#rm -f test/*/*/rules.txt
+#git checkout run_*_half_*.sh
+#git checkout nextflow.config
+#git checkout conf/*_half_*.config
+
 if [ "$1" == "docker" ]; then
 
-    echo "Not yet supported! Please use 'bash install_software.sh "local"'."
-    exit 1
-    
     #  This is the docker image to be used for execution of R via docker (with
     #  docker mode)
-    R_container="libddocker/bioc_kallisto:3.11"
+    R_container="libddocker/bioc_kallisto:3.13"
     
     #  Point to original repo's main script to facilitate pipeline sharing
     sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_*_half_*.sh
     
-    INSTALL_DIR=$(pwd)/Software
-    mkdir -p $INSTALL_DIR
-    cd $INSTALL_DIR/bin
+    #  Add docker configuration to each config profile in 'nextflow.config'
+    sed -i "s|includeConfig 'conf/\(.*\)_half_\(.*\)\.config'|includeConfig 'conf/\1_half_\2.config'\n        includeConfig 'conf/\1_half_docker.config'|" nextflow.config
+    
+    BASE_DIR=$(pwd)
+    mkdir -p $BASE_DIR/Software/bin
+    cd $BASE_DIR/Software/bin
     
     #  Install nextflow (latest)
     echo "Installing nextflow..."
     wget -qO- https://get.nextflow.io | bash
-    cd ..
         
     ###########################################################################
     #  Create the 'samples.manifest' and 'rules.txt' files for test samples
@@ -43,14 +49,13 @@ if [ "$1" == "docker" ]; then
     
     echo "Setting up test files..."
     
-    #  Grab the container
-    docker pull $R_container
-    
     docker run \
-        -v $(pwd)/scripts:/scripts/ \
-        -v $(pwd)/test:/test \
+        -it \
+        -u $(id -u):$(id -g) \
+        -v $BASE_DIR/scripts:/scripts/ \
+        -v $BASE_DIR/test:/test \
         $R_container \
-        Rscript scripts/prepare_test_files.R
+        Rscript /scripts/prepare_test_files.R
         
     echo "Done."
     
