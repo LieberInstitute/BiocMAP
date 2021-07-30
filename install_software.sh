@@ -68,7 +68,7 @@ if [ "$1" == "docker" ]; then
         -v $BASE_DIR/scripts:/usr/local/src/scripts/ \
         -v $BASE_DIR/test:/usr/local/src/test \
         $R_container \
-        Rscript /usr/local/src/scripts/prepare_test_files.R
+        Rscript /usr/local/src/scripts/prepare_test_files.R -d $BASE_DIR
         
     echo "Done."
     
@@ -79,7 +79,7 @@ elif [ "$1" == "jhpce" ]; then
     Rscript scripts/install_R_packages.R
     
     echo "Setting up test files..."
-    Rscript scripts/prepare_test_files.R
+    Rscript scripts/prepare_test_files.R -d $(pwd)
     
     sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_first_half_jhpce.sh
     sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_second_half_jhpce.sh
@@ -94,7 +94,7 @@ elif [ "$1" == "conda" ]; then
     Rscript scripts/install_R_packages.R
     
     echo "Setting up test files..."
-    Rscript scripts/prepare_test_files.R
+    Rscript scripts/prepare_test_files.R -d $(pwd)
     conda deactivate
     
     echo "Configuring main and config files..."
@@ -121,6 +121,7 @@ elif [ "$1" == "local" ]; then
         #  Add some configuration of environment variables for local runs
         sed -i '5s|\(.*\)|\1\n//  Add locally installed software to path-related environment variables\nrepoDir=System.getProperty("user.dir")\nenv.LD_LIBRARY_PATH="\$repoDir/Software/lib:System.getenv('"'"'LD_LIBRARY_PATH'"'"')"\nenv.PATH="\$repoDir/Software/bin:System.getenv('"'"'PATH'"'"')"\n|' conf/*_half_local.config
         
+        BASE_DIR=$(pwd)
         INSTALL_DIR=$(pwd)/Software
         mkdir -p $INSTALL_DIR/bin
         cd $INSTALL_DIR/bin
@@ -222,10 +223,10 @@ elif [ "$1" == "local" ]; then
           
         #  Install packages and set up test files
         echo "Installing R packages..."
-        Rscript ../scripts/install_R_packages.R
+        Rscript ../scripts/install_R_packages.R -d $BASE_DIR
         
         echo "Setting up test files..."
-        Rscript ../scripts/prepare_test_files.R
+        Rscript ../scripts/prepare_test_files.R -d $BASE_DIR
         
         #  samblaster (v.0.1.26) ----------------------------------------------
         
