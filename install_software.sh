@@ -115,14 +115,11 @@ elif [ "$1" == "local" ]; then
     if [ -x "$(command -v java)" ]; then
         echo "Found a java runtime. Proceeding with the setup..."
         
-        #  Point to the original repository so that the "main" scripts can be
-        #  trivially copied to share the pipeline
-        sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_first_half_local.sh
-        sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_second_half_local.sh
-        sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_first_half_slurm.sh
-        sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_second_half_slurm.sh
-        sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_first_half_sge.sh
-        sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_second_half_sge.sh
+        #  Point to original repo's main script to facilitate pipeline sharing
+        sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_*_half_*.sh
+        
+        #  Add some configuration of environment variables for local runs
+        sed -i '5s|\(.*\)|\1\n//  Add locally installed software to path-related environment variables\nrepoDir=System.getProperty("user.dir")\nenv.LD_LIBRARY_PATH="\$repoDir/Software/lib:System.getenv('"'"'LD_LIBRARY_PATH'"'"')"\nenv.PATH="\$repoDir/Software/bin:System.getenv('"'"'PATH'"'"')"\n|' conf/*_half_local.config
         
         INSTALL_DIR=$(pwd)/Software
         mkdir -p $INSTALL_DIR/bin
