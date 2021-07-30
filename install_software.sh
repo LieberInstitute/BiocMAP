@@ -16,12 +16,25 @@
 
 set -e
 
-#rm -r Software
-#rm -f test/*/*/samples.manifest
-#rm -f test/*/*/rules.txt
-#git checkout run_*_half_*.sh
-#git checkout nextflow.config
-#git checkout conf/*_half_*.config
+REPO_NAME="WGBS-Pipeline"
+
+if [ "$(basename $(pwd))" == "$REPO_NAME" ]; then
+
+    echo "Making sure the repository is clean and ready for installation..."
+    
+    #rm -r Software
+    rm -f test/*/*/samples.manifest
+    rm -f test/*/*/rules.txt
+    git checkout run_*_half_*.sh
+    git checkout nextflow.config
+    git checkout conf/*_half_*.config
+    
+else
+
+    echo "Please only invoke the script from directly inside the '$REPO_NAME' directory!"
+    exit 1
+    
+fi
 
 if [ "$1" == "docker" ]; then
 
@@ -52,10 +65,10 @@ if [ "$1" == "docker" ]; then
     docker run \
         -it \
         -u $(id -u):$(id -g) \
-        -v $BASE_DIR/scripts:/scripts/ \
-        -v $BASE_DIR/test:/test \
+        -v $BASE_DIR/scripts:/usr/local/src/scripts/ \
+        -v $BASE_DIR/test:/usr/local/src/test \
         $R_container \
-        Rscript /scripts/prepare_test_files.R
+        Rscript /usr/local/src/scripts/prepare_test_files.R
         
     echo "Done."
     

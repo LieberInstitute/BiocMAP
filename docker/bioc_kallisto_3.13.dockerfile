@@ -1,5 +1,7 @@
 FROM bioconductor/bioconductor_docker:RELEASE_3_13
 
+WORKDIR /usr/local/src
+
 #  Install required R packages (R 4.1.0, Bioconductor 3.13)
 COPY install_R_packages.R ./install_R_packages.R
 RUN Rscript install_R_packages.R
@@ -11,4 +13,4 @@ RUN wget https://github.com/pachterlab/kallisto/releases/download/v0.46.1/kallis
     cp kallisto/kallisto /usr/local/bin/
    
 #  Make sure the 'here' R package works as expected inside the container 
-RUN touch /.here
+RUN touch .here
