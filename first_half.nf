@@ -149,13 +149,7 @@ def get_prefix(f) {
     f = replace_listed(f.name.toString(), blackListAny, "")
     f = replace_listed(f, blackListDot, ".")
     
-    f = f.tokenize('.')[0]
-    
-    if (f.substring(0, 1) == '_') {
-        return f.substring(1)
-    } else {
-        return f
-    }
+    return f.tokenize('.')[0]
 }
 
 def get_chromosome_name(f) {
@@ -356,7 +350,7 @@ process PreprocessInputs {
         file raw_fastqs
         
     output:
-        file "*.f*q*" into merged_inputs_flat
+        file "*.f*q*" into merged_inputs_flat includeInputs true
         file "arioc_samples.manifest" into arioc_manifest
         file "preprocess_inputs_first_half.log"
 
@@ -407,9 +401,9 @@ process FastQC_Untrimmed {
 
     shell:
         if (params.sample == "single") {
-            copy_command = "mv _${prefix}_fastqc ${prefix}_fastqc && cp ${prefix}_fastqc/summary.txt ${prefix}_untrimmed_summary.txt"
+            copy_command = "cp ${prefix}_fastqc/summary.txt ${prefix}_untrimmed_summary.txt"
         } else {
-            copy_command = "mv _${prefix}_1_fastqc ${prefix}_1_fastqc && cp ${prefix}_1_fastqc/summary.txt ${prefix}_1_untrimmed_summary.txt && mv _${prefix}_2_fastqc ${prefix}_2_fastqc && cp ${prefix}_2_fastqc/summary.txt ${prefix}_2_untrimmed_summary.txt"
+            copy_command = "cp ${prefix}_1_fastqc/summary.txt ${prefix}_1_untrimmed_summary.txt && cp ${prefix}_2_fastqc/summary.txt ${prefix}_2_untrimmed_summary.txt"
         }
         '''
         fastqc -t !{task.cpus} *.f*q* --extract
@@ -511,17 +505,17 @@ process Trimming {
             #  nextflow to output these files) and decompress as necessary
             if [ !{file_ext} == '.fastq.gz' ]; then
                 if [ "!{params.sample}" == "single" ]; then
-                    gunzip -c _!{fq_prefix}!{file_ext} > !{fq_prefix}_trimmed.fq
+                    gunzip -c !{fq_prefix}!{file_ext} > !{fq_prefix}_trimmed.fq
                 else
-                    gunzip -c _!{fq_prefix}_1!{file_ext} > !{fq_prefix}_val_1.fq
-                    gunzip -c _!{fq_prefix}_2!{file_ext} > !{fq_prefix}_val_2.fq
+                    gunzip -c !{fq_prefix}_1!{file_ext} > !{fq_prefix}_val_1.fq
+                    gunzip -c !{fq_prefix}_2!{file_ext} > !{fq_prefix}_val_2.fq
                 fi
             else
                 if [ "!{params.sample}" == "single" ]; then
-                    mv _!{fq_prefix}!{file_ext} !{fq_prefix}_untrimmed.fq
+                    mv !{fq_prefix}!{file_ext} !{fq_prefix}_untrimmed.fq
                 else
-                    mv _!{fq_prefix}_1!{file_ext} !{fq_prefix}_untrimmed_1.fq
-                    mv _!{fq_prefix}_2!{file_ext} !{fq_prefix}_untrimmed_2.fq
+                    mv !{fq_prefix}_1!{file_ext} !{fq_prefix}_untrimmed_1.fq
+                    mv !{fq_prefix}_2!{file_ext} !{fq_prefix}_untrimmed_2.fq
                 fi
             fi
             

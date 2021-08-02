@@ -72,7 +72,7 @@ if (paired) {
 
         #  Do the file merging
         files_to_combine <- do.call(paste, as.list(manifest[indices, 1]))
-        new_file <- paste0("_", manifest[indices[1], 5], "_1.", first_ext)
+        new_file <- paste0(manifest[indices[1], 5], "_1.", first_ext)
         command <- paste("cat", files_to_combine, ">", new_file)
         run_command(command)
 
@@ -83,7 +83,7 @@ if (paired) {
         run_command(command)
 
         files_to_combine <- do.call(paste, as.list(manifest[indices, 3]))
-        new_file <- paste0("_", manifest[indices[1], 5], "_2.", first_ext)
+        new_file <- paste0(manifest[indices[1], 5], "_2.", first_ext)
         command <- paste("cat", files_to_combine, ">", new_file)
         run_command(command)
 
@@ -105,20 +105,16 @@ if (paired) {
     for (index in remaining_rows) {
         first_ext <- actual_exts[index]
 
-        new_file <- paste0("_", manifest[index, 5], "_1.", first_ext)
+        new_file <- paste0(manifest[index, 5], "_1.", first_ext)
         if (manifest[index, 1] != new_file) {
             command <- paste("mv", manifest[index, 1], new_file)
             run_command(command)
-        } else {
-            stop("Names of FASTQ files must not begin with '_'.")
         }
 
-        new_file <- paste0("_", manifest[index, 5], "_2.", first_ext)
+        new_file <- paste0(manifest[index, 5], "_2.", first_ext)
         if (manifest[index, 3] != new_file) {
             command <- paste("mv", manifest[index, 3], new_file)
             run_command(command)
-        } else { 
-            stop("Names of FASTQ files must not begin with '_'.")
         }
     }
 
@@ -139,7 +135,7 @@ if (paired) {
     for (indices in indicesToCombine) {
         #  Do the file merging
         files_to_combine <- do.call(paste, as.list(manifest[indices, 1]))
-        new_file <- paste0("_", manifest[indices[1], 3], ".", actual_exts[indices[1]])
+        new_file <- paste0(manifest[indices[1], 3], ".", actual_exts[indices[1]])
         command <- paste("cat", files_to_combine, ">", new_file)
         run_command(command)
 
@@ -158,12 +154,10 @@ if (paired) {
         remaining_rows <- 1:nrow(manifest)
     }
     for (index in remaining_rows) {
-        new_file <- paste0("_", manifest[index, 3], ".", actual_exts[index])
+        new_file <- paste0(manifest[index, 3], ".", actual_exts[index])
         if (manifest[index, 1] != new_file) {
             command <- paste("mv", manifest[index, 1], new_file)
             run_command(command)
-        } else {
-            stop("Names of FASTQ files must not begin with '_'.")
         }
     }
 
@@ -174,5 +168,6 @@ if (paired) {
     new_man <- paste(reads, 0, ids)
     writeLines(new_man, con = "arioc_samples.manifest")
 }
+
 
 print("Done all tasks.")
