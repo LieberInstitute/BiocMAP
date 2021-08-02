@@ -11,6 +11,12 @@ manifest <- read.table("samples.manifest", header = FALSE, stringsAsFactors = FA
 ## Is the data paired end?
 paired <- ncol(manifest) > 3
 
+#  Nextflow passed files from the manifest to the working directory by this
+#  point, so relative paths should be used (and in fact must be used when
+#  running with docker- absolute paths are not mounted in this container)
+manifest[, 1] <- basename(manifest[, 1])
+if (paired) manifest[, 3] <- basename(manifest[, 3])
+
 ############################################################
 #  Verify the files in the manifest have known extensions
 ############################################################
@@ -62,81 +68,111 @@ if (paired) {
     print("Merging any files that need to be merged...")
     for (indices in indicesToCombine) {
         #  Determine file extension for the merged file to have
-        first_ext = actual_exts[indices[1]]
-        
+        first_ext <- actual_exts[indices[1]]
+
         #  Do the file merging
-        files_to_combine = do.call(paste, as.list(manifest[indices, 1]))
-        new_file = paste0(manifest[indices[1], 5], '_1.', first_ext)
-        command = paste('cat', files_to_combine, '>', new_file)
+        files_to_combine <- do.call(paste, as.list(manifest[indices, 1]))
+        new_file <- paste0("_", manifest[indices[1], 5], "_1.", first_ext)
+        command <- paste("cat", files_to_combine, ">", new_file)
         run_command(command)
-        
-        files_to_combine = do.call(paste, as.list(manifest[indices, 3]))
-        new_file = paste0(manifest[indices[1], 5], '_2.', first_ext)
-        command = paste('cat', files_to_combine, '>', new_file)
+
+        #  Note that 'basename' was called on the manifest, so unintended
+        #  application of this command will not do harm outside the nextflow
+        #  temporary directory
+        command <- paste("rm", files_to_combine)
+        run_command(command)
+
+        files_to_combine <- do.call(paste, as.list(manifest[indices, 3]))
+        new_file <- paste0("_", manifest[indices[1], 5], "_2.", first_ext)
+        command <- paste("cat", files_to_combine, ">", new_file)
+        run_command(command)
+
+        #  Note that 'basename' was called on the manifest, so unintended
+        #  application of this command will not do harm outside the nextflow
+        #  temporary directory
+        command <- paste("rm", files_to_combine)
         run_command(command)
     }
-    
-    #  Symbolically link any remaining files: this renames the files
-    #  by their associated sampleID, and uses the paired suffices _1 and _2.
-    print("Renaming and symbolically linking files for handling in the pipeline...")
+
+    #  Rename any remaining files by their associated sampleID, using the
+    #  paired suffices _1 and _2.
+    print("Renaming remaining files for handling in the pipeline...")
     if (length(unlist(indicesToCombine)) > 0) {
-        remaining_rows = (1:nrow(manifest))[-unlist(indicesToCombine)]
+        remaining_rows <- (1:nrow(manifest))[-unlist(indicesToCombine)]
     } else {
-        remaining_rows = 1:nrow(manifest)
+        remaining_rows <- 1:nrow(manifest)
     }
     for (index in remaining_rows) {
-        first_ext = actual_exts[index]
-        
-        new_file = paste0(manifest[index, 5], '_1.', first_ext)
-        command = paste('ln -s', manifest[index, 1], new_file)
-        run_command(command)
-        
-        new_file = paste0(manifest[index, 5], '_2.', first_ext)
-        command = paste('ln -s', manifest[index, 3], new_file)
-        run_command(command)
+        first_ext <- actual_exts[index]
+
+        new_file <- paste0("_", manifest[index, 5], "_1.", first_ext)
+        if (manifest[index, 1] != new_file) {
+            command <- paste("mv", manifest[index, 1], new_file)
+            run_command(command)
+        } else {
+            stop("Names of FASTQ files must not begin with '_'.")
+        }
+
+        new_file <- paste0("_", manifest[index, 5], "_2.", first_ext)
+        if (manifest[index, 3] != new_file) {
+            command <- paste("mv", manifest[index, 3], new_file)
+            run_command(command)
+        } else { 
+            stop("Names of FASTQ files must not begin with '_'.")
+        }
     }
-    
+
     #  Rewrite a manifest to reflect the file name changes and any merging
     print("Constructing a new manifest to reflect these changes...")
-    first_reads = basename(system('ls *_1.f*q*', intern=TRUE))
-    ids = ss(first_reads, '_1.', fixed=TRUE)
-    new_man = paste(first_reads,
-                    0,
-                    basename(system('ls *_2.f*q*', intern=TRUE)),
-                    0,
-                    ids)
-    writeLines(new_man, con="arioc_samples.manifest")
-
+    first_reads <- list.files(pattern = ".*_1\\.f.*q.*$")
+    ids <- ss(first_reads, "_1.", fixed = TRUE)
+    new_man <- paste(
+        first_reads,
+        0,
+        list.files(pattern = ".*_2\\.f.*q.*$"),
+        0,
+        ids
+    )
+    writeLines(new_man, con = "arioc_samples.manifest")
 } else {
     print("Merging any files that need to be merged...")
     for (indices in indicesToCombine) {
         #  Do the file merging
-        files_to_combine = do.call(paste, as.list(manifest[indices, 1]))
-        new_file = paste0(manifest[indices[1], 3], '.', actual_exts[indices[1]])
-        command = paste('cat', files_to_combine, '>', new_file)
+        files_to_combine <- do.call(paste, as.list(manifest[indices, 1]))
+        new_file <- paste0("_", manifest[indices[1], 3], ".", actual_exts[indices[1]])
+        command <- paste("cat", files_to_combine, ">", new_file)
+        run_command(command)
+
+        #  Note that 'basename' was called on the manifest, so unintended
+        #  application of this command will not do harm outside the nextflow
+        #  temporary directory
+        command <- paste("rm", files_to_combine)
         run_command(command)
     }
-    
-    #  Symbolically link any remaining files; also renames the files
-    #  by their associated sampleID
-    print("Renaming and symbolically linking files for handling in the pipeline...")
+
+    #  Rename remaining files by their associated sampleID
+    print("Renaming remaining files for handling in the pipeline...")
     if (length(unlist(indicesToCombine)) > 0) {
-        remaining_rows = (1:nrow(manifest))[-unlist(indicesToCombine)]
+        remaining_rows <- (1:nrow(manifest))[-unlist(indicesToCombine)]
     } else {
-        remaining_rows = 1:nrow(manifest)
+        remaining_rows <- 1:nrow(manifest)
     }
     for (index in remaining_rows) {
-        new_file = paste0(manifest[index, 3], '.', actual_exts[index])
-        command = paste('ln -s', manifest[index, 1], new_file)
-        run_command(command)
+        new_file <- paste0("_", manifest[index, 3], ".", actual_exts[index])
+        if (manifest[index, 1] != new_file) {
+            command <- paste("mv", manifest[index, 1], new_file)
+            run_command(command)
+        } else {
+            stop("Names of FASTQ files must not begin with '_'.")
+        }
     }
-    
+
     #  Rewrite a manifest to reflect the file name changes and any merging
     print("Constructing a new manifest to reflect these changes...")
-    reads = basename(system('ls *.f*q*', intern=TRUE))
-    ids = ss(reads, '.', fixed=TRUE)
-    new_man = paste(reads, 0, ids)
-    writeLines(new_man, con="arioc_samples.manifest")
+    reads <- list.files(pattern = ".*\\.f.*q.*$")
+    ids <- ss(reads, ".", fixed = TRUE)
+    new_man <- paste(reads, 0, ids)
+    writeLines(new_man, con = "arioc_samples.manifest")
 }
 
 print("Done all tasks.")

@@ -149,7 +149,13 @@ def get_prefix(f) {
     f = replace_listed(f.name.toString(), blackListAny, "")
     f = replace_listed(f, blackListDot, ".")
     
-    return f.tokenize('.')[0]
+    f = f.tokenize('.')[0]
+    
+    if (f.substring(0, 1) == '_') {
+        return f.substring(1)
+    } else {
+        return f
+    }
 }
 
 def get_chromosome_name(f) {
@@ -369,14 +375,14 @@ if (params.sample == "single") {
         .flatten()
         .map{file -> tuple(get_prefix(file), file) }
         .ifEmpty{ error "Input fastq files (after any merging) are missing from the channel"}
-        .into{ fastqc_untrimmed_inputs; trimming_inputs; lambda_inputs }
+        .into{ fastqc_untrimmed_inputs; trimming_inputs }
 } else {
     merged_inputs_flat
         .flatten()
         .map{file -> tuple(get_prefix(file), file) }
         .groupTuple()
         .ifEmpty{ error "Input fastq files (after any merging) are missing from the channel"}
-        .into{ fastqc_untrimmed_inputs; trimming_inputs; lambda_inputs }
+        .into{ fastqc_untrimmed_inputs; trimming_inputs }
 }
 
 // ######################################################
@@ -401,12 +407,13 @@ process FastQC_Untrimmed {
 
     shell:
         if (params.sample == "single") {
-            copy_command = "cp ${prefix}_fastqc/summary.txt ${prefix}_untrimmed_summary.txt"
+            copy_command = "mv _${prefix}_fastqc ${prefix}_fastqc && cp ${prefix}_fastqc/summary.txt ${prefix}_untrimmed_summary.txt"
         } else {
-            copy_command = "cp ${prefix}_1_fastqc/summary.txt ${prefix}_1_untrimmed_summary.txt && cp ${prefix}_2_fastqc/summary.txt ${prefix}_2_untrimmed_summary.txt"
+            copy_command = "mv _${prefix}_1_fastqc ${prefix}_1_fastqc && cp ${prefix}_1_fastqc/summary.txt ${prefix}_1_untrimmed_summary.txt && mv _${prefix}_2_fastqc ${prefix}_2_fastqc && cp ${prefix}_2_fastqc/summary.txt ${prefix}_2_untrimmed_summary.txt"
         }
         '''
         fastqc -t !{task.cpus} *.f*q* --extract
+        
         !{copy_command}
         '''
 }
@@ -502,19 +509,19 @@ process Trimming {
         else
             #  Otherwise rename files (for compatibility downnstream, and to signal to
             #  nextflow to output these files) and decompress as necessary
-            if [ ![file_ext] == '.fastq.gz' ]; then
+            if [ !{file_ext} == '.fastq.gz' ]; then
                 if [ "!{params.sample}" == "single" ]; then
-                    gunzip -c !{fq_prefix}!{file_ext} > !{fq_prefix}_trimmed.fq
+                    gunzip -c _!{fq_prefix}!{file_ext} > !{fq_prefix}_trimmed.fq
                 else
-                    gunzip -c !{fq_prefix}_1!{file_ext} > !{fq_prefix}_val_1.fq
-                    gunzip -c !{fq_prefix}_2!{file_ext} > !{fq_prefix}_val_2.fq
+                    gunzip -c _!{fq_prefix}_1!{file_ext} > !{fq_prefix}_val_1.fq
+                    gunzip -c _!{fq_prefix}_2!{file_ext} > !{fq_prefix}_val_2.fq
                 fi
             else
                 if [ "!{params.sample}" == "single" ]; then
-                    mv !{fq_prefix}!{file_ext} !{fq_prefix}_untrimmed.fq
+                    mv _!{fq_prefix}!{file_ext} !{fq_prefix}_untrimmed.fq
                 else
-                    mv !{fq_prefix}_1!{file_ext} !{fq_prefix}_untrimmed_1.fq
-                    mv !{fq_prefix}_2!{file_ext} !{fq_prefix}_untrimmed_2.fq
+                    mv _!{fq_prefix}_1!{file_ext} !{fq_prefix}_untrimmed_1.fq
+                    mv _!{fq_prefix}_2!{file_ext} !{fq_prefix}_untrimmed_2.fq
                 fi
             fi
             
