@@ -171,6 +171,16 @@ def get_context(f) {
         .tokenize('.')[0][-3..-1]
 }
 
+//  Given a "row" of the 'samples.manifest' file as a string, return the FASTQ
+//  files
+def get_fastq_names(row) {
+    if (params.sample == "single") {
+        return(file(row.tokenize('\t')[0]))
+    } else {
+        return(tuple(file(row.tokenize('\t')[0]), file(row.tokenize('\t')[2])))
+    }
+}
+
 
 // ------------------------------------------------------------
 //  Print all parameters to log
@@ -320,6 +330,15 @@ process EncodeReference {
         '''
 }
 
+// Extract FASTQ file paths from the manifest and place in a channel to pass to
+// PreprocessInputs
+Channel
+    .fromPath("${params.input}/samples.manifest")
+    .splitText()
+    .map{ row -> get_fastq_names(row) }
+    .flatten()
+    .collect()
+    .set{ raw_fastqs }
 
 process PreprocessInputs {
 
@@ -328,6 +347,7 @@ process PreprocessInputs {
     input:
         file original_manifest from file("${params.input}/samples.manifest")
         file preprocess_script from file("${workflow.projectDir}/scripts/preprocess_inputs_first.R")
+        file raw_fastqs
         
     output:
         file "*.f*q*" into merged_inputs_flat
