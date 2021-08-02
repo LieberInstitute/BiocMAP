@@ -12,7 +12,7 @@ RUN apt-get install -y wget make zip perl default-jre python3-dev python3-pip py
 RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.8.zip && \
     unzip fastqc_v0.11.8.zip && \
     chmod -R 775 FastQC && \
-    cp FastQC/fastqc /usr/local/bin/
+    ln -s /usr/local/src/FastQC/fastqc /usr/local/bin/fastqc
     
 #  Install cutadapt
 RUN pip install cutadapt
