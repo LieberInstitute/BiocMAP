@@ -144,11 +144,21 @@ def get_context(f) {
 
 //  Given a "row" of the 'samples.manifest' file as a string, return the sample
 //  ids
-def get_fastq_names(row) {
+def get_ids(row) {
     if (params.sample == "single") {
         return(row.tokenize('\t')[2])
     } else {
         return(row.tokenize('\t')[4])
+    }
+}
+
+//  Given a "row" of the 'samples.manifest' file as a string, return the FASTQ
+//  files
+def get_fastq_names(row) {
+    if (params.sample == "single") {
+        return(file(row.tokenize('\t')[0]))
+    } else {
+        return(tuple(file(row.tokenize('\t')[0]), file(row.tokenize('\t')[2])))
     }
 }
 
@@ -322,23 +332,16 @@ rules_globs = rules_file
     .readLines()
     .collect{ get_rules_glob(it) }
     .flatten()
-    
-print(rules_globs)
 
 //  Read 'samples.manifest' to produce a list of sample IDs
 manifest_index = rules_globs
     .collect{ it.tokenize('/')[-1] }
     .indexOf('samples.manifest')
     
-print(manifest_index)
-    
 manifest_file = file(rules_globs[manifest_index])
 ids = manifest_file
     .readLines()
-    .collect{ row -> get_fastq_names(row) }
-
-print(manifest_file)
-print(ids)
+    .collect{ get_ids(it) }
 
 //  Evaluate instances of '[id]' in rules.txt, to produce a list of pure globs
 //  matching all required files for the preprocessing step
@@ -352,14 +355,22 @@ for (glob in rules_globs) {
         path_list.add(glob)
     }
 }
-
-print(path_list)
     
 //  Place all files matched by any of the globs into a channel
 Channel
     .fromPath(path_list)
     .collect()
     .set{ glob_channel }
+    
+// Extract FASTQ file paths from the manifest and place in a channel to pass to
+// PreprocessInputs
+Channel
+    .fromPath(manifest_file)
+    .splitText()
+    .map{ row -> get_fastq_names(row) }
+    .flatten()
+    .collect()
+    .set{ raw_fastqs }
 
 //  Place SAMs and any reports/logs into channels for use in the pipeline
 process PreprocessInputs {
@@ -372,6 +383,7 @@ process PreprocessInputs {
         //  at https://github.com/nextflow-io/nextflow/issues/516
         file "*." from glob_channel
         
+        file raw_fastqs
         file rules_file
         file manifest_file
         file preprocess_script from file("${workflow.projectDir}/scripts/preprocess_inputs_second.R")
@@ -380,7 +392,7 @@ process PreprocessInputs {
         file "*.{sam,bam}" into concordant_bams_out
         file "*.bam.bai" optional true into concordant_indices_out
         file "*_{arioc,trim_report,xmc,fastqc}.log" into misc_reports_out
-        file "*.f*q*" optional true into fastq_out
+        file "*.f*q*" includeInputs true into fastq_out
         file "preprocess_inputs_second_half.log"
         
     shell:
