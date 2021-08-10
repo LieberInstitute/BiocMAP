@@ -152,20 +152,12 @@ def get_fastq_names(row) {
     }
 }
 
-//  Given a single line of 'rules.txt' and a list of sample IDs, return either
-//  a string or a list of strings containing all glob expression(s) 
-def get_rules_glob(row, ids) {
+//  Given a single line of 'rules.txt', return either a string or a list of
+//  strings containing all glob expression(s) (note that instances of '[id]'
+//  are still returned, and not "evaluated") 
+def get_rules_glob(row) {
     if (row[0] == "#") {
         return ""
-    } else if (row.contains('[id]')) {
-        row = row.replaceAll("\\s", "").tokenize('=')[1]
-        
-        path_list = []
-        for (id in ids) {
-            path_list.add(row.replaceAll('\\[id\\]', id))
-        }
-            
-        return path_list
     } else {
         return row.replaceAll("\\s", "").tokenize('=')[1]
     }
@@ -324,13 +316,64 @@ if (params.with_lambda) {
 }
 
 
+//  Read rules.txt, producing a list of globs (one glob per row in rules.txt)
+rules_file = file("${params.input}/rules.txt")
+rules_globs = rules_file
+    .readLines()
+    .collect{ get_rules_glob(it) }
+    .flatten()
+    
+print(rules_globs)
+
+//  Read 'samples.manifest' to produce a list of sample IDs
+manifest_index = rules_globs
+    .collect{ it.tokenize('/')[-1] }
+    .indexOf('samples.manifest')
+    
+print(manifest_index)
+    
+manifest_file = file(rules_globs[manifest_index])
+ids = manifest_file
+    .readLines()
+    .collect{ row -> get_fastq_names(row) }
+
+print(manifest_file)
+print(ids)
+
+//  Evaluate instances of '[id]' in rules.txt, to produce a list of pure globs
+//  matching all required files for the preprocessing step
+path_list = []
+for (glob in rules_globs) {
+    if (glob.contains('[id]')) {
+        for (id in ids) {
+            path_list.add(glob.replaceAll('\\[id\\]', id))
+        }
+    } else {
+        path_list.add(glob)
+    }
+}
+
+print(path_list)
+    
+//  Place all files matched by any of the globs into a channel
+Channel
+    .fromPath(path_list)
+    .collect()
+    .set{ glob_channel }
+
 //  Place SAMs and any reports/logs into channels for use in the pipeline
 process PreprocessInputs {
     
     publishDir "${params.output}/preprocessing/", mode:'copy', pattern:'preprocess_inputs_second_half.log'
     
     input:
-        file rules from file("${params.input}/rules.txt")
+        //  Stage files with unique names, since we are not guaranteed the
+        //  basename of each file is unique as it is. See pditommaso's solution
+        //  at https://github.com/nextflow-io/nextflow/issues/516
+        file "*." from glob_channel
+        
+        file rules_file
+        file manifest_file
         file preprocess_script from file("${workflow.projectDir}/scripts/preprocess_inputs_second.R")
         
     output:
