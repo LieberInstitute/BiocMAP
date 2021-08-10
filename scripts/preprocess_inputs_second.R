@@ -1,8 +1,8 @@
 library('jaffelab')
 
-###################################################
+###############################################################################
 #  Functions
-###################################################
+###############################################################################
 
 run_command = function(command) {
     print(paste0("Running command: '", command, "'..."))
@@ -25,53 +25,18 @@ get_value = function(rules, key, required) {
     return(gsub(' ', '', ss(this_line, '=', 2)))
 }
 
-#  Given an absolute file path (character vector of length 1) as a glob
-#  expression, return a vector of corresponding filepaths.
-process_glob = function(path_glob, key) {
-    #  Expand glob and check that the correct number of files were matched
-    paths = Sys.glob(path_glob)
-    if (length(paths) == 0) {
-        stop(paste0('Paths for key "',
-                   key,
-                   '" in "rules.txt" matched no files.'))
-    } else if (key == 'sam') {
-        suff = substr(basename(paths), 
-                      nchar(basename(paths)) - 3,
-                      nchar(basename(paths)))
-        using_bams = length(paths) == 2 && all(suff %in% c('.bam', '.bai'))
-        using_sams = length(paths) == 1 && all(suff == '.sam')
-        if (!using_bams && !using_sams) {
-            stop("Incorrect path specification for key 'sam'. Either specify a glob matching '.bam' and '.bam.bai' files, or just match '.sam' files.")
-        }
-    } else if (key != 'fastqc_log_last' && key != 'fastqc_log_first' && length(paths) > 1) {
-        stop(paste0('Paths for key "',
-                   key,
-                   '" in "rules.txt" matched more than 1 file.'))
-    } else if (key != 'fastqc_log_last' && key != 'fastqc_log_first' && !(length(paths) %in% c(1, 2, 4))) {
-        stop(paste0('Paths for key "',
-                   key,
-                   '" in "rules.txt" matched an invalid number of files: ',
-                   length(paths)))
-    }
-    
-    return(paths)
-}
-
 get_paths = function(rules, key, ids, required) {
     value = get_value(rules, key, required)
     
     if (!is.na(value)) {
         pieces = strsplit(value, '[id]', fixed=TRUE)[[1]]
         
-        #  Get the paths, substituting in actual ids for each '[id]', and
-        #  evaluating any glob syntax
-        
+        #  Get the paths, substituting in actual ids for each '[id]'
         paths = ''
         for (i in 1:(length(pieces)-1)) {
             paths = paste0(paths, pieces[i], ids)
         }
         paths = paste0(paths, pieces[length(pieces)])
-        paths = unlist(lapply(paths, process_glob, key))
         
         return(paths)
     } else {
@@ -79,95 +44,137 @@ get_paths = function(rules, key, ids, required) {
     }
 }
 
-#  Given absolute paths to the logs for a particular key in 'rules.txt', stop
-#  if any files don't exist or if the wrong number of paths exist
-check_paths = function(paths, key, ids) {
-    if (!is.na(paths)) {
-        #  Verify legitimacy of paths
-        if (length(paths) != length(ids) && length(paths) != 2 * length(ids)) {
-            stop('Improper number of total logs found for key "', key, '".')
-        }
-        if (! all(file.exists(paths))) {
-            stop(paste0('Some or all files for key "', key, '" do not exist.'))
-        }
-    }
-}
-
-form_links = function(paths, ids, end_name) {
-    #  Whether 2 logs exist per ID
-    paired = length(paths) == 2 * length(ids)
+rename_links = function(glob, orig_paths_long, sym_paths_short, end_name, key, expected_matches, missing_ok=FALSE) {
+    total_ids_matched = 0
     
-    #  Symbolically link each file into the current working directory
-    for (i in 1:length(ids)) {
-        if (paired) {
-            command = paste0('ln -s ', paths[2*i - 1], ' ', ids[i], '_1', end_name)
-            run_command(command)
-            
-            command = paste0('ln -s ', paths[2*i], ' ', ids[i], '_2', end_name)
-            run_command(command)
-        } else {
-            command = paste0('ln -s ', paths[i], ' ', ids[i], end_name)
-            run_command(command)
+    for (i in 1:length(glob)) {
+        matches = regexpr(pattern = glob[i], orig_paths_long)
+        num_matches = length(which(matches == 1))
+        
+        if (missing_ok && (num_matches == 0)) {
+            next
+        } else if (num_matches != expected_matches) {
+            stop(paste0(num_matches, ' matches found for "', key , '" per ID when ', expected_matches, ' matches were expected.'))
         }
+        
+        total_ids_matched = total_ids_matched + 1
+        
+        sym_path = sym_paths_short[matches == 1]
+        
+        if (length(sym_path) == 1) {
+            run_command(paste('mv', sym_path, paste0(ids[i], end_name)))
+        } else {
+            #  Assumes 'list.files' will return mates in order!
+            run_command(paste('mv', sym_path[1], paste0(ids[i], '_1', end_name)))
+            run_command(paste('mv', sym_path[2], paste0(ids[i], '_2', end_name)))
+        }
+    }
+    
+    if (total_ids_matched == 0) {
+        stop("Didn't find any files for '", key , "' (expected at least 1 ID to have a matching file).")
     }
 }
 
-process_key = function(rules, key, ids, end_name, required) {
-    paths = get_paths(rules, key, ids, required)
-    check_paths(paths, key, ids)
-    form_links(paths, ids, end_name)
+get_ext = function(filename) {
+    num_fields = length(strsplit(filename, '\\.')[[1]])
+    
+    last_field = ss(filename, '\\.', num_fields)
+    if (last_field == 'bai') {
+        ext = paste0(ss(filename, '\\.', num_fields - 1), '.', last_field)
+        if (ext != 'bam.bai') {
+            stop(paste0('Found an unknown file type: ".', ext, '".'))
+        }
+        return (ext)
+    } else {
+        return (last_field)
+    }
 }
 
-###################################################
-#  Link logs into the working directory
-###################################################
+###############################################################################
+#  Rename logs with meaningful, unique filenames
+###############################################################################
 
+#  Read in 'rules.txt'
 rules = readLines('rules.txt')
 
 if (length(grep('#', rules)) > 0) {
     rules = rules[-grep('#', rules)]
 }
 
-manifest = read.table(get_value(rules, 'manifest', TRUE), header = FALSE,
-                      stringsAsFactors = FALSE)
+#  Read in 'samples.manifest'
+manifest = read.table(
+    'samples.manifest', header = FALSE, stringsAsFactors = FALSE
+)
 ids = manifest[,ncol(manifest)]
 paired = ncol(manifest) > 3
 
+#  Name of the symbolic links present in the working directory, full path to
+#  the files each link points to, and basename of these files, respectively
+sym_paths_short = list.files(pattern = '.*\\.$')
+orig_paths_long = Sys.readlink(sym_paths_short)
+orig_paths_short = basename(orig_paths_long)
+
+#  For each type of log:
+#    1. Grab the glob specified in rules.txt for the key
+#    2. See which files in the WD match the glob
+#    3. Rename those files appropriately
 
 #  Arioc logs
-process_key(rules, 'arioc_log', ids, '_arioc.log', TRUE)
+print('Looking for Arioc logs...')
+glob = get_paths(rules, 'arioc_log', ids, TRUE) # now we have one glob per ID
+rename_links(glob, orig_paths_long, sym_paths_short, '_arioc.log', 'arioc_log', 1)
 
 #  XMC logs
-process_key(rules, 'xmc_log', ids, '_xmc.log', FALSE)
-
-#  Trim Galore reports
-process_key(rules, 'trim_report', ids, '_trim_report.log', TRUE)
-
-#  FastQC logs
-last_paths = get_paths(rules, 'fastqc_log_last', ids, TRUE)
-first_paths = get_paths(rules, 'fastqc_log_first', ids, FALSE)
-
-if (is.na(first_paths)) {
-    combined_paths = last_paths
-    check_paths(combined_paths, 'fastqc_log_last', ids)
-} else {
-    combined_paths = c(first_paths[!(first_paths %in% last_paths)], last_paths)
-    check_paths(paths, 'combined fastqc_log_first and fastqc_log_last', ids)
+glob = get_paths(rules, 'xmc_log', ids, FALSE) # now we have one glob per ID
+if (!is.na(glob)) {
+    print('Looking for XMC logs, since the "xmc_log" key was specified...')
+    rename_links(glob, orig_paths_long, sym_paths_short, '_xmc.log', 'xmc_log', 1)
 }
 
-form_links(combined_paths, ids, '_fastqc.log')
+#  FastQC logs
+print('Looking for FastQC logs...')
+glob_last = get_paths(rules, 'fastqc_log_last', ids, TRUE)
+glob_first = get_paths(rules, 'fastqc_log_first', ids, FALSE)
+
+num_matches = ifelse(paired, 2, 1)
+if (is.na(glob_first)) {
+    rename_links(glob_last, orig_paths_long, sym_paths_short, '_fastqc.log', 'fastqc_log_last', num_matches)
+} else {
+    #  For simplicity given the existing code/functions, all "first fastqc logs"
+    #  are renamed, and renaming for any "last fastqc logs" is performed afterward,
+    #  thus overwriting "first fastqc logs" for applicable IDs
+    rename_links(glob_first, orig_paths_long, sym_paths_short, '_fastqc.log', 'fastqc_log_first', num_matches)
+    rename_links(glob_last, orig_paths_long, sym_paths_short, '_fastqc.log', 'fastqc_log_last', num_matches, TRUE)
+}
+
+#  Trim Galore reports
+glob = get_paths(rules, 'trim_report', ids, FALSE) # now we have one glob per ID
+if (!is.na(glob)) {
+    print('Looking for Trim Galore logs, since the "trim_report" key was specified...')
+    rename_links(glob, orig_paths_long, sym_paths_short, '_trim_report.log', 'trim_report', 1, TRUE)
+}
 
 #  SAM or (BAM and .bam.bai) files
-sam_paths = get_paths(rules, 'sam', ids, TRUE)
-check_paths(sam_paths, 'sam', ids)
-if (length(sam_paths) == 2 * length(ids)) {
-    suff = substr(sam_paths, nchar(sam_paths) - 3, nchar(sam_paths))
-    
-    #  Note that ids and files to link are guaranteed to be lined up correctly
-    form_links(sam_paths[suff == '.bam'], ids, '.bam')
-    form_links(sam_paths[suff == '.bai'], ids, '.bam.bai')
+print('Looking for alignment-related files...')
+glob = get_paths(rules, 'sam', ids, FALSE) # now we have one glob per ID
+
+temp = sapply(orig_paths_short, get_ext) == 'sam'
+orig_sams = orig_paths_long[temp]
+
+#  Note that 'rename_links' would catch the problematic case where
+#  0 < length(orig_sams) < length(ids)
+if (length(orig_sams) > 0) {
+    print('Found at least one SAM file; looking for the remaining ones...')
+    sym_sams = sym_paths_short[temp]
+    rename_links(glob, orig_sams, sym_sams, '.sam', 'sam', 1)
 } else {
-    form_links(sam_paths, ids, '.sam')
+    print("Didn't find any SAM files; looking for BAMs instead...")
+    temp = sapply(orig_paths_short, get_ext) == 'bam'
+    rename_links(glob, orig_paths_long[temp], sym_paths_short[temp], '.bam', 'sam', 1)
+    
+    print('Looking for indices for these BAMs (".bam.bai" files)...')
+    temp = sapply(orig_paths_short, get_ext) == 'bam.bai'
+    rename_links(glob, orig_paths_long[temp], sym_paths_short[temp], '.bam.bai', 'sam', 1)
 }
 
 ############################################################
@@ -201,9 +208,9 @@ if (paired && any(actual_exts[1:nrow(manifest)] != actual_exts[(nrow(manifest)+1
 }
 
 
-####################################################################
+###############################################################################
 #  Perform merging and renaming of FASTQs for use in the pipeline
-####################################################################
+###############################################################################
 
 #  This forms a list, where each element is a vector containing row numbers
 #  of the manifest to combine (and each element contains a unique set of rows)
