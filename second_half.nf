@@ -142,6 +142,35 @@ def get_context(f) {
         .tokenize('.')[0][-3..-1]
 }
 
+//  Given a "row" of the 'samples.manifest' file as a string, return the sample
+//  ids
+def get_fastq_names(row) {
+    if (params.sample == "single") {
+        return(row.tokenize('\t')[2])
+    } else {
+        return(row.tokenize('\t')[4])
+    }
+}
+
+//  Given a single line of 'rules.txt' and a list of sample IDs, return either
+//  a string or a list of strings containing all glob expression(s) 
+def get_rules_glob(row, ids) {
+    if (row[0] == "#") {
+        return ""
+    } else if (row.contains('[id]')) {
+        row = row.replaceAll("\\s", "").tokenize('=')[1]
+        
+        path_list = []
+        for (id in ids) {
+            path_list.add(row.replaceAll('\\[id\\]', id))
+        }
+            
+        return path_list
+    } else {
+        return row.replaceAll("\\s", "").tokenize('=')[1]
+    }
+}
+
 //  Write run info to output
 log.info "=================================="
 log.info " WGBS Pipeline- Second Half"
