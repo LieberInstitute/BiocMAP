@@ -279,6 +279,7 @@ process PrepareReference {
         file "encode_ref_${params.gapped_seed}.cfg" into encode_ref_gap_cfg
         file "encode_ref_${params.nongapped_seed}.cfg" into encode_ref_nongap_cfg
         file "prepare_ref_first_${params.gapped_seed}_${params.nongapped_seed}.log"
+        file "*.fa" into split_fastas
         
     shell:
         if (params.custom_anno != "") {
@@ -294,11 +295,8 @@ process PrepareReference {
         bash !{split_fasta_script} !{raw_genome}
         
         #  Write the Arioc configs for encoding the reference
-        out_dir=!{params.annotation}/!{params.anno_suffix}
-        mkdir -p $out_dir
         Rscript !{encode_ref_script} \
             -r !{params.reference} \
-            -d $out_dir \
             -g !{params.gapped_seed} \
             -n !{params.nongapped_seed}
         
@@ -311,20 +309,32 @@ process PrepareReference {
 // Arioc requires an encoded reference sequence. This process builds that within the repo,
 // if the encoded sequence hasn't been built before.
 process EncodeReference {
-    storeDir "${params.annotation}/${params.anno_suffix}"
+    storeDir "${params.annotation}/${params.anno_suffix}", pattern:"{*\$*.sbf,.success}"
+    storeDir "${params.annotation}/${params.anno_suffix}/${params.gapped_seed}", pattern:"{[HJ]*.sbf,${params.gapped_seed}.cfg}"
+    storeDir "${params.annotation}/${params.anno_suffix}/${params.nongapped_seed}", pattern:"{[HJ]*.sbf,${params.nongapped_seed}.cfg}"
     
     input:
         file encode_ref_gap_cfg
         file encode_ref_nongap_cfg
+        file split_fastas
         
     output:
         //  Both the gapped and nongapped seeds must be built to continue
         set file("${params.gapped_seed}.success"), file("${params.nongapped_seed}.success") into success_token_ref
         
+        file "*.sbf"
+        file "*.cfg"
+        
     shell:
         '''
+        #  Update the configs with this process' working directory
+        sed -i "s|\[future_work_dir\]|$PWD|" !{encode_ref_gap_cfg}
+        sed -i "s|\[future_work_dir\]|$PWD|" !{encode_ref_nongap_cfg}
+        
+        #  Encode gapped and nongapped seeds sequentially (later parallelize)
         AriocE !{encode_ref_gap_cfg}
         AriocE !{encode_ref_nongap_cfg}
+        
         touch !{params.gapped_seed}.success
         touch !{params.nongapped_seed}.success
         '''
