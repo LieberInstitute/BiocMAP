@@ -6,7 +6,6 @@ spec <- matrix(c('paired', 'p', 1, 'character', '"single" or "paired"',
                  'arioc_opts', 'o', 1, 'character', 'main alignment options',
                  'gapped_opts', 'g', 1, 'character', 'gapped seed options',
                  'nongapped_opts', 'n', 1, 'character', 'nongapped seed options',
-                 'r_opts', 'r', 1, 'character', 'reference-related options',
                  'x_opts', 'x', 1, 'character', 'opts to pass to <X>',
                  'q_opts', 'q', 1, 'character', 'file-related options'),
                byrow=TRUE, ncol=5)
@@ -48,16 +47,20 @@ if (opt$allAlign) {
 #    Gather lines into a vector for writing
 #############################################################
 
-#  Lines related to alignment settings
-config_lines = c('<?xml version="1.0" encoding="utf-8"?>',
-                 opt$arioc_opts,
-                 opt$r_opts, 
-                 '',
-                 opt$nongapped_opts,
-                 opt$gapped_opts,
-                 opt$x_opts, 
-                 '',
-                 opt$q_opts)
+#  Lines related to alignment settings: here the literal '[future_work_dir]' is
+#  written and will be replaced with the working directory used in the
+#  AlignReads process
+config_lines = c(
+    '<?xml version="1.0" encoding="utf-8"?>',
+    opt$arioc_opts,
+    '  <R>[future_work_dir]</R>',
+    '',
+    opt$nongapped_opts,
+    opt$gapped_opts,
+    opt$x_opts, 
+    '',
+    '  <Q filePath="[future_work_dir]/encoded_reads">'
+)
 
 #  Lines related to the particular reads used for this alignment
 if (opt$paired == "paired") {

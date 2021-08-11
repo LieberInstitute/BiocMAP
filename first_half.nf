@@ -319,8 +319,9 @@ process EncodeReference {
         file split_fastas
         
     output:
-        file "*.sbf"
-        file "*.cfg"
+        file "${params.gapped_seed}/*.{sbf,cfg}" into gap_ref_files
+        file "${params.nongapped_seed}/*.{sbf,cfg}" into nongap_ref_files
+        file "*.sbf" into encoded_ref_files
         
     shell:
         '''
@@ -581,13 +582,11 @@ process WriteAriocConfigs {
         arioc_opts = '<' + exec_name + ' gpuMask="' + params.gpu_mask + \
                      '" batchSize="' + params.batch_size + \
                      '" verboseMask="0xE0000007">'
-        r_opts = "  <R>${params.annotation}/${params.anno_suffix}</R>"
         nongapped_opts = '  <nongapped seed="' + params.nongapped_seed + \
                          '" ' + params.nongapped_args + '/>'
         gapped_opts = '  <gapped seed="' + params.gapped_seed + '" ' + \
                       params.gapped_args + '/>'
         x_opts = '  <X ' + params.x_args + '/>'
-        q_opts = '  <Q filePath="' + encoded_dir + '">'
         '''
         Rscript !{encode_reads_script} \
             -p !{params.sample} \
@@ -600,9 +599,7 @@ process WriteAriocConfigs {
             -o \'!{arioc_opts}\' \
             -g \'!{gapped_opts}\' \
             -n \'!{nongapped_opts}\' \
-            -r \'!{r_opts}\' \
             -x \'!{x_opts}\' \
-            -q \'!{q_opts}\'
             
         cp .command.log write_configs_!{fq_prefix}.log
         '''
@@ -644,7 +641,7 @@ process EncodeReads {
 }
 
 //  This channel includes encoded reads and their associated Arioc alignment config
-encoded_reads_reads
+encoded_reads
     .mix(align_reads_cfgs)
     .flatten()
     .map{ file -> tuple(get_prefix(file), file) }
@@ -663,6 +660,9 @@ process AlignReads {
         file success_token_ref
         
         set val(prefix), file(cfg_and_encoded_reads) from align_in
+        file gap_ref_files
+        file nongap_ref_files
+        file encoded_ref_files
         
     output:
         file "${prefix}.[dru].sam" optional true
@@ -676,6 +676,23 @@ process AlignReads {
             exec_name = "AriocU"
         }
         '''
+        #  Recreate the directory layout for Arioc reference files (as they
+        #  were originally created)
+        mkdir ${params.gapped_seed}
+        for file in !{gap_ref_files}; do
+            mv file ${params.gapped_seed}/
+        done
+        
+        mkdir ${params.nongapped_seed}
+        for file in !{nongap_ref_files}; do
+            mv file ${params.nongapped_seed}/
+        done
+        
+        #  Isolate encoded reads into their own directory
+        mkdir encoded_reads
+        mv !{prefix}*.sbf encoded_reads/
+        sed -i "s|\[future_work_dir\]|$PWD|" !{prefix}_align_reads.cfg
+        
         #  Run alignment
         !{exec_name} !{prefix}_align_reads.cfg
         cp .command.log !{prefix}_alignment.log
