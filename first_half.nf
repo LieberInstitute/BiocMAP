@@ -576,8 +576,6 @@ process WriteAriocConfigs {
             exec_name = "AriocU"
         }
         
-        encoded_dir = "${workflow.workDir}/temp_encoded_reads"
-        
         //  Form strings containing lines to write in the Arioc configs, that
         //  are dependent on parameters from the first-half config
         arioc_opts = '<' + exec_name + ' gpuMask="' + params.gpu_mask + \
@@ -593,7 +591,6 @@ process WriteAriocConfigs {
         '''
         Rscript !{encode_reads_script} \
             -p !{params.sample} \
-            -d !{encoded_dir} \
             -x !{fq_prefix}
             
         Rscript !{align_reads_script} \
@@ -636,6 +633,10 @@ process EncodeReads {
         
     shell:
         '''
+        #  Update the configs with this process' working directory
+        sed -i "s|\[future_work_dir\]|$PWD|" !{fq_prefix}_encode_reads.cfg
+        
+        #  Encode reads
         AriocE !{fq_prefix}_encode_reads.cfg
         
         cp .command.log encode_!{fq_prefix}.log

@@ -1,7 +1,6 @@
 library('getopt')
 
 spec <- matrix(c('paired', 'p', 1, 'character', '"single" or "paired"',
-                 'writeDir', 'd', 1, 'character', 'directory to put encoded reads in',
                  'prefix', 'x', 1, 'character', 'prefix to uniquely identify sample'),
                byrow=TRUE, ncol=5)
 opt <- getopt(spec)
@@ -155,10 +154,11 @@ if (opt$paired == "paired") {
 }
 config_lines = c(config_lines, '  </dataIn>')
 
-#  Output
+#  Output: here the literal '[future_work_dir]' is written and will be replaced
+#  with the working directory used in the EncodeReads process
 config_lines = c(config_lines,
                  '  <dataOut>',
-                 paste0('    <path>', opt$writeDir, '</path>'),
+                 paste0('    <path>[future_work_dir]</path>'),
                  '  </dataOut>',
                  '</AriocE>')
 
