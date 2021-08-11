@@ -319,9 +319,6 @@ process EncodeReference {
         file split_fastas
         
     output:
-        //  Both the gapped and nongapped seeds must be built to continue
-        set file("${params.gapped_seed}.success"), file("${params.nongapped_seed}.success") into success_token_ref
-        
         file "*.sbf"
         file "*.cfg"
         
@@ -334,9 +331,6 @@ process EncodeReference {
         #  Encode gapped and nongapped seeds sequentially (later parallelize)
         AriocE !{encode_ref_gap_cfg}
         AriocE !{encode_ref_nongap_cfg}
-        
-        touch !{params.gapped_seed}.success
-        touch !{params.nongapped_seed}.success
         '''
 }
 
