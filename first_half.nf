@@ -631,25 +631,24 @@ process EncodeReads {
         set val(fq_prefix), file(config), file(fq_file) from ariocE_merged_inputs
         
     output:
-        file "${fq_prefix}_success_token" into success_tokens_reads
+        file "${fq_prefix}*.sbf" into encoded_reads
         file "encode_${fq_prefix}.log"
         
     shell:
         '''
         AriocE !{fq_prefix}_encode_reads.cfg
-        touch !{fq_prefix}_success_token
         
         cp .command.log encode_!{fq_prefix}.log
         '''
 }
 
 //  This channel includes encoded reads and their associated Arioc alignment config
-success_tokens_reads
+encoded_reads_reads
     .mix(align_reads_cfgs)
     .flatten()
     .map{ file -> tuple(get_prefix(file), file) }
     .groupTuple()
-    .ifEmpty{ error "Encoded reads missing from input to 'AlignReads' process." }
+    .ifEmpty{ error "Encoded reads and/or alignment configs missing from input to 'AlignReads' process." }
     .set{ align_in }
 
 process AlignReads {   
@@ -662,7 +661,7 @@ process AlignReads {
         // This indicates the reference exists/ was properly built
         file success_token_ref
         
-        set val(prefix), file(cfg_and_token) from align_in
+        set val(prefix), file(cfg_and_encoded_reads) from align_in
         
     output:
         file "${prefix}.[dru].sam" optional true
