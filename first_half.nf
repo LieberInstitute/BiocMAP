@@ -309,9 +309,7 @@ process PrepareReference {
 // Arioc requires an encoded reference sequence. This process builds that within the repo,
 // if the encoded sequence hasn't been built before.
 process EncodeReference {
-    storeDir "${params.annotation}/${params.anno_suffix}", pattern:"{*\$*.sbf,.success}"
-    storeDir "${params.annotation}/${params.anno_suffix}/${params.gapped_seed}", pattern:"{[HJ]*.sbf,${params.gapped_seed}.cfg}"
-    storeDir "${params.annotation}/${params.anno_suffix}/${params.nongapped_seed}", pattern:"{[HJ]*.sbf,${params.nongapped_seed}.cfg}"
+    storeDir "${params.annotation}/${params.anno_suffix}"
     
     input:
         file encode_ref_gap_cfg
@@ -326,8 +324,8 @@ process EncodeReference {
     shell:
         '''
         #  Update the configs with this process' working directory
-        sed -i "s|\[future_work_dir\]|$PWD|" !{encode_ref_gap_cfg}
-        sed -i "s|\[future_work_dir\]|$PWD|" !{encode_ref_nongap_cfg}
+        sed -i "s|\\[future_work_dir\\]|$PWD|" !{encode_ref_gap_cfg}
+        sed -i "s|\\[future_work_dir\\]|$PWD|" !{encode_ref_nongap_cfg}
         
         #  Encode gapped and nongapped seeds sequentially (later parallelize)
         AriocE !{encode_ref_gap_cfg}
@@ -631,7 +629,7 @@ process EncodeReads {
     shell:
         '''
         #  Update the configs with this process' working directory
-        sed -i "s|\[future_work_dir\]|$PWD|" !{fq_prefix}_encode_reads.cfg
+        sed -i "s|\\[future_work_dir\\]|$PWD|" !{fq_prefix}_encode_reads.cfg
         
         #  Encode reads
         AriocE !{fq_prefix}_encode_reads.cfg
@@ -656,9 +654,6 @@ process AlignReads {
     tag "$prefix"
     
     input:
-        // This indicates the reference exists/ was properly built
-        file success_token_ref
-        
         set val(prefix), file(cfg_and_encoded_reads) from align_in
         file gap_ref_files
         file nongap_ref_files
@@ -691,7 +686,7 @@ process AlignReads {
         #  Isolate encoded reads into their own directory
         mkdir encoded_reads
         mv !{prefix}*.sbf encoded_reads/
-        sed -i "s|\[future_work_dir\]|$PWD|" !{prefix}_align_reads.cfg
+        sed -i "s|\\[future_work_dir\\]|$PWD|" !{prefix}_align_reads.cfg
         
         #  Run alignment
         !{exec_name} !{prefix}_align_reads.cfg
