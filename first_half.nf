@@ -330,6 +330,12 @@ process EncodeReference {
         #  Encode gapped and nongapped seeds sequentially (later parallelize)
         AriocE !{encode_ref_gap_cfg}
         AriocE !{encode_ref_nongap_cfg}
+        
+        #  Rename files to allow nextflow to properly handle them ("$"
+        #  characters otherwise sometimes begin the parsing of a bash variable)
+        for filename in $(ls *\$*.sbf); do
+            mv $filename $(echo $filename | sed 's/\$/%/')
+        done
         '''
 }
 
@@ -623,7 +629,7 @@ process EncodeReads {
         set val(fq_prefix), file(config), file(fq_file) from ariocE_merged_inputs
         
     output:
-        file "${fq_prefix}*.sbf" into encoded_reads
+        file "${fq_prefix}*.{sbf,cfg}" into encoded_reads
         file "encode_${fq_prefix}.log"
         
     shell:
@@ -633,6 +639,12 @@ process EncodeReads {
         
         #  Encode reads
         AriocE !{fq_prefix}_encode_reads.cfg
+        
+        #  Rename files to allow nextflow to properly handle them ("$"
+        #  characters otherwise sometimes begin the parsing of a bash variable)
+        for filename in $(ls *\$*.sbf); do
+            mv $filename $(echo $filename | sed 's/\\\$/%/')
+        done
         
         cp .command.log encode_!{fq_prefix}.log
         '''
@@ -671,21 +683,31 @@ process AlignReads {
             exec_name = "AriocU"
         }
         '''
+        #  Rename files to their original names given by Arioc
+        for filename in $(ls *%*.sbf); do
+            mv $filename $(echo $filename | sed 's/%/$/')
+        done
+        
         #  Recreate the directory layout for Arioc reference files (as they
         #  were originally created)
-        mkdir ${params.gapped_seed}
+        mkdir !{params.gapped_seed}
         for file in !{gap_ref_files}; do
-            mv file ${params.gapped_seed}/
+            mv $file !{params.gapped_seed}/
         done
         
-        mkdir ${params.nongapped_seed}
+        mkdir !{params.nongapped_seed}
         for file in !{nongap_ref_files}; do
-            mv file ${params.nongapped_seed}/
+            mv $file !{params.nongapped_seed}/
         done
         
-        #  Isolate encoded reads into their own directory
+        #  Isolate encoded reads into their own directory, renaming any files
+        #  with the "%" character to have the "$" character as originally named
+        #  by Arioc
         mkdir encoded_reads
-        mv !{prefix}*.sbf encoded_reads/
+        for filename in $(ls !{prefix}*.{sbf,cfg} | grep -v "align_reads"); do
+            mv $filename encoded_reads/$(echo $filename | sed 's/%/$/')
+        done
+
         sed -i "s|\\[future_work_dir\\]|$PWD|" !{prefix}_align_reads.cfg
         
         #  Run alignment
