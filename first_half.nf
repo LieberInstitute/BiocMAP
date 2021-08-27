@@ -780,7 +780,7 @@ fastq_summaries_untrimmed2
 //  Generate a 'rules.txt' file automatically, for use as input to the second
 //  module
 process MakeRules {
-    publishDir "${params.input}", mode:'copy'
+    publishDir "${params.output}", mode:'copy'
     
     input:
         file fastq_summaries_all
