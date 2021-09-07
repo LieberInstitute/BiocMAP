@@ -332,6 +332,8 @@ rules_globs = rules_file
     .readLines()
     .collect{ get_rules_glob(it) }
     .flatten()
+    
+rules_globs.removeAll('')
 
 //  Read 'samples.manifest' to produce a list of sample IDs
 manifest_index = rules_globs
