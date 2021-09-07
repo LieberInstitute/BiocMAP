@@ -48,6 +48,9 @@ if [ "$1" == "docker" ]; then
     #  Add docker configuration to each config profile in 'nextflow.config'
     sed -i "s|includeConfig 'conf/\(.*\)_half_\(.*\)\.config'|includeConfig 'conf/\1_half_\2.config'\n        includeConfig 'conf/\1_half_docker.config'|" nextflow.config
     
+    #  Remove a variable from configs that disables docker settings
+    sed -i "/using_docker = false/d" conf/second_half_{jhpce,local,sge,slurm}.config
+    
     BASE_DIR=$(pwd)
     mkdir -p $BASE_DIR/Software/bin
     cd $BASE_DIR/Software/bin

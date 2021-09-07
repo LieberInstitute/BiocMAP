@@ -661,6 +661,14 @@ process ParseReports {
 process FormBsseqObjects {
 
     publishDir "${params.output}/BSobjects/logs", mode:'copy', pattern:'*.log'
+    
+    // When using docker, publish the bsseq objects to the output folder
+    // normally. Otherwise, use a shortcut where we directly write objects to
+    // the output folder during creation. The shortcut saves a significant
+    // amount of disk space as well as some I/O strain and time
+    publishDir "${params.output}/BSobjects/objects/$chr/CpG", mode:'copy', pattern: '*_CpG.{h5,rds}', saveAs: { filename -> filename.replaceAll("_${chr}_CpG", "") }, enabled: params.using_docker
+    publishDir "${params.output}/BSobjects/objects/$chr/CpH", mode:'copy', pattern: '*_CpH.{h5,rds}', saveAs: { filename -> filename.replaceAll("_${chr}_CpH", "") }, enabled: params.using_docker
+    
     tag "$chr"
         
     input:
@@ -668,51 +676,97 @@ process FormBsseqObjects {
         file bs_creation_script from file("${workflow.projectDir}/scripts/bs_create.R")
         
     output:
-        file "${chr}_Cp*.success" into bs_tokens_out
+        file "{*.rds,*.h5,${chr}_Cp*.success}" into bsseq_objects_out
         file "create_bs_${chr}.log"
         
     shell:
         '''
-        mkdir -p !{params.output}/BSobjects/objects
+        if [[ !{params.using_docker} == "true" ]]; then
+            out_dir=$(pwd)
+        else
+            out_dir=!{params.output}/BSobjects/objects
+            mkdir -p ${out_dir}
+        fi
+        
         Rscript !{bs_creation_script} \
             -s !{chr} \
             -c !{task.cpus} \
-            -d !{params.output}/BSobjects/objects
-        if [ "$?" == "0" ]; then
+            -d ${out_dir}
+           
+        if [[ !{params.using_docker} == "true" ]]; then
+            #  Give unique filenames so that nextflow knows how to manage the
+            #  files
+            mv !{chr}/CpG/assays.h5 assays_!{chr}_CpG.h5
+            mv !{chr}/CpG/se.rds se_!{chr}_CpG.rds
+            
+            mv !{chr}/CpH/assays.h5 assays_!{chr}_CpH.h5
+            mv !{chr}/CpH/se.rds se_!{chr}_CpH.rds
+        else
             touch !{chr}_CpG.success
             touch !{chr}_CpH.success
         fi
+        
         cp .command.log create_bs_!{chr}.log
         '''
 }
 
 
-//  Group tokens into two elements ("CpG" context and "CpH" context)
-bs_tokens_out
+//  Group objects (or "success tokens" if applicable) into two elements ("CpG"
+//  context and "CpH" context)
+bsseq_objects_out
     .flatten()
     .map{ file -> tuple(get_context(file), file) }
     .groupTuple()
-    .set{ bs_tokens_in }
+    .set{ bsseq_objects_in }
 
 //  Combine Bsseq objects and their HDF5-backed assays into two HDF5-backed
 //  summarized experiments (directories)- one for each cytosine context
 process MergeBsseqObjects {
 
-    publishDir "${params.output}/BSobjects/logs", mode:'copy'
+    publishDir "${params.output}/BSobjects/logs", pattern: "merge_objects_${context}.log", mode:'copy'
+    
+    // When using docker, publish the bsseq objects to the output folder
+    // normally. Otherwise, use a shortcut where we directly write objects to
+    // the output folder during creation. The shortcut saves a significant
+    // amount of disk space as well as some I/O strain and time
+    publishDir "${params.output}/BSobjects/objects/combined", pattern: '*.{rds,h5}', mode:'move', enabled: params.using_docker
     
     input:
-        set val(context), file(token) from bs_tokens_in
+        set val(context), file(bsobj) from bsseq_objects_in
         file chr_names
         file metrics
         file combine_script from file("${workflow.projectDir}/scripts/bs_merge.R")
         
     output:
         file "merge_objects_${context}.log"
+        file "*{.rds,.h5}" optional true
         
     shell:
         '''
-        #  This script actually writes result files directly to publishDir
-        Rscript !{combine_script} -d !{params.output}/BSobjects/objects -c !{context}
+        if [[ !{params.using_docker} == "true" ]]; then
+            #  Organize bsseq objects into directories as they were
+            #  originally produced
+            for chr in $(cat !{chr_names}); do
+                mkdir -p $chr/!{context}
+                mv assays_${chr}_!{context}.h5 $chr/!{context}/assays.h5
+                mv se_${chr}_!{context}.rds $chr/!{context}/se.rds
+            done
+            
+            in_dir=$(pwd)
+            out_dir=$(pwd)
+        else
+            #  Write files directly to output dir
+            in_dir=!{params.output}/BSobjects/objects
+            out_dir=!{params.output}/BSobjects/objects/combined
+        fi
+        
+        mkdir -p $out_dir
+        
+        Rscript !{combine_script} \
+          -i $in_dir \
+          -o $out_dir \
+          -c !{context}
+
         
         cp .command.log merge_objects_!{context}.log
         '''

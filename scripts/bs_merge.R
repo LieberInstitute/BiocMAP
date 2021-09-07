@@ -3,13 +3,19 @@ suppressPackageStartupMessages(library('HDF5Array'))
 suppressPackageStartupMessages(library('getopt'))
 suppressPackageStartupMessages(library('BiocParallel'))
 
-spec <- matrix(c('dir', 'd', 1, 'character', 'base directory containing objects',
-                 'context', 'c', 1, 'character', 'cytosine context of object'),
-               byrow=TRUE, ncol=5)
+spec <- matrix(
+    c(
+        'in_dir', 'i', 1, 'character', 'base directory containing input objects',
+        'out_dir', 'o', 1, 'character', 'base directory for output objects',
+        'context', 'c', 1, 'character', 'cytosine context of object'
+    ),
+    byrow = TRUE,
+    ncol = 5
+)
 opt <- getopt(spec)
 
 chrs = readLines(list.files(pattern='chr_names_.*'))
-bs_dirs = file.path(opt$dir, chrs, opt$context)
+in_dirs = file.path(opt$in_dir, chrs, opt$context)
 
 #  jhpce-specific requirements
 BiocParallel::register(MulticoreParam(1))
@@ -29,7 +35,7 @@ print(paste("Beginning merging for", opt$context, "context..."))
 bs_list = list()
 for (i in 1:length(chrs)) {
     print(paste0("Loading ", chrs[i], "..."))
-    bs_list[[i]] = loadHDF5SummarizedExperiment(bs_dirs[i])
+    bs_list[[i]] = loadHDF5SummarizedExperiment(in_dirs[i])
 }
 gc()
 
@@ -46,8 +52,9 @@ colData(bs_big) = DataFrame(metrics)
 
 #  Save the combined result
 print("Saving...")
-saveHDF5SummarizedExperiment(bs_big, dir=paste0(opt$dir, '/combined'),
-                             prefix=opt$context, verbose=TRUE, replace=TRUE)
+saveHDF5SummarizedExperiment(
+    bs_big, dir=opt$out_dir, prefix=opt$context, verbose=TRUE, replace=TRUE
+)
 print("Done.")
 
 proc.time() - r_time
