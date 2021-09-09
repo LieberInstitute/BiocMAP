@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>9 Software | [INSERT PIPELINE NAME HERE]</title>
-  <meta name="description" content="9 Software | [INSERT PIPELINE NAME HERE]" />
+  <title>Page not found | [INSERT PIPELINE NAME HERE]</title>
+  <meta name="description" content="Page not found | [INSERT PIPELINE NAME HERE]" />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="9 Software | [INSERT PIPELINE NAME HERE]" />
+  <meta property="og:title" content="Page not found | [INSERT PIPELINE NAME HERE]" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="9 Software | [INSERT PIPELINE NAME HERE]" />
+  <meta name="twitter:title" content="Page not found | [INSERT PIPELINE NAME HERE]" />
   
   
   
@@ -29,7 +29,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="configuration.html"/>
+
 
 <script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -254,172 +254,18 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="software" class="section level1" number="9">
-<h1><span class="header-section-number">9</span> Software</h1>
-<p>[INSERT PIPELINE NAME HERE] makes use of several external software tools. The pipeline additionally supports the use of these tools via docker containers- this section also documents the docker images used in this mode.</p>
-<div id="software-versions" class="section level2" number="9.1">
-<h2><span class="header-section-number">9.1</span> Software Versions</h2>
-<p>Here is the full list of software used by this pipeline:</p>
-<table>
-<colgroup>
-<col width="55%" />
-<col width="22%" />
-<col width="22%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th align="center">Software</th>
-<th align="right">Version</th>
-<th align="right">Command used by the pipeline</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="center"><a href="https://github.com/RWilton/Arioc">Arioc</a></td>
-<td align="right">1.43</td>
-<td align="right"><code>AriocE</code>, <code>AriocP</code>, <code>AriocU</code></td>
-</tr>
-<tr class="even">
-<td align="center"><a href="https://www.bioinformatics.babraham.ac.uk/projects/bismark/">Bismark</a></td>
-<td align="right">0.23.0</td>
-<td align="right"><code>bismark_prepare_genome</code>, <code>bismark_methylation_extractor</code>, <code>bismark2bedgraph</code>, <code>coverage2cytosine</code></td>
-</tr>
-<tr class="odd">
-<td align="center"><a href="https://cmake.org/">cmake</a></td>
-<td align="right">latest</td>
-<td align="right"><code>cmake</code></td>
-</tr>
-<tr class="even">
-<td align="center"><a href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc">fastQC</a></td>
-<td align="right">0.11.8</td>
-<td align="right"><code>fastqc</code></td>
-</tr>
-<tr class="odd">
-<td align="center"><a href="https://ccb.jhu.edu/software/hisat2/manual.shtml#obtaining-hisat2">hisat2</a></td>
-<td align="right">2.2.1</td>
-<td align="right"><code>hisat2-build</code></td>
-</tr>
-<tr class="even">
-<td align="center"><a href="http://www.htslib.org/download/">htslib</a></td>
-<td align="right">1.12</td>
-<td align="right">(software library)</td>
-</tr>
-<tr class="odd">
-<td align="center"><a href="https://github.com/dpryan79/libBigWig">libBigWig</a></td>
-<td align="right">0.4.6</td>
-<td align="right">(software library)</td>
-</tr>
-<tr class="even">
-<td align="center"><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">java</a></td>
-<td align="right">8+</td>
-<td align="right"><code>java</code></td>
-</tr>
-<tr class="odd">
-<td align="center"><a href="https://pachterlab.github.io/kallisto/source">kallisto</a></td>
-<td align="right">0.46.1</td>
-<td align="right"><code>kallisto</code></td>
-</tr>
-<tr class="even">
-<td align="center"><a href="https://github.com/dpryan79/MethylDackel">MethylDackel</a></td>
-<td align="right">0.5.2</td>
-<td align="right"><code>MethylDackel extract</code></td>
-</tr>
-<tr class="odd">
-<td align="center"><a href="https://www.nextflow.io/docs/latest/getstarted.html">nextflow</a></td>
-<td align="right">&gt;=0.27.0 (tested with 20.01.0)</td>
-<td align="right"><code>nextflow</code></td>
-</tr>
-<tr class="even">
-<td align="center"><a href="https://www.r-project.org/">R</a></td>
-<td align="right">user-dependent</td>
-<td align="right"><code>Rscript</code></td>
-</tr>
-<tr class="odd">
-<td align="center"><a href="https://github.com/GregoryFaust/samblaster">samblaster</a></td>
-<td align="right">v.0.1.26</td>
-<td align="right"></td>
-</tr>
-<tr class="even">
-<td align="center"><a href="http://www.htslib.org/download/">samtools</a></td>
-<td align="right">1.10</td>
-<td align="right"><code>samtools</code></td>
-</tr>
-<tr class="odd">
-<td align="center"><a href="https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/">Trim Galore!</a></td>
-<td align="right">0.6.6</td>
-<td align="right"><code>trim_galore</code></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div id="docker-images" class="section level2" number="9.2">
-<h2><span class="header-section-number">9.2</span> Docker Images</h2>
-<p>The following image versions are used in this pipeline. These are automatically managed by [INSERT PIPELINE NAME HERE].</p>
-<table>
-<colgroup>
-<col width="55%" />
-<col width="22%" />
-<col width="22%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th align="center">Image</th>
-<th align="right">Tag</th>
-<th align="right">Software</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="center">libddocker/arioc</td>
-<td align="right">1.43</td>
-<td align="right">Arioc</td>
-</tr>
-<tr class="even">
-<td align="center">libddocker/bioc_kallisto</td>
-<td align="right">3.11</td>
-<td align="right">R 4.1.0, Bioconductor 3.11, Kallisto 0.46.1</td>
-</tr>
-<tr class="odd">
-<td align="center">libddocker/bismark</td>
-<td align="right">0.23.0</td>
-<td align="right">Bismark</td>
-</tr>
-<tr class="even">
-<td align="center">libddocker/filter_alignments</td>
-<td align="right">1.0</td>
-<td align="right">samtools 1.10, samblaster v.0.1.26</td>
-</tr>
-<tr class="odd">
-<td align="center">libddocker/kallisto</td>
-<td align="right">0.46.1</td>
-<td align="right">Kallisto</td>
-</tr>
-<tr class="even">
-<td align="center">libddocker/methyldackel</td>
-<td align="right">0.5.2</td>
-<td align="right">MethylDackel, samtools 1.10</td>
-</tr>
-<tr class="odd">
-<td align="center">libddocker/quality_and_trim</td>
-<td align="right">0.6.6</td>
-<td align="right">FastQC 0.11.8, Cutadapt (latest), Trim Galore 0.6.6</td>
-</tr>
-<tr class="even">
-<td align="center">libddocker/ubuntu16.04_base</td>
-<td align="right">1_v3</td>
-<td align="right">Ubuntu Base</td>
-</tr>
-</tbody>
-</table>
-
-</div>
+<div id="page-not-found" class="section level1">
+<h1>Page not found</h1>
+<p>The page you requested cannot be found (perhaps it was moved or renamed).</p>
+<p>You may want to try searching to find the page's new location, or use
+the table of contents to find the page you are looking for.</p>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="configuration.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
 
     </div>
   </div>
