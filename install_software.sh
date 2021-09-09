@@ -152,20 +152,6 @@ elif [ "$1" == "local" ]; then
         
         #  Bismark (0.23.0) ---------------------------------------------------
         
-        ##  hisat2 (2.2.1), required for bismark_genome_preparation
-        
-        wget https://github.com/DaehwanKimLab/hisat2/archive/v2.2.1.tar.gz
-        tar -xzf v2.2.1.tar.gz
-        cd hisat2-2.2.1
-        cp hisat2 $INSTALL_DIR/bin/
-        cp hisat2-align* $INSTALL_DIR/bin/
-        cp hisat2-build* $INSTALL_DIR/bin/
-        cp hisat2-inspect* $INSTALL_DIR/bin/
-        cp *.py $INSTALL_DIR/bin/
-        cd $INSTALL_DIR
-        
-        ##  bismark itself (0.23.0)
-        
         wget https://github.com/FelixKrueger/Bismark/archive/0.23.0.tar.gz
         tar -xzf 0.23.0.tar.gz
         cp Bismark-0.23.0/bismark* bin/

@@ -207,7 +207,7 @@ if (params.custom_anno == "") {
         input:
             file split_fasta_script from file("${workflow.projectDir}/scripts/split_fasta.sh")
         output:
-            file "$out_fasta" into raw_genome, MD_genome, BME_genome
+            file "assembly_${params.anno_suffix}.fa" into raw_genome, MD_genome, BME_genome, C2C_genome
             
         shell:
             //  Name of the primary assembly fasta after being downloaded and unzipped
@@ -216,12 +216,8 @@ if (params.custom_anno == "") {
             //  Name the pipeline will use for the primary and main assembly fastas, respectively
             primaryName = "assembly_${params.anno_suffix}.fa".replaceAll("main", "primary")
             mainName = "assembly_${params.anno_suffix}.fa".replaceAll("primary", "main")
-                
-            //  Name of fasta to use for this pipeline execution instance
-            out_fasta = "assembly_${params.anno_suffix}.fa"
+
             '''
-            mkdir -p !{params.annotation}/!{params.anno_suffix}
-            
             #  Pull fasta from GENCODE
             wget !{params.ref_fasta_link}
             gunzip !{baseName}.gz
@@ -251,11 +247,11 @@ if (params.custom_anno == "") {
     Channel.fromPath("${params.annotation}/*.fa")
         .ifEmpty{ error "Cannot find FASTA in annotation directory (and --custom_anno was specified)" }
         .first()  // This proves to nextflow that the channel will always hold one value/file
-        .into{ raw_genome; MD_genome; BME_genome }
+        .into{ raw_genome; MD_genome; BME_genome; C2C_genome }
 }
 
 
-// Create 'chr_names' file for the current FASTA; prepare genome for bismark
+// Create 'chr_names' file for the current FASTA
 process PrepareReference {
     storeDir "${params.annotation}/${params.anno_suffix}"
     
@@ -264,7 +260,6 @@ process PrepareReference {
         
     output:
         file "chr_names_${params.anno_suffix}" into chr_names
-        file "prepare_ref_second.log"
         
     shell:
         if (params.custom_anno != "") {
@@ -275,21 +270,6 @@ process PrepareReference {
         '''
         #  Make a file containing a list of seqnames
         grep ">" !{raw_genome} | cut -d " " -f 1 | cut -d ">" -f 2 > chr_names_!{params.anno_suffix}
-        
-        #  Create a link in an isolated directory for compatibility with 
-        #  bismark genome preparation
-        mkdir !{genome_dirname}
-        cd !{genome_dirname}
-        ln -s ../!{raw_genome} !{raw_genome}
-        cd ..
-        
-        #  Build the bisulfite genome, needed for bismark (and copy it to publishDir,
-        #  circumventing Nextflow's inability to recursively copy)
-        bismark_genome_preparation --hisat2 ./!{genome_dirname}
-        cp -R !{genome_dirname}/Bisulfite_Genome !{params.annotation}/!{params.anno_suffix}
-        
-        #  Keep a log of what happened so far
-        cp .command.log prepare_ref_second.log
         '''
 }
         
@@ -563,6 +543,7 @@ if (params.use_bme) {
         
         input:
             set val(prefix), file(bedgraph_file) from c2c_in
+            file C2C_genome
             
         output:
             file "*.CX_report.txt" into cytosine_reports
@@ -573,7 +554,7 @@ if (params.use_bme) {
             coverage2cytosine \
                 --split_by_chromosome \
                 --CX \
-                --genome_folder !{workflow.projectDir}/ref/!{params.reference}/ \
+                --genome_folder . \
                 -o !{prefix} \
                 !{bedgraph_file}
                 
