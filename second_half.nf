@@ -523,7 +523,7 @@ if (params.use_bme) {
             
         shell:
             '''
-            bismark2bedGraph -o !{prefix}_bedgraph_merged ./!{BME_dir}/*_!{prefix}.cfu.txt.gz
+            bismark2bedGraph -o !{prefix}_bedgraph_merged ./!{BME_dir}/*.txt.gz
             
             cp .command.log bismark2bedgraph_!{prefix}.log
             '''
