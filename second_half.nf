@@ -120,7 +120,7 @@ def replace_listed(x, pattern_list, replacement) {
 
 def get_prefix(f) {
     //  Remove these regardless of position in the string (note blackListAny is a regular expression)
-    blackListAny = [~/_[12]_(summary|fastqc_data)/, ~/_success_token/, ~/_(trimmed|untrimmed)/, ~/_(reverse|forward)/, ~/_(paired|unpaired)/, ~/_R[12]\$(a21|raw|sqm|sqq)/, ~/CH[GH]_*O[BT]_|CpG_*O[BT]_/, ~/|_bedgraph_merged/]
+    blackListAny = [~/_[12]_(summary|fastqc_data)/, ~/_success_token/, ~/_(trimmed|untrimmed)/, ~/_(reverse|forward)/, ~/_(paired|unpaired)/, ~/_R[12]\$(a21|raw|sqm|sqq)/, ~/CH[GH]_*O[BT]_|CpG_*O[BT]_/, ~/_bedgraph_merged/]
     
     //  Replace these with a dot
     blackListDot = [~/(_[12]|_R[12])\./, ~/_(encode|align)_reads\./, ~/\.(c|cfu)/, ~/\.txt/, ~/\.gz/, ~/\.sorted/]
@@ -489,9 +489,18 @@ if (params.use_bme) {
             if (task.cpus > 1) {
                 flags += " --multicore " + (task.cpus - 1)
             }
+            
+            is_test = (params.input == "${workflow.projectDir}/test/mouse/${params.sample}") || (params.input == "${workflow.projectDir}/test/human/${params.sample}")
             '''
+            if [[ !{is_test} && !{params.use_bme} ]]; then
+                #  "Unsort" the sorted test BAM for compatibility with BME
+                samtools sort -n -@ !{task.cpus} -o temp.bam !{prefix}.bam
+                rm !{prefix}.bam
+                mv temp.bam !{prefix}.bam
+            fi
+            
             mkdir !{prefix}
-            bismark_methylation_extractor !{flags} --gzip -o !{prefix}/ !{sam_file}
+            bismark_methylation_extractor !{flags} --gzip -o !{prefix}/ $(ls | grep -E "^*.[bs]am$")
             
             cp .command.log methyl_extraction_!{prefix}.log
             '''
