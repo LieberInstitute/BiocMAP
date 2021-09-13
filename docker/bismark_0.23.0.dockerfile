@@ -2,16 +2,13 @@ FROM libddocker/ubuntu16.04_base:latest
 
 WORKDIR /usr/local/src
 
-##  hisat2 (2.2.1)
-RUN wget https://github.com/DaehwanKimLab/hisat2/archive/v2.2.1.tar.gz && \
-    tar -xzf v2.2.1.tar.gz && \
-    cd hisat2-2.2.1 && \
+#  Install samtools (1.10)
+RUN wget https://github.com/samtools/samtools/releases/download/1.10/samtools-1.10.tar.bz2 -O samtools.tar.bz2 && \
+    tar -xjf samtools.tar.bz2 && \
+    cd samtools-1.10 && \
+    ./configure && \
     make && \
-    cp hisat2 /usr/local/bin/ && \
-    cp hisat2-align* /usr/local/bin/ && \
-    cp hisat2-build* /usr/local/bin/ && \
-    cp hisat2-inspect* /usr/local/bin/ && \
-    cp *.py /usr/local/bin/ && \
+    make install && \
     cd /usr/local/src
         
 ##  bismark itself (0.23.0) 
