@@ -11,5 +11,5 @@ for i in $(seq 0 $num_images); do
         -f ${image_names[$i]}_${image_versions[$i]}.dockerfile \
         -t libddocker/${image_names[$i]}:${image_versions[$i]} \
         .
-    docker push libddocker/${image_names[$i]}
+    docker push libddocker/${image_names[$i]}:${image_versions[$i]}
 done
