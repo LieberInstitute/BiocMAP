@@ -65,7 +65,13 @@ if [ "$1" == "docker" ]; then
     
     echo "Setting up test files..."
     
-    docker run \
+    if [[ "$2" == "sudo" ]]; then
+        command="sudo docker run"
+    else
+        command="docker run"
+    fi
+    
+    $command \
         -it \
         -u $(id -u):$(id -g) \
         -v $BASE_DIR/scripts:/usr/local/src/scripts/ \
