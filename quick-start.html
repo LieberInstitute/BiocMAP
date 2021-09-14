@@ -262,7 +262,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ol style="list-style-type: decimal">
 <li>Clone the [INSERT PIPELINE NAME HERE] repository with <code>git clone git@github.com:LieberInstitute/[INSERT PIPELINE NAME HERE].git</code></li>
 <li>Change directory into the repository with <code>cd [INSERT PIPELINE NAME HERE]</code></li>
-<li>Users of the <a href="https://jhpce.jhu.edu/">JHPCE</a> cluster should run <code>bash install_software.sh "jhpce"</code>. Otherwise, you can install everything required locally with <code>bash install_software.sh "local"</code>.</li>
+<li>Run the command <code>bash install_software.sh [option]</code> to set up test files and software dependencies, where <code>[option]</code> must be replaced by <code>docker</code>, <code>conda</code>, <code>local</code>, or <code>jhpce</code>. These respectively (and in descending order of our recommendation) correspond to using docker to manage software dependencies, using conda, installing all software locally, or preparing [INSERT PIPELINE NAME HERE] for execution at the <a href="https://jhpce.jhu.edu/">JHPCE</a> cluster.</li>
 </ol>
 <p><strong>Note:</strong> JHPCE users must also make an edit to their <code>~/.bashrc</code> files, described <a href="setup-details.html#installation">here</a></p>
 </div>
