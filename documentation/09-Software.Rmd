@@ -7,7 +7,7 @@
 Here is the full list of software used by this pipeline:
     
 Software | Version | Command used by the pipeline |
-|:-------------:| -----:| -----: |
+| ----- | ---- | ------- |
 |[Arioc](https://github.com/RWilton/Arioc) | 1.43 | `AriocE`, `AriocP`, `AriocU` |
 |[Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/) | 0.23.0 | `bismark_prepare_genome`, `bismark_methylation_extractor`, `bismark2bedgraph`, `coverage2cytosine` |
 |[cmake](https://cmake.org/) | latest | `cmake` |
@@ -29,7 +29,7 @@ Software | Version | Command used by the pipeline |
 The following image versions are used in this pipeline. These are automatically managed by [INSERT PIPELINE NAME HERE].
 
 | Image | Tag | Software |
-|:-------------:| -----:| -----: |
+| ----- | ---- | ------- |
 | libddocker/arioc | 1.43 | Arioc |
 | libddocker/bioc_kallisto | 3.11 | R 4.1.0, Bioconductor 3.11, Kallisto 0.46.1 |
 | libddocker/bismark | 0.23.0 | Bismark |

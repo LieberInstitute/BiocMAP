@@ -8,7 +8,7 @@ A brief guide to setting up [INSERT PIPELINE NAME HERE]. A more detailed and tho
 2. Change directory into the repository with `cd [INSERT PIPELINE NAME HERE]`
 3. Run the command `bash install_software.sh [option]` to set up test files and software dependencies, where `[option]` must be replaced by `docker`, `conda`, `local`, or `jhpce`. These respectively (and in descending order of our recommendation) correspond to using docker to manage software dependencies, using conda, installing all software locally, or preparing [INSERT PIPELINE NAME HERE] for execution at the [JHPCE](https://jhpce.jhu.edu/) cluster.
 
-**Note:** JHPCE users must also make an edit to their `~/.bashrc` files, described [here](#installation)
+**Note:** JHPCE users must also make an edit to their `~/.bashrc` files, described [here](#installation).
 
 ## Configuration {#quick-config}
 
@@ -17,7 +17,7 @@ A brief guide to setting up [INSERT PIPELINE NAME HERE]. A more detailed and tho
 The script you will use to run the pipeline depends on the system ("executor") you wish to run the pipeline on, as well as which module you wish to run. 
 
 | Executor | Module | Script |
-| -----  | ----------- |
+| ---  | -- | ---- |
 | SGE cluster | first | run_first_half_sge.sh |
 | SGE cluster | second | run_second_half_sge.sh |
 | SLURM cluster | first | run_first_half_slurm.sh |
