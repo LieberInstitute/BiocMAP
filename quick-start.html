@@ -264,7 +264,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>Change directory into the repository with <code>cd [INSERT PIPELINE NAME HERE]</code></li>
 <li>Run the command <code>bash install_software.sh [option]</code> to set up test files and software dependencies, where <code>[option]</code> must be replaced by <code>docker</code>, <code>conda</code>, <code>local</code>, or <code>jhpce</code>. These respectively (and in descending order of our recommendation) correspond to using docker to manage software dependencies, using conda, installing all software locally, or preparing [INSERT PIPELINE NAME HERE] for execution at the <a href="https://jhpce.jhu.edu/">JHPCE</a> cluster.</li>
 </ol>
-<p><strong>Note:</strong> JHPCE users must also make an edit to their <code>~/.bashrc</code> files, described <a href="setup-details.html#installation">here</a></p>
+<p><strong>Note:</strong> JHPCE users must also make an edit to their <code>~/.bashrc</code> files, described <a href="setup-details.html#installation">here</a>.</p>
 </div>
 <div id="quick-config" class="section level2" number="1.2">
 <h2><span class="header-section-number">1.2</span> Configuration</h2>
@@ -276,40 +276,49 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <tr class="header">
 <th>Executor</th>
 <th>Module</th>
+<th>Script</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>SGE cluster</td>
 <td>first</td>
+<td>run_first_half_sge.sh</td>
 </tr>
 <tr class="even">
 <td>SGE cluster</td>
 <td>second</td>
+<td>run_second_half_sge.sh</td>
 </tr>
 <tr class="odd">
 <td>SLURM cluster</td>
 <td>first</td>
+<td>run_first_half_slurm.sh</td>
 </tr>
 <tr class="even">
 <td>SLURM cluster</td>
 <td>second</td>
+<td>run_second_half_slurm.sh</td>
 </tr>
 <tr class="odd">
 <td>local machine</td>
 <td>first</td>
+<td>run_first_half_local.sh</td>
 </tr>
 <tr class="even">
 <td>local machine</td>
 <td>second</td>
+<td>run_second_half_local.sh</td>
 </tr>
 <tr class="odd">
 <td>The <a href="https://jhpce.jhu.edu/">JHPCE</a> cluster</td>
 <td>first</td>
+<td>run_first_half_jhpce.sh</td>
 </tr>
 <tr class="even">
 <td>The JHPCE cluster</td>
 <td>second</td>
+<td>run_second_half_jhpce.sh</td>
 </tr>
 </tbody>
 </table>
