@@ -1,4 +1,5 @@
 library('here')
+library('getopt')
 
 #  Run several instances of the pipeline, testing combinations of major options
 #  (such as "--reference"), to verify the pipeline works under a diverse set of
@@ -19,28 +20,36 @@ trim_opts = c('skip', 'adaptive', 'force')
 bme_opts = c('true', 'false')
 lambda_opts = c('true', 'false')
 
-first_man_dir = '/dcl01/lieber/ajaffe/Nick/misc/manifests/WGBS_test_master'
-second_man_dir = '/dcl01/lieber/ajaffe/Nick/misc/manifests/WGBS_test_small'
+spec = matrix(
+    c("base_dir", "d", 1, "character", "full path to directory to place grid-test files"),
+    byrow = TRUE, ncol = 5
+)
+opt <- getopt(spec)
 
-first_half_base_command = c('#$ -cwd',
-                            '#$ -l bluejay,mem_free=25G,h_vmem=25G,h_fsize=800G',
-                            '',
-                            'module load nextflow',
-                            'export _JAVA_OPTIONS="-Xms8g -Xmx10g"',
-                            '',
-                            paste0('nextflow ', here::here('first_half.nf'), ' \\'),
-                            paste0('    --input "', first_man_dir, '" \\'),
-                            '    -profile first_half_jhpce \\')
+dir.create(opt$base_dir, showWarnings=FALSE)
+
+
+first_half_base_command = c(
+    '#$ -cwd',
+    '#$ -l bluejay,mem_free=25G,h_vmem=25G,h_fsize=800G',
+    '',
+    'module load nextflow',
+    'export _JAVA_OPTIONS="-Xms8g -Xmx10g"',
+    '',
+    paste0('nextflow ', here('first_half.nf'), ' \\'),
+    '    -profile first_half_jhpce \\'
+)
                        
-second_half_base_command = c('#$ -cwd',
-                             '#$ -l bluejay,mem_free=25G,h_vmem=25G,h_fsize=800G',
-                             '',
-                             'module load nextflow',
-                             'export _JAVA_OPTIONS="-Xms8g -Xmx10g"',
-                             '',
-                             paste0('nextflow ', here::here('second_half.nf'), ' \\'),
-                             paste0('    --input "', second_man_dir, '" \\'),
-                             '    -profile second_half_jhpce \\')
+second_half_base_command = c(
+    '#$ -cwd',
+    '#$ -l bluejay,mem_free=25G,h_vmem=25G,h_fsize=800G',
+    '',
+    'module load nextflow',
+    'export _JAVA_OPTIONS="-Xms8g -Xmx10g"',
+    '',
+    paste0('nextflow ', here('second_half.nf'), ' \\'),
+    '    -profile second_half_jhpce \\'
+)
 
 ###############################################################################
 
@@ -48,10 +57,6 @@ second_half_base_command = c('#$ -cwd',
 trim_opts = sample(trim_opts, size=length(trim_opts), replace=FALSE)
 bme_opts = sample(bme_opts, size=length(bme_opts), replace=FALSE)
 lambda_opts = sample(lambda_opts, size=length(lambda_opts), replace=FALSE)
-
-#  Prepare directories
-dir.create(file.path(first_man_dir, 'grid_tests'), showWarnings=FALSE)
-dir.create(file.path(second_man_dir, 'grid_tests'), showWarnings=FALSE)
 
 index = 1
 for (sample_opt in sample_opts) {
@@ -62,39 +67,49 @@ for (sample_opt in sample_opts) {
         lambda_opt = lambda_opts[(index %% length(lambda_opts)) + 1]
         
         #  Determine command for first half
-        log_path = paste0('grid_test_', index, '.log')
-        base_dir = paste0(first_man_dir, '/grid_tests')
+        log_path = file.path(
+            opt$base_dir,
+            paste0('grid_test_first_', index, '.log'
+        )
         
-        first_half_command = c(paste('#$ -o', log_path),
-                               paste('#$ -e', log_path),
-                               first_half_base_command,
-                               paste0('    --trim_mode "', trim_opt, '" \\'),
-                               paste0('    --sample "', sample_opt, '" \\'),
-                               paste0('    --reference "', ref_opt, '" \\'),
-                               paste0('    -w "', base_dir, '/work', index, '" \\'),
-                               paste0('    --output "', base_dir, '/out', index, '"'))
+        first_half_command = c(
+            paste('#$ -o', log_path),
+            paste('#$ -e', log_path),
+            first_half_base_command,
+            paste0('    --trim_mode "', trim_opt, '" \\'),
+            paste0('    --sample "', sample_opt, '" \\'),
+            paste0('    --reference "', ref_opt, '" \\'),
+            paste0('    --annotation "', here('ref'), '" \\'),
+            paste0('    -w "', opt$base_dir, '/work_first_', index, '" \\'),
+            paste0('    --output "', opt$base_dir, '/out_first_', index, '"')
+        )
         
         #  Write into shell script and submit as a job
-        shell_path = file.path(base_dir, paste0('run', index, '.sh'))
+        shell_path = file.path(opt$base_dir, paste0('run_first_', index, '.sh'))
         writeLines(first_half_command, con=shell_path)
         #system(paste('qsub', shell_path))
         
         #  Determine command for second half
-        log_path = paste0('grid_test_', index, '.log')
-        base_dir = paste0(second_man_dir, '/grid_tests')
+        log_path = file.path(
+            opt$base_dir,
+            paste0('grid_test_second_', index, '.log'
+        )
         
-        second_half_command = c(paste('#$ -o', log_path),
-                                paste('#$ -e', log_path),
-                                second_half_base_command,
-                                paste0('    --with_lambda=', lambda_opt, ' \\'),
-                                paste0('    --use_bme=', bme_opt, ' \\'), 
-                                paste0('    --sample "', sample_opt, '" \\'),
-                                paste0('    --reference "', ref_opt, '" \\'),
-                                paste0('    -w "', base_dir, '/work', index, '" \\'),
-                                paste0('    --output "', base_dir, '/out', index, '"'))
+        second_half_command = c(
+            paste('#$ -o', log_path),
+            paste('#$ -e', log_path),
+            second_half_base_command,
+            paste0('    --with_lambda=', lambda_opt, ' \\'),
+            paste0('    --use_bme=', bme_opt, ' \\'), 
+            paste0('    --sample "', sample_opt, '" \\'),
+            paste0('    --reference "', ref_opt, '" \\'),
+            paste0('    --annotation "', here('ref'), '" \\'),
+            paste0('    -w "', opt$base_dir, '/work_second_', index, '" \\'),
+            paste0('    --output "', opt$base_dir, '/out_second_', index, '"')
+        )
         
         #  Write into shell script and submit as a job
-        shell_path = file.path(base_dir, paste0('run', index, '.sh'))
+        shell_path = file.path(opt$base_dir, paste0('run_second_', index, '.sh'))
         writeLines(second_half_command, con=shell_path)
         #system(paste('qsub', shell_path))
         
