@@ -2,29 +2,26 @@
 
 ## Main Outputs
 
-### First Module
-
-[TODO]
-
-### Second Module
-
 ![Main Outputs](images/bsseq_output_objects.png)
-
-#### R Objects
 
 The major outputs from the second module are R objects from the [*bsseq* Bioconductor package](https://www.bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq.html), which contain methylation proportion and coverage information at all cytosine loci in the human genome. bsseq extends the `SummarizedExperiment` class, which provides a general and popular format for storing genomics data. Two `bsseq` objects are produced, with one object containing cytosine sites in CpG context, and the other containing the remaining CpH loci.
 
+### CpG *bsseq* object
+
 We "strand collapse" CpG loci, which involves combining methylation data from both genomic strands (and thus discarding strand-specific information). The object is "smoothed" with the [BSmooth algorithm](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2012-13-10-r83), a process for inferring stable regional estimates of methylation levels. Loci are ordered by genomic position.
+
+### CpH *bsseq* object
 
 We retain strand-specific information for CpH loci. These loci are also ordered by genomic position.
 
+### Storage method
+
 Because all cytosines in the genome are included in the output objects, the data may occupy tens or even hundreds of gigabytes in memory (RAM) if loaded in a typical fashion. To enable working with the objects in a reasonable amount of memory, the assays (in this case methylation fraction and coverage counts) are HDF5-backed using the [HDF5Array R package](https://bioconductor.org/packages/release/bioc/html/HDF5Array.html), based on the [DelayedArray](https://bioconductor.org/packages/release/bioc/html/DelayedArray.html) framework. Essentially, this involves storing the assays in a .h5 file, a format designed to enable working with on-disk data as if it were loaded in RAM.
 
-The `colData` slot of each `bsseq` object includes metrics collected from various processing steps throughout the pipeline. These metrics are also included in a standalone RDA file, documented below.
+### Metrics
 
-#### Metrics
+The `colData` slot of each `bsseq` object includes metrics collected from various processing steps throughout the pipeline. These metrics are also included in a standalone RDA file containing an R data frame whose columns are different quality metrics, and whose rows are associated with sample names. A list of the exact column names and their descriptions is given below.
 
-One of the major pipeline outputs is an RDA containing an R data frame whose columns are different quality metrics, and whose rows are associated with sample names. A list of the exact column names and their descriptions is given below.
 
 | Metric Name | Processing step | Description |
 | --- | --- | ------ |
@@ -87,12 +84,16 @@ One of the major pipeline outputs is an RDA containing an R data frame whose col
 
 - `[sample_name]_trimmed*.fastq`: Trimmed FASTQ files, if applicable, from [Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/).
 
-**Alignment-related Files** `Arioc/`
+**Raw Alignment-related Files** `Arioc/`
 
 - `sams/[sample_name].c.sam`: Concordant alignments output directly from Arioc, in SAM format.
 - `configs/[sample_name]_align.cfg`: The exact config file used by Arioc to align reads to the reference genome.
 - `configs/[sample_name]_encode.cfg`: The exact config file used by Arioc to encode reads prior to alignment to the reference genome.
 - `logs/*_[sample_name].log`: Logs from encoding and aligning samples with Arioc.
+
+**Filtered Alignments** `FilteredAlignments/bams`
+
+- `[sample_name].cfu.sorted.bam` and `[sample_name].cfu.sorted.bam.bai`: Coordinate-sorted, quality-filtered (only including alignments with `MAPQ` >= 5), unique (duplicate mappings removed) alignments in BAM format, with a corresponding BAM index.
 
 ### Second Module
 
@@ -113,3 +114,7 @@ One of the major pipeline outputs is an RDA containing an R data frame whose col
 - `[sample_name]/[sample_name].*.CX_report.txt`: "Cytosine reports" containing methylation counts and context for every cytosine in the genome, split by chromosome. By default, these are generated with `MethylDackel`, or otherwise with `coverage2cytosine` from the `Bismark` software suite when using the `--use_bme` [option](#command-opts).
 
 - `[sample_name]/[sample_name]_bedgraph_merged*.gz`: (When using the `--use_bme` [option](#command-opts)) A `bedgraph` file containing positional and methylation information for each cytosine; a "coverage" file containing similar information. See [Bismark's documentation](https://rawgit.com/FelixKrueger/Bismark/master/Docs/Bismark_User_Guide.html#appendix-iii-bismark-methylation-extractor) for more detail.
+
+**Individual *bsseq* objects** `BSobjects/objects/`
+
+- `[chromosome]/[context]/*`: R objects containing either cytosines in "CpG" or "CpH", for a single chromosome. While the [final bsseq objects](#main-outputs) are combined across all chromosomes for convenience, it may be more practical in some cases to work with these individual objects, which are significantly smaller in memory.
