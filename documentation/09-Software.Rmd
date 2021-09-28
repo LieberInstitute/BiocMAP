@@ -12,7 +12,6 @@ Software | Version | Command used by the pipeline |
 |[Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/) | 0.23.0 | `bismark_prepare_genome`, `bismark_methylation_extractor`, `bismark2bedgraph`, `coverage2cytosine` |
 |[cmake](https://cmake.org/) | latest | `cmake` |
 |[fastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc) | 0.11.8 | `fastqc` |
-|[hisat2](https://ccb.jhu.edu/software/hisat2/manual.shtml#obtaining-hisat2) | 2.2.1 | `hisat2-build` |
 |[htslib](http://www.htslib.org/download/) | 1.12 | (software library) |
 |[libBigWig](https://github.com/dpryan79/libBigWig) | 0.4.6 | (software library) |
 |[java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) | 8+ | `java` |
@@ -20,7 +19,7 @@ Software | Version | Command used by the pipeline |
 |[MethylDackel](https://github.com/dpryan79/MethylDackel) | 0.5.2 | `MethylDackel extract` |
 |[nextflow](https://www.nextflow.io/docs/latest/getstarted.html) | >=0.27.0 (tested with 20.01.0) | `nextflow` |
 |[R](https://www.r-project.org/) | user-dependent | `Rscript` |
-|[samblaster](https://github.com/GregoryFaust/samblaster) | v.0.1.26 |
+|[samblaster](https://github.com/GregoryFaust/samblaster) | v.0.1.26 | `samblaster` |
 |[samtools](http://www.htslib.org/download/) | 1.10 | `samtools` |
 |[Trim Galore!](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) | 0.6.6 | `trim_galore` |
 
