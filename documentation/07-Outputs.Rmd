@@ -12,7 +12,13 @@
 
 #### R Objects
 
-[TODO]
+The major outputs from the second module are R objects from the [*bsseq* Bioconductor package](https://www.bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq.html), which contain methylation proportion and coverage information at all cytosine loci in the human genome. bsseq extends the `SummarizedExperiment` class, which provides a general and popular format for storing genomics data. Two `bsseq` objects are produced, with one object containing cytosine sites in CpG context, and the other containing the remaining CpH loci.
+
+We "strand collapse" CpG loci, which involves combining methylation data from both genomic strands (and thus discarding strand-specific information). The object is "smoothed" with the [BSmooth algorithm](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2012-13-10-r83), a process for inferring stable regional estimates of methylation levels. Loci are ordered by genomic position.
+
+We retain strand-specific information for CpH loci. These loci are also ordered by genomic position.
+
+Because all cytosines in the genome are included in the output objects, the data may occupy tens or even hundreds of gigabytes in memory (RAM) if loaded in a typical fashion. To enable working with the objects in a reasonable amount of memory, the assays (in this case methylation fraction and coverage counts) are HDF5-backed using the [HDF5Array R package](https://bioconductor.org/packages/release/bioc/html/HDF5Array.html), based on the [DelayedArray](https://bioconductor.org/packages/release/bioc/html/DelayedArray.html) framework. Essentially, this involves storing the assays in a .h5 file, a format designed to enable working with on-disk data as if it were loaded in RAM.
 
 #### Metrics
 
