@@ -8,7 +8,7 @@
 
 ### Second Module
 
-[LIKELY WANT A FIGURE DEPICTING OUTPUT OBJECTS]
+![Main Outputs](images/bsseq_output_objects.png)
 
 #### R Objects
 
