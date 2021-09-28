@@ -41,7 +41,7 @@
 
 **Trimmed FASTQ Files** `trimming/`
 
-- `[sample_name]_trimmed*.fastq`: Trimmed FASTQ files, if applicable, from [Trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic)
+- `[sample_name]_trimmed*.fastq`: Trimmed FASTQ files, if applicable, from [Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/).
 
 ### Second Module
 
