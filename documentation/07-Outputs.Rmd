@@ -45,4 +45,20 @@
 
 ### Second Module
 
-[TODO]
+**Preprocessing Logs** `preprocessing/`
+
+- `preprocess_input_second_half.log`: Information about how the input `rules.txt` file was parsed to internally handle input files correctly downstream.
+
+**Lambda-based Bisulfite-Conversion Estimatation** `lambda/`
+
+- `[sample_name]_lambda_pseudo.log`: (For experiments with lambda spike-ins, using the `--with_lambda` [option](#command-opts)) Logs containing a percentage estimate for the bisulfite-conversion efficiency for each sample, based on pseudo-aligning input FASTQs to both the lambda bacteriophage transcriptome and an "*in silico* bisulfite-converted copy" of the transcriptome, and comparing alignment rates.
+
+**Bismark Methylation Extractor Outputs** `BME/`
+
+- `[sample_name]/*`: (When using the `--use_bme` [option](#command-opts)) Files output from running `bismark_methylation_extractor`, including compressed text-based methylation information, a splitting report, and an "M-bias" report.
+
+**Cytosine Reports and Bedgraphs** `Reports/`
+
+- `[sample_name]/[sample_name].*.CX_report.txt`: "Cytosine reports" containing methylation counts and context for every cytosine in the genome, split by chromosome. By default, these are generated with `MethylDackel`, or otherwise with `coverage2cytosine` from the `Bismark` software suite when using the `--use_bme` [option](#command-opts).
+
+- `[sample_name]/[sample_name]_bedgraph_merged*.gz`: (When using the `--use_bme` [option](#command-opts)) A `bedgraph` file containing positional and methylation information for each cytosine; a "coverage" file containing similar information. See [Bismark's documentation](https://rawgit.com/FelixKrueger/Bismark/master/Docs/Bismark_User_Guide.html#appendix-iii-bismark-methylation-extractor) for more detail.
