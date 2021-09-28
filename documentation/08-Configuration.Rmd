@@ -69,10 +69,18 @@ A number of variables in your [config file](#your-config-file) exist to control 
 
 ### Arioc settings
 
-[TODO]
+Below, we document how the names of settings accepted by [INSERT PIPELINE NAME HERE] correspond to variables in Arioc configuration. For documentation on those Arioc configuration variables, see [here](https://raw.githubusercontent.com/RWilton/Arioc/master/Arioc.guide.pdf).
+
+* *batch_size*: this is passed to the "batchSize" attribute of the "AriocU" or "AriocP" element of the config for `AriocU` or `AriocP`.
+* *gapped_seed*: this is passed to the "seed" attribute of the "gapped" element of the config for `AriocU` or `AriocP`.
+* *nongapped_seed*: this is passed to the "seed" attribute of the "nongapped" of the config for `AriocU` or `AriocP`.
+* *gapped_args*: these arguments in string form are passed literally to the "gapped" element of the config for `AriocU` or `AriocP`.
+* *nongapped_args*: these arguments in string form are passed literally to the "nongapped" element of the config for `AriocU` or `AriocP`.
+* *x_args*: these arguments in string form are passed literally to the "AriocU" or "AriocP" element of the config for `AriocU` or `AriocP`.
+* *gpu_mask*: this is passed to the "gpuMask" attribute of the "AriocU" or "AriocP" element of the config for `AriocU` or `AriocP`.
 
 ### Miscellaneous settings
 
 [TODO: BRIEF DESCRIPTION]
 
-* *kallisto_single_args*: [TODO]
+* *kallisto_single_args*: literal arguments to pass to 'kallisto quant' for single-end samples, as part of the process for estimating bisulfite conversion efficiency when using the '--with_lambda' [option](#command-opts).
