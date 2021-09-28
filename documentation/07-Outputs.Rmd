@@ -24,24 +24,24 @@
 
 ### First Module
 
-[TODO- needs editing and additional content]
+**Preprocessing Logs** `preprocessing/`
+
+- `preprocess_input_first_half.log`: Information about how the input `samples.manifest` file was parsed to internally handle input files correctly downstream.
 
 **FastQC Outputs** `fastQC/`
 
 - `[trim_status]/[file_name]/*`: Outputs from [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/). Here `[trim_status]` indicates when FastQC was performed: `Untrimmed` is before trimming, and `Trimmed` is after. `[file_name]` contains the sample name, and if applicable, the mate number.
 
-**Alignment BAMs and Summaries** `alignment/`
-
-- `[sample_name].bam`: The main alignment output from [HISAT2](http://daehwankimlab.github.io/hisat2/) or optionally [STAR](https://github.com/alexdobin/STAR) in BAM format. In either case, unmapped reads are not included (different from the default behavior for HISAT2!).
-- `[sample_name]_align_summary.txt`: The text-based alignment summary from [Hisat2](http://daehwankimlab.github.io/hisat2/), if applicable. Note that metrics from these files are aggregated for the experiment, and so users likely will not need to check or process the original files manually.
-- `[sample_name]_STAR_alignment.log`: Statistics from STAR alignment (if applicable) for a single sample, renamed from `Log.final.out`. Note that metrics from these files are aggregated for the experiment, and so users likely will not need to check or process the original files manually.
-- `bam_sort/[sample_name]_sorted.bam` and `bam_sort/[sample_name]_sorted.bam.bai`: Coordinate-sorted alignments and their corresponding indices.
-- `[sample_name]_unmapped_mate*.fastq`: If using STAR with paired-end reads and the `--unalign` [option](#command-opts), these two files (mates 1 and 2) are produced, including unmapped reads (this includes "discordant" reads).
-- `[sample_name]_discordant.fastq`: If using HISAT2 (this is the default) and the `--unalign` [option](#command-opts), this file is produced and includes discordant mappings.
-
 **Trimmed FASTQ Files** `trimming/`
 
 - `[sample_name]_trimmed*.fastq`: Trimmed FASTQ files, if applicable, from [Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/).
+
+**Alignment-related Files** `Arioc/`
+
+- `sams/[sample_name].c.sam`: Concordant alignments output directly from Arioc, in SAM format.
+- `configs/[sample_name]_align.cfg`: The exact config file used by Arioc to align reads to the reference genome.
+- `configs/[sample_name]_encode.cfg`: The exact config file used by Arioc to encode reads prior to alignment to the reference genome.
+- `logs/*_[sample_name].log`: Logs from encoding and aligning samples with Arioc.
 
 ### Second Module
 
