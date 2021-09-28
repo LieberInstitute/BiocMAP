@@ -209,13 +209,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="7.1" data-path="outputs.html"><a href="outputs.html#main-outputs"><i class="fa fa-check"></i><b>7.1</b> Main Outputs</a>
 <ul>
-<li class="chapter" data-level="7.1.1" data-path="outputs.html"><a href="outputs.html#first-module"><i class="fa fa-check"></i><b>7.1.1</b> First Module</a></li>
-<li class="chapter" data-level="7.1.2" data-path="outputs.html"><a href="outputs.html#second-module"><i class="fa fa-check"></i><b>7.1.2</b> Second Module</a></li>
+<li class="chapter" data-level="7.1.1" data-path="outputs.html"><a href="outputs.html#cpg-bsseq-object"><i class="fa fa-check"></i><b>7.1.1</b> CpG <em>bsseq</em> object</a></li>
+<li class="chapter" data-level="7.1.2" data-path="outputs.html"><a href="outputs.html#cph-bsseq-object"><i class="fa fa-check"></i><b>7.1.2</b> CpH <em>bsseq</em> object</a></li>
+<li class="chapter" data-level="7.1.3" data-path="outputs.html"><a href="outputs.html#storage-method"><i class="fa fa-check"></i><b>7.1.3</b> Storage method</a></li>
+<li class="chapter" data-level="7.1.4" data-path="outputs.html"><a href="outputs.html#metrics"><i class="fa fa-check"></i><b>7.1.4</b> Metrics</a></li>
 </ul></li>
 <li class="chapter" data-level="7.2" data-path="outputs.html"><a href="outputs.html#intermediary-outputs"><i class="fa fa-check"></i><b>7.2</b> Intermediary Outputs</a>
 <ul>
-<li class="chapter" data-level="7.2.1" data-path="outputs.html"><a href="outputs.html#first-module-1"><i class="fa fa-check"></i><b>7.2.1</b> First Module</a></li>
-<li class="chapter" data-level="7.2.2" data-path="outputs.html"><a href="outputs.html#second-module-1"><i class="fa fa-check"></i><b>7.2.2</b> Second Module</a></li>
+<li class="chapter" data-level="7.2.1" data-path="outputs.html"><a href="outputs.html#first-module"><i class="fa fa-check"></i><b>7.2.1</b> First Module</a></li>
+<li class="chapter" data-level="7.2.2" data-path="outputs.html"><a href="outputs.html#second-module"><i class="fa fa-check"></i><b>7.2.2</b> Second Module</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="8" data-path="configuration.html"><a href="configuration.html"><i class="fa fa-check"></i><b>8</b> Configuration</a>
@@ -258,50 +260,296 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1><span class="header-section-number">7</span> Outputs</h1>
 <div id="main-outputs" class="section level2" number="7.1">
 <h2><span class="header-section-number">7.1</span> Main Outputs</h2>
-<div id="first-module" class="section level3" number="7.1.1">
-<h3><span class="header-section-number">7.1.1</span> First Module</h3>
-<p>[TODO]</p>
+<div class="figure">
+<img src="images/bsseq_output_objects.png" alt="" />
+<p class="caption">Main Outputs</p>
 </div>
-<div id="second-module" class="section level3" number="7.1.2">
-<h3><span class="header-section-number">7.1.2</span> Second Module</h3>
-<p>[LIKELY WANT A FIGURE DEPICTING OUTPUT OBJECTS]</p>
-<div id="r-objects" class="section level4" number="7.1.2.1">
-<h4><span class="header-section-number">7.1.2.1</span> R Objects</h4>
-<p>[TODO]</p>
+<p>The major outputs from the second module are R objects from the <a href="https://www.bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq.html"><em>bsseq</em> Bioconductor package</a>, which contain methylation proportion and coverage information at all cytosine loci in the human genome. bsseq extends the <code>SummarizedExperiment</code> class, which provides a general and popular format for storing genomics data. Two <code>bsseq</code> objects are produced, with one object containing cytosine sites in CpG context, and the other containing the remaining CpH loci.</p>
+<div id="cpg-bsseq-object" class="section level3" number="7.1.1">
+<h3><span class="header-section-number">7.1.1</span> CpG <em>bsseq</em> object</h3>
+<p>We “strand collapse” CpG loci, which involves combining methylation data from both genomic strands (and thus discarding strand-specific information). The object is “smoothed” with the <a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2012-13-10-r83">BSmooth algorithm</a>, a process for inferring stable regional estimates of methylation levels. Loci are ordered by genomic position.</p>
 </div>
-<div id="metrics" class="section level4" number="7.1.2.2">
-<h4><span class="header-section-number">7.1.2.2</span> Metrics</h4>
-<p>[TODO]</p>
+<div id="cph-bsseq-object" class="section level3" number="7.1.2">
+<h3><span class="header-section-number">7.1.2</span> CpH <em>bsseq</em> object</h3>
+<p>We retain strand-specific information for CpH loci. These loci are also ordered by genomic position.</p>
 </div>
+<div id="storage-method" class="section level3" number="7.1.3">
+<h3><span class="header-section-number">7.1.3</span> Storage method</h3>
+<p>Because all cytosines in the genome are included in the output objects, the data may occupy tens or even hundreds of gigabytes in memory (RAM) if loaded in a typical fashion. To enable working with the objects in a reasonable amount of memory, the assays (in this case methylation fraction and coverage counts) are HDF5-backed using the <a href="https://bioconductor.org/packages/release/bioc/html/HDF5Array.html">HDF5Array R package</a>, based on the <a href="https://bioconductor.org/packages/release/bioc/html/DelayedArray.html">DelayedArray</a> framework. Essentially, this involves storing the assays in a .h5 file, a format designed to enable working with on-disk data as if it were loaded in RAM.</p>
+</div>
+<div id="metrics" class="section level3" number="7.1.4">
+<h3><span class="header-section-number">7.1.4</span> Metrics</h3>
+<p>The <code>colData</code> slot of each <code>bsseq</code> object includes metrics collected from various processing steps throughout the pipeline. These metrics are also included in a standalone RDA file containing an R data frame whose columns are different quality metrics, and whose rows are associated with sample names. A list of the exact column names and their descriptions is given below.</p>
+<table>
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric Name</th>
+<th>Processing step</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FQCbasicStats</td>
+<td>FastQC</td>
+<td>Value for “Basic Statistics” in FastQC summary output</td>
+</tr>
+<tr class="even">
+<td>perBaseQual</td>
+<td>FastQC</td>
+<td>Value for “Per base sequence quality” in FastQC summary output</td>
+</tr>
+<tr class="odd">
+<td>perTileQual</td>
+<td>FastQC</td>
+<td>Value for “Per tile sequence quality” in FastQC summary output</td>
+</tr>
+<tr class="even">
+<td>perSeqQual</td>
+<td>FastQC</td>
+<td>Value for “Per sequence quality scores” in FastQC summary output</td>
+</tr>
+<tr class="odd">
+<td>perBaseContent</td>
+<td>FastQC</td>
+<td>Value for “Per base sequence content” in FastQC summary output</td>
+</tr>
+<tr class="even">
+<td>GCcontent</td>
+<td>FastQC</td>
+<td>Value for “Per sequence GC content” in FastQC summary output</td>
+</tr>
+<tr class="odd">
+<td>Ncontent</td>
+<td>FastQC</td>
+<td>Value for “Per base N content” in FastQC summary output</td>
+</tr>
+<tr class="even">
+<td>SeqLengthDist</td>
+<td>FastQC</td>
+<td>Value for “Sequence Length Distribution” in FastQC summary output</td>
+</tr>
+<tr class="odd">
+<td>SeqDuplication</td>
+<td>FastQC</td>
+<td>Value for “Sequence Duplication Levels” in FastQC summary output</td>
+</tr>
+<tr class="even">
+<td>OverrepSeqs</td>
+<td>FastQC</td>
+<td>Value for “Overrepresented sequences” in FastQC summary output</td>
+</tr>
+<tr class="odd">
+<td>AdapterContent</td>
+<td>FastQC</td>
+<td>Value for “Adapter Content” in FastQC summary output</td>
+</tr>
+<tr class="even">
+<td>KmerContent</td>
+<td>FastQC</td>
+<td>Value for “Kmer Content” in FastQC summary output</td>
+</tr>
+<tr class="odd">
+<td>Total_reads_processed</td>
+<td>Trim Galore!</td>
+<td>Value for “Total reads processed” entry in STDOUT from trimming</td>
+</tr>
+<tr class="even">
+<td>Reads_with_adapters</td>
+<td>Trim Galore!</td>
+<td>Value for “Reads with adapters” entry in STDOUT from trimming</td>
+</tr>
+<tr class="odd">
+<td>Reads_written_passing_filters</td>
+<td>Trim Galore!</td>
+<td>Value for “Reads written (passing filters)” entry in STDOUT from trimming</td>
+</tr>
+<tr class="even">
+<td>Total_basepairs_processed</td>
+<td>Trim Galore!</td>
+<td>Value for “Total basepairs processed” entry in STDOUT from trimming</td>
+</tr>
+<tr class="odd">
+<td>Quality_trimmed</td>
+<td>Trim Galore!</td>
+<td>Value for “Quality-trimmed” entry in STDOUT from trimming</td>
+</tr>
+<tr class="even">
+<td>Total_written_filtered</td>
+<td>Trim Galore!</td>
+<td>Value for “Total written (filtered)” entry in STDOUT from trimming</td>
+</tr>
+<tr class="odd">
+<td>Sequence</td>
+<td>Trim Galore!</td>
+<td>Detected adapter sequence when trimming</td>
+</tr>
+<tr class="even">
+<td>was_trimmed</td>
+<td>Trim Galore!</td>
+<td>Logical value (“TRUE” or “FALSE”) indicating whether this sample was trimmed</td>
+</tr>
+<tr class="odd">
+<td>pairs</td>
+<td>Arioc</td>
+<td>Total number of pairs present in input data</td>
+</tr>
+<tr class="even">
+<td>conc_pairs_total</td>
+<td>Arioc</td>
+<td>Total number of concordantly aligned pairs</td>
+</tr>
+<tr class="odd">
+<td>conc_pairs_1_mapping</td>
+<td>Arioc</td>
+<td>Number of uniquely mapped concordant alignments</td>
+</tr>
+<tr class="even">
+<td>conc_pairs_many_mappings</td>
+<td>Arioc</td>
+<td>Number of non-uniquely mapped concordant pairs</td>
+</tr>
+<tr class="odd">
+<td>disc_pairs</td>
+<td>Arioc</td>
+<td>Number of pairs that aligned discordantly</td>
+</tr>
+<tr class="even">
+<td>rejected_pairs</td>
+<td>Arioc</td>
+<td>Number of pairs that were “rejected” during alignment</td>
+</tr>
+<tr class="odd">
+<td>unmapped_pairs</td>
+<td>Arioc</td>
+<td>Number of pairs that didn’t both successfully map</td>
+</tr>
+<tr class="even">
+<td>mates_not_in_paired_maps_total</td>
+<td>Arioc</td>
+<td>Value for “mates not in paired mappings” field in “SAM output” section of verbose output from alignment</td>
+</tr>
+<tr class="odd">
+<td>mates_NIPM_with_no_maps</td>
+<td>Arioc</td>
+<td>Number of mates not in paired mappings having no mappings</td>
+</tr>
+<tr class="even">
+<td>mates_NIPM_with_1_map</td>
+<td>Arioc</td>
+<td>Number of mates not in paired mappings having 1 mapping</td>
+</tr>
+<tr class="odd">
+<td>mates_NIPM_with_many_maps</td>
+<td>Arioc</td>
+<td>Number of mates not in paired mappings having 2 or more mappings</td>
+</tr>
+<tr class="even">
+<td>total_mapped_mates</td>
+<td>Arioc</td>
+<td>Total number of mates mapped</td>
+</tr>
+<tr class="odd">
+<td>duplicate_maps</td>
+<td>Arioc</td>
+<td>Value for “duplicate mappings (unreported)” field in “SAM output” section of verbose output from alignment</td>
+</tr>
+<tr class="even">
+<td>maxQlen</td>
+<td>Arioc</td>
+<td>Value for “maximum Q length” field in “SAM output” section of verbose output from alignment</td>
+</tr>
+<tr class="odd">
+<td>max_diag_band_width</td>
+<td>Arioc</td>
+<td>Value for “maximum diagonal band width” field in “SAM output” section of verbose output from alignment</td>
+</tr>
+<tr class="even">
+<td>TLEN mean</td>
+<td>Arioc</td>
+<td>Value for “TLEN mean (stdev, skewness)” field in “SAM output” section of verbose output from alignment</td>
+</tr>
+<tr class="odd">
+<td>perc_M_CpG</td>
+<td>Methylation extraction</td>
+<td>Percentage of methylated cytosines appearing in CpG context</td>
+</tr>
+<tr class="even">
+<td>perc_M_CHG</td>
+<td>Methylation extraction</td>
+<td>Percentage of methylated cytosines appearing in CHG context</td>
+</tr>
+<tr class="odd">
+<td>perc_M_CHH</td>
+<td>Methylation extraction</td>
+<td>Percentage of methylated cytosines appearing in CHH context</td>
+</tr>
+<tr class="even">
+<td>lambda_bs_conv_eff</td>
+<td>Lambda pseudo-alignment</td>
+<td>Estimated bisulfite conversion efficiency as a percentage</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="intermediary-outputs" class="section level2" number="7.2">
 <h2><span class="header-section-number">7.2</span> Intermediary Outputs</h2>
 <p>[INSERT PIPELINE NAME HERE] generates a number of files along the process before producing the main outputs of interest in each module. Each of these “intermediary” files is described below.</p>
-<div id="first-module-1" class="section level3" number="7.2.1">
+<div id="first-module" class="section level3" number="7.2.1">
 <h3><span class="header-section-number">7.2.1</span> First Module</h3>
-<p>[TODO- needs editing and additional content]</p>
+<p><strong>Preprocessing Logs</strong> <code>preprocessing/</code></p>
+<ul>
+<li><code>preprocess_input_first_half.log</code>: Information about how the input <code>samples.manifest</code> file was parsed to internally handle input files correctly downstream.</li>
+</ul>
 <p><strong>FastQC Outputs</strong> <code>fastQC/</code></p>
 <ul>
 <li><code>[trim_status]/[file_name]/*</code>: Outputs from <a href="https://www.bioinformatics.babraham.ac.uk/projects/fastqc/">FastQC</a>. Here <code>[trim_status]</code> indicates when FastQC was performed: <code>Untrimmed</code> is before trimming, and <code>Trimmed</code> is after. <code>[file_name]</code> contains the sample name, and if applicable, the mate number.</li>
 </ul>
-<p><strong>Alignment BAMs and Summaries</strong> <code>alignment/</code></p>
-<ul>
-<li><code>[sample_name].bam</code>: The main alignment output from <a href="http://daehwankimlab.github.io/hisat2/">HISAT2</a> or optionally <a href="https://github.com/alexdobin/STAR">STAR</a> in BAM format. In either case, unmapped reads are not included (different from the default behavior for HISAT2!).</li>
-<li><code>[sample_name]_align_summary.txt</code>: The text-based alignment summary from <a href="http://daehwankimlab.github.io/hisat2/">Hisat2</a>, if applicable. Note that metrics from these files are aggregated for the experiment, and so users likely will not need to check or process the original files manually.</li>
-<li><code>[sample_name]_STAR_alignment.log</code>: Statistics from STAR alignment (if applicable) for a single sample, renamed from <code>Log.final.out</code>. Note that metrics from these files are aggregated for the experiment, and so users likely will not need to check or process the original files manually.</li>
-<li><code>bam_sort/[sample_name]_sorted.bam</code> and <code>bam_sort/[sample_name]_sorted.bam.bai</code>: Coordinate-sorted alignments and their corresponding indices.</li>
-<li><code>[sample_name]_unmapped_mate*.fastq</code>: If using STAR with paired-end reads and the <code>--unalign</code> <a href="command-opts.html#command-opts">option</a>, these two files (mates 1 and 2) are produced, including unmapped reads (this includes “discordant” reads).</li>
-<li><code>[sample_name]_discordant.fastq</code>: If using HISAT2 (this is the default) and the <code>--unalign</code> <a href="command-opts.html#command-opts">option</a>, this file is produced and includes discordant mappings.</li>
-</ul>
 <p><strong>Trimmed FASTQ Files</strong> <code>trimming/</code></p>
 <ul>
-<li><code>[sample_name]_trimmed*.fastq</code>: Trimmed FASTQ files, if applicable, from <a href="http://www.usadellab.org/cms/?page=trimmomatic">Trimmomatic</a></li>
+<li><code>[sample_name]_trimmed*.fastq</code>: Trimmed FASTQ files, if applicable, from <a href="https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/">Trim Galore</a>.</li>
+</ul>
+<p><strong>Raw Alignment-related Files</strong> <code>Arioc/</code></p>
+<ul>
+<li><code>sams/[sample_name].c.sam</code>: Concordant alignments output directly from Arioc, in SAM format.</li>
+<li><code>configs/[sample_name]_align.cfg</code>: The exact config file used by Arioc to align reads to the reference genome.</li>
+<li><code>configs/[sample_name]_encode.cfg</code>: The exact config file used by Arioc to encode reads prior to alignment to the reference genome.</li>
+<li><code>logs/*_[sample_name].log</code>: Logs from encoding and aligning samples with Arioc.</li>
+</ul>
+<p><strong>Filtered Alignments</strong> <code>FilteredAlignments/bams</code></p>
+<ul>
+<li><code>[sample_name].cfu.sorted.bam</code> and <code>[sample_name].cfu.sorted.bam.bai</code>: Coordinate-sorted, quality-filtered (only including alignments with <code>MAPQ</code> &gt;= 5), unique (duplicate mappings removed) alignments in BAM format, with a corresponding BAM index.</li>
 </ul>
 </div>
-<div id="second-module-1" class="section level3" number="7.2.2">
+<div id="second-module" class="section level3" number="7.2.2">
 <h3><span class="header-section-number">7.2.2</span> Second Module</h3>
-<p>[TODO]</p>
+<p><strong>Preprocessing Logs</strong> <code>preprocessing/</code></p>
+<ul>
+<li><code>preprocess_input_second_half.log</code>: Information about how the input <code>rules.txt</code> file was parsed to internally handle input files correctly downstream.</li>
+</ul>
+<p><strong>Lambda-based Bisulfite-Conversion Estimatation</strong> <code>lambda/</code></p>
+<ul>
+<li><code>[sample_name]_lambda_pseudo.log</code>: (For experiments with lambda spike-ins, using the <code>--with_lambda</code> <a href="command-opts.html#command-opts">option</a>) Logs containing a percentage estimate for the bisulfite-conversion efficiency for each sample, based on pseudo-aligning input FASTQs to both the lambda bacteriophage transcriptome and an “<em>in silico</em> bisulfite-converted copy” of the transcriptome, and comparing alignment rates.</li>
+</ul>
+<p><strong>Bismark Methylation Extractor Outputs</strong> <code>BME/</code></p>
+<ul>
+<li><code>[sample_name]/*</code>: (When using the <code>--use_bme</code> <a href="command-opts.html#command-opts">option</a>) Files output from running <code>bismark_methylation_extractor</code>, including compressed text-based methylation information, a splitting report, and an “M-bias” report.</li>
+</ul>
+<p><strong>Cytosine Reports and Bedgraphs</strong> <code>Reports/</code></p>
+<ul>
+<li><p><code>[sample_name]/[sample_name].*.CX_report.txt</code>: “Cytosine reports” containing methylation counts and context for every cytosine in the genome, split by chromosome. By default, these are generated with <code>MethylDackel</code>, or otherwise with <code>coverage2cytosine</code> from the <code>Bismark</code> software suite when using the <code>--use_bme</code> <a href="command-opts.html#command-opts">option</a>.</p></li>
+<li><p><code>[sample_name]/[sample_name]_bedgraph_merged*.gz</code>: (When using the <code>--use_bme</code> <a href="command-opts.html#command-opts">option</a>) A <code>bedgraph</code> file containing positional and methylation information for each cytosine; a “coverage” file containing similar information. See <a href="https://rawgit.com/FelixKrueger/Bismark/master/Docs/Bismark_User_Guide.html#appendix-iii-bismark-methylation-extractor">Bismark’s documentation</a> for more detail.</p></li>
+</ul>
+<p><strong>Individual <em>bsseq</em> objects</strong> <code>BSobjects/objects/</code></p>
+<ul>
+<li><code>[chromosome]/[context]/*</code>: R objects containing either cytosines in “CpG” or “CpH”, for a single chromosome. While the <a href="outputs.html#main-outputs">final bsseq objects</a> are combined across all chromosomes for convenience, it may be more practical in some cases to work with these individual objects, which are significantly smaller in memory.</li>
+</ul>
 
 </div>
 </div>
