@@ -20,9 +20,54 @@ We retain strand-specific information for CpH loci. These loci are also ordered 
 
 Because all cytosines in the genome are included in the output objects, the data may occupy tens or even hundreds of gigabytes in memory (RAM) if loaded in a typical fashion. To enable working with the objects in a reasonable amount of memory, the assays (in this case methylation fraction and coverage counts) are HDF5-backed using the [HDF5Array R package](https://bioconductor.org/packages/release/bioc/html/HDF5Array.html), based on the [DelayedArray](https://bioconductor.org/packages/release/bioc/html/DelayedArray.html) framework. Essentially, this involves storing the assays in a .h5 file, a format designed to enable working with on-disk data as if it were loaded in RAM.
 
+The `colData` slot of each `bsseq` object includes metrics collected from various processing steps throughout the pipeline. These metrics are also included in a standalone RDA file, documented below.
+
 #### Metrics
 
-[TODO]
+One of the major pipeline outputs is an RDA containing an R data frame whose columns are different quality metrics, and whose rows are associated with sample names. A list of the exact column names and their descriptions is given below.
+
+| Metric Name | Processing step | Description |
+| --- | --- | ------ |
+| FQCbasicStats | FastQC | Value for "Basic Statistics" in FastQC summary output |
+| perBaseQual | FastQC | Value for "Per base sequence quality" in FastQC summary output |
+| perTileQual | FastQC | Value for "Per tile sequence quality" in FastQC summary output |
+| perSeqQual | FastQC | Value for "Per sequence quality scores" in FastQC summary output |
+| perBaseContent | FastQC | Value for "Per base sequence content" in FastQC summary output |
+| GCcontent | FastQC | Value for "Per sequence GC content" in FastQC summary output |
+| Ncontent | FastQC | Value for "Per base N content" in FastQC summary output |
+| SeqLengthDist | FastQC | Value for "Sequence Length Distribution" in FastQC summary output |
+| SeqDuplication | FastQC | Value for "Sequence Duplication Levels" in FastQC summary output |
+| OverrepSeqs | FastQC | Value for "Overrepresented sequences" in FastQC summary output |
+| AdapterContent | FastQC | Value for "Adapter Content" in FastQC summary output |
+| KmerContent | FastQC | Value for "Kmer Content" in FastQC summary output |
+| Total_reads_processed | Trim Galore! | Value for "Total reads processed" entry in STDOUT from trimming |
+| Reads_with_adapters | Trim Galore! | Value for "Reads with adapters" entry in STDOUT from trimming |
+| Reads_written_passing_filters | Trim Galore! | Value for "Reads written (passing filters)" entry in STDOUT from trimming |
+| Total_basepairs_processed | Trim Galore! | Value for "Total basepairs processed" entry in STDOUT from trimming |
+| Quality_trimmed | Trim Galore! | Value for "Quality-trimmed" entry in STDOUT from trimming |
+| Total_written_filtered | Trim Galore! | Value for "Total written (filtered)" entry in STDOUT from trimming |
+| Sequence | Trim Galore! | Detected adapter sequence when trimming |
+| was_trimmed | Trim Galore! | Logical value ("TRUE" or "FALSE") indicating whether this sample was trimmed |
+| pairs | Arioc | Total number of pairs present in input data |
+| conc_pairs_total | Arioc | Total number of concordantly aligned pairs |
+| conc_pairs_1_mapping | Arioc | Number of uniquely mapped concordant alignments |
+| conc_pairs_many_mappings | Arioc | Number of non-uniquely mapped concordant pairs |
+| disc_pairs | Arioc | Number of pairs that aligned discordantly |
+| rejected_pairs | Arioc | Number of pairs that were "rejected" during alignment |
+| unmapped_pairs | Arioc | Number of pairs that didn't both successfully map |
+| mates_not_in_paired_maps_total | Arioc | Value for "mates not in paired mappings" field in "SAM output" section of verbose output from alignment |
+| mates_NIPM_with_no_maps | Arioc | Number of mates not in paired mappings having no mappings |
+| mates_NIPM_with_1_map | Arioc | Number of mates not in paired mappings having 1 mapping |
+| mates_NIPM_with_many_maps | Arioc | Number of mates not in paired mappings having 2 or more mappings |      
+| total_mapped_mates | Arioc | Total number of mates mapped |      
+| duplicate_maps | Arioc | Value for "duplicate mappings (unreported)" field in "SAM output" section of verbose output from alignment |      
+| maxQlen | Arioc | Value for "maximum Q length" field in "SAM output" section of verbose output from alignment |      
+| max_diag_band_width | Arioc | Value for "maximum diagonal band width" field in "SAM output" section of verbose output from alignment |      
+| TLEN mean | Arioc | Value for "TLEN mean (stdev, skewness)" field in "SAM output" section of verbose output from alignment |        
+| perc_M_CpG | Methylation extraction | Percentage of methylated cytosines appearing in CpG context |      
+| perc_M_CHG | Methylation extraction | Percentage of methylated cytosines appearing in CHG context |
+| perc_M_CHH | Methylation extraction | Percentage of methylated cytosines appearing in CHH context |
+| lambda_bs_conv_eff | Lambda pseudo-alignment | Estimated bisulfite conversion efficiency as a percentage |
 
 ## Intermediary Outputs
 
