@@ -141,7 +141,7 @@ def replace_listed(x, pattern_list, replacement) {
 
 def get_prefix(f) {
     //  Remove these regardless of position in the string (note blackListAny is a regular expression)
-    blackListAny = [~/(|_[12])_(un|)trimmed_summary/, ~/_success_token/, ~/_(trimmed|untrimmed)/, ~/_(reverse|forward)/, ~/_(paired|unpaired)/, ~/_R[12]\$(a21|raw|sqm|sqq)/, ~/CH[GH]_*O[BT]_|CpG_*O[BT]_/, ~/|_bedgraph_merged/]
+    blackListAny = [~/(|_[12])_(un|)trimmed_summary/, ~/_success_token/, ~/_(trimmed|untrimmed)/, ~/_(reverse|forward)/, ~/_(paired|unpaired)/, ~/%(a21|raw|sqm|sqq)/, ~/CH[GH]_*O[BT]_|CpG_*O[BT]_/, ~/|_bedgraph_merged/]
     
     //  Replace these with a dot
     blackListDot = [~/(_[12]|_R[12])\./, ~/_(encode|align)_reads\./, ~/\.(c|cfu)/, ~/\.txt/, ~/\.gz/, ~/\.sorted/, ~/_val/]
@@ -334,7 +334,7 @@ process EncodeReference {
         #  Rename files to allow nextflow to properly handle them ("$"
         #  characters otherwise sometimes begin the parsing of a bash variable)
         for filename in $(ls *\$*.sbf); do
-            mv $filename $(echo $filename | sed 's/\$/%/')
+            mv $filename $(echo $filename | sed 's/\\\$/%/')
         done
         '''
 }
