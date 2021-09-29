@@ -239,6 +239,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="9.1" data-path="software.html"><a href="software.html#software-versions"><i class="fa fa-check"></i><b>9.1</b> Software Versions</a></li>
 <li class="chapter" data-level="9.2" data-path="software.html"><a href="software.html#docker-images"><i class="fa fa-check"></i><b>9.2</b> Docker Images</a></li>
 </ul></li>
+<li class="chapter" data-level="10" data-path="help.html"><a href="help.html"><i class="fa fa-check"></i><b>10</b> Help</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="help.html"><a href="help.html#common-errors"><i class="fa fa-check"></i><b>10.1</b> Common Errors</a></li>
+<li class="chapter" data-level="10.2" data-path="help.html"><a href="help.html#resuming"><i class="fa fa-check"></i><b>10.2</b> Resuming</a></li>
+<li class="chapter" data-level="10.3" data-path="help.html"><a href="help.html#docker-help"><i class="fa fa-check"></i><b>10.3</b> Docker help</a></li>
+</ul></li>
 </ul>
 
       </nav>
@@ -316,13 +322,22 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="arioc-settings" class="section level3" number="8.2.2">
 <h3><span class="header-section-number">8.2.2</span> Arioc settings</h3>
-<p>[TODO]</p>
+<p>Below, we document how the names of settings accepted by [INSERT PIPELINE NAME HERE] correspond to variables in Arioc configuration. For documentation on those Arioc configuration variables, see <a href="https://raw.githubusercontent.com/RWilton/Arioc/master/Arioc.guide.pdf">here</a>.</p>
+<ul>
+<li><em>batch_size</em>: this is passed to the “batchSize” attribute of the “AriocU” or “AriocP” element of the config for <code>AriocU</code> or <code>AriocP</code>.</li>
+<li><em>gapped_seed</em>: this is passed to the “seed” attribute of the “gapped” element of the config for <code>AriocU</code> or <code>AriocP</code>.</li>
+<li><em>nongapped_seed</em>: this is passed to the “seed” attribute of the “nongapped” of the config for <code>AriocU</code> or <code>AriocP</code>.</li>
+<li><em>gapped_args</em>: these arguments in string form are passed literally to the “gapped” element of the config for <code>AriocU</code> or <code>AriocP</code>.</li>
+<li><em>nongapped_args</em>: these arguments in string form are passed literally to the “nongapped” element of the config for <code>AriocU</code> or <code>AriocP</code>.</li>
+<li><em>x_args</em>: these arguments in string form are passed literally to the “AriocU” or “AriocP” element of the config for <code>AriocU</code> or <code>AriocP</code>.</li>
+<li><em>gpu_mask</em>: this is passed to the “gpuMask” attribute of the “AriocU” or “AriocP” element of the config for <code>AriocU</code> or <code>AriocP</code>.</li>
+</ul>
 </div>
 <div id="miscellaneous-settings" class="section level3" number="8.2.3">
 <h3><span class="header-section-number">8.2.3</span> Miscellaneous settings</h3>
 <p>[TODO: BRIEF DESCRIPTION]</p>
 <ul>
-<li><em>kallisto_single_args</em>: [TODO]</li>
+<li><em>kallisto_single_args</em>: literal arguments to pass to ‘kallisto quant’ for single-end samples, as part of the process for estimating bisulfite conversion efficiency when using the ‘–with_lambda’ <a href="command-opts.html#command-opts">option</a>.</li>
 </ul>
 
 </div>

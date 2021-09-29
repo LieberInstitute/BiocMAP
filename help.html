@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>4 Pipeline Overview | [INSERT PIPELINE NAME HERE]</title>
-  <meta name="description" content="4 Pipeline Overview | [INSERT PIPELINE NAME HERE]" />
+  <title>10 Help | [INSERT PIPELINE NAME HERE]</title>
+  <meta name="description" content="10 Help | [INSERT PIPELINE NAME HERE]" />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="4 Pipeline Overview | [INSERT PIPELINE NAME HERE]" />
+  <meta property="og:title" content="10 Help | [INSERT PIPELINE NAME HERE]" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="4 Pipeline Overview | [INSERT PIPELINE NAME HERE]" />
+  <meta name="twitter:title" content="10 Help | [INSERT PIPELINE NAME HERE]" />
   
   
   
@@ -29,8 +29,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="command-opts.html"/>
-<link rel="next" href="annotation.html"/>
+<link rel="prev" href="software.html"/>
+
 <script src="libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -262,49 +262,61 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="pipeline-overview" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> Pipeline Overview</h1>
-<p><img src="images/workflow.png" />
-<em>Diagram representing the “conceptual” workflow traversed by [INSERT PIPELINE NAME HERE]. Here some nextflow <a href="https://www.nextflow.io/docs/latest/process.html"><code>processes</code></a> are grouped together for simplicity; the exact processes traversed are enumerated below. The red box indicates the FASTQ files are inputs to the pipeline; green coloring denotes major output files from the pipeline; the remaining boxes represent computational steps. Yellow-colored steps are optional or not always performed; for example, preparing a particular set of annotation files occurs once and uses a cache for further runs. Finally, blue-colored steps are ordinary processes which occur on every pipeline execution.</em></p>
-<div id="preparation-steps" class="section level2" number="4.1">
-<h2><span class="header-section-number">4.1</span> Preparation Steps</h2>
-<p>The following processes in the pipeline are done only once for a given configuration, and are skipped on all subsequent runs:</p>
-<div id="downloading-and-preparing-required-annotation-files" class="section level3" number="4.1.1">
-<h3><span class="header-section-number">4.1.1</span> Downloading and preparing required annotation files</h3>
+<div id="help" class="section level1" number="10">
+<h1><span class="header-section-number">10</span> Help</h1>
+<div id="common-errors" class="section level2" number="10.1">
+<h2><span class="header-section-number">10.1</span> Common Errors</h2>
+<p>[INSERT PIPELINE NAME HERE] should be configured so that fundamental issues related to pipeline function do not arise. If you encounter an error and believe it to be a design flaw in [INSERT PIPELINE NAME HERE], you can always <a href="https://github.com/LieberInstitute/%5BINSERT%20PIPELINE%20NAME%20HERE%5D/issues">submit a github issue</a>. However, please take a look at the following common issues:</p>
 <ul>
-<li><em>PullReference</em>: when using default <a href="annotation.html#annotation">annotation</a>, this process pulls the genome fasta from <a href="https://www.gencodegenes.org/">GENCODE</a>, possibly subsets to canonical sequences (see <a href="annotation.html#choosing-build">annotation builds</a>, and saves to the directory specified by <code>--annotation</code>. This is the file against which FASTQ reads are aligned, and methylation is extracted.</li>
-<li><em>PrepareReference</em>: when run as part of the first module: split the single FASTA file into individual files (for handling with Arioc) and write the configuration file later used by Arioc to encode these reference files. When run as part of the second module: runs <code>bismark_genome_preparation</code> with the <code>--hisat</code> option, in preparation for possible methylation extraction using <code>Bismark</code> (though note that <code>MethylDackel</code> is used instead by default!).</li>
-<li><em>EncodeReference</em>: run <code>AriocE</code> to encode reference files for use with the <code>Arioc</code> aligner. This process requires a GPU.</li>
-<li><em>PrepareLambda</em> when using the <code>--with_lambda</code> <a href="command-opts.html#command-opts">option</a> as part of the second module, this process downloads the lambda bacteriophage genome and creates kallisto indices required for later estimation of bisulfite conversion efficiency.</li>
+<li><em>A job/ process is not given enough memory or time</em>: pipeline runs on large samples or datasets may require more memory or a higher time limit. When reported correctly, the pipeline will indicate an error status of 140 (for SGE or SLURM environments); however, memory issues can take many forms, and related error messages are not always clear. In this example case, the process FilterAlignments failed due to insufficient memory, but indicated a general error status (1):</li>
 </ul>
+<div class="figure">
+<img src="images/memory_error.png" alt="" />
+<p class="caption">How Nextflow may report memory-related errors</p>
 </div>
-</div>
-<div id="main-workflow-steps-first-module" class="section level2" number="4.2">
-<h2><span class="header-section-number">4.2</span> Main Workflow Steps: First Module</h2>
+<p>Attempt to provide the process more memory in your config. In this case the configuration for FilterAlignments looks like this (for SGE users):</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb24-1"><a href="help.html#cb24-1" aria-hidden="true" tabindex="-1"></a>withName<span class="op">:</span> FilterAlignments <span class="op">{</span></span>
+<span id="cb24-2"><a href="help.html#cb24-2" aria-hidden="true" tabindex="-1"></a>    cpus <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb24-3"><a href="help.html#cb24-3" aria-hidden="true" tabindex="-1"></a>    penv <span class="op">=</span> <span class="st">&#39;local&#39;</span></span>
+<span id="cb24-4"><a href="help.html#cb24-4" aria-hidden="true" tabindex="-1"></a>    memory <span class="op">=</span> <span class="fl">16.G</span>B</span>
+<span id="cb24-5"><a href="help.html#cb24-5" aria-hidden="true" tabindex="-1"></a>    clusterOptions <span class="op">=</span> <span class="st">&#39;-l h_fsize=800G&#39;</span></span>
+<span id="cb24-6"><a href="help.html#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Note that disk space may also be the limitation. See the <a href="configuration.html#configuration">configuration</a> section for more info.</p>
 <ul>
-<li><em>PreprocessInputs</em>: Merge FASTQ files where specified in <code>samples.manifest</code> and create conveniently named soft links of each FASTQ file for internal use in [INSERT PIPELINE NAME HERE].</li>
-<li><em>FastQC_Untrimmed</em>: FASTQ files are ran through FastQC as a preliminary quality control measure. By default, the presence of “adapter content” determined in this process decides whether a given sample is trimmed in the next step. See the <code>--trim_mode</code> <a href="command-opts.html#command-opts">command option</a> for modifying this default behavior.</li>
-<li><em>Trimming</em>: See “FastQC_Untrimmed” above- FASTQ inputs are trimmed with <code>Trim Galore!</code> either based on adapter content from FastQC, or differently based on the <code>--trim_mode</code> [command option]. FastQC is also run as a confirmation step after trimming. For samples that are trimmed, post-trimming FastQC metrics are collected and later gathered into an R data frame; for all other samples, these metrics are collected from the FastQC run prior to any trimming.</li>
-<li><em>WriteAriocConfigs</em>: Generate configurations file for use in <code>AriocE</code>, followed by <code>AriocU</code> or <code>AriocP</code>, using configuration settings specified in <a href="quick-start.html#quick-config">the appropriate config</a>. Note two configuration files are created for each sample.</li>
-<li><em>EncodeReads</em>: Run <code>AriocE</code> to encode each sample in preparation for the alignment step with Arioc.</li>
-<li><em>AlignReads</em>: Align each sample to the reference genome using Arioc, creating at least one SAM file.</li>
-<li><em>FilterAlignments</em>: Filter, sort, compress, and index alignments from Arioc. First, primary alignments with a <code>MAPQ</code> of at least 5 are kept, and duplicate alignments are removed using <code>samblaster</code>. The result is coordinate-sorted, compressed into BAM format, and this BAM file is indexed.</li>
-<li><em>MakeRules</em>: <a href="inputs.html#inputs">A <code>rules.txt</code> file</a> is created in the same directory as <code>samples.manifest</code> so that the second module can be easily run by the user after completion of the first module.</li>
+<li><em>Nextflow has trouble communicating with your cluster</em>: a less common issue can occur on slower clusters, related to nextflow failing to poll your grid scheduler (like SGE or SLURM) for information it needs about the jobs that are running. This can show up in an error message like: <code>Process</code>FilterAlignments (Prefix: Sample_FE2P1_blood)<code>terminated for an unknown reason -- Likely it has been terminated by the external system</code>. We have found that raising the <code>exitReadTimeout</code> to a large value (such as 40 minutes) solves this issue, but consider raising it further if needed.</li>
 </ul>
+<div class="sourceCode" id="cb25"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb25-1"><a href="help.html#cb25-1" aria-hidden="true" tabindex="-1"></a>executor <span class="op">{</span></span>
+<span id="cb25-2"><a href="help.html#cb25-2" aria-hidden="true" tabindex="-1"></a>    name <span class="op">=</span> <span class="st">&#39;sge&#39;</span></span>
+<span id="cb25-3"><a href="help.html#cb25-3" aria-hidden="true" tabindex="-1"></a>    queueSize <span class="op">=</span> <span class="dv">40</span></span>
+<span id="cb25-4"><a href="help.html#cb25-4" aria-hidden="true" tabindex="-1"></a>    submitRateLimit <span class="op">=</span> <span class="st">&#39;1 sec&#39;</span></span>
+<span id="cb25-5"><a href="help.html#cb25-5" aria-hidden="true" tabindex="-1"></a>    exitReadTimeout <span class="op">=</span> <span class="st">&#39;40 min&#39;</span></span>
+<span id="cb25-6"><a href="help.html#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 </div>
-<div id="main-workflow-steps-second-module" class="section level2" number="4.3">
-<h2><span class="header-section-number">4.3</span> Main Workflow Steps: Second Module</h2>
-<ul>
-<li><em>PreprocessInputs</em>: parse <code>rules.txt</code> and <code>samples.manifest</code>, the inputs to the second module, so that all relevant FASTQ files and logs may be handled correctly in later steps.</li>
-<li><em>LambdaPseudo</em>: when the <code>--with_lambda</code> <a href="command-opts.html#command-opts">option</a> is specified, pseudoalignment to the lambda bacteriophage transcriptome is performed. Both the (overwhelmingly unmethylated) original transcriptome and then an “in-silico bisulfite-converted” version of the transcriptome are used in series. Successful map rates are used to estimate the entire experiment’s bisulfite conversion rate, a metric which is included in the final output R data frame.</li>
-<li><em>BME</em>: when using the <code>--use_bme</code> <a href="command-opts.html#command-opts">option</a>, methylation extraction is performed using <code>bismark_methylation_extraction</code>.</li>
-<li><em>Bismark2Bedgraph</em>: when using the <code>--use_bme</code> <a href="command-opts.html#command-opts">option</a>, the <code>bismark2bedgraph</code> utility from Bismark is run to generate intermediate <code>bedGraph</code> files, which are later used to generate text-based “cytosine reports”.</li>
-<li><em>Coverage2Cytosine</em>: when using the <code>--use_bme</code> <a href="command-opts.html#command-opts">option</a>, the <code>coverage2cytosine</code> utility from Bismark created text-based “cytosine reports”, which are later read into R to produce the final <code>bsseq</code> objects.</li>
-<li><em>MethylationExtraction</em>: this process is run by default in place of the above Bismark-related processes, and performs methylation extraction with <code>MethylDackel</code>, ultimately generating “cytosine reports” comparable to those produced by the <code>coverage2cytosine</code> Bismark utility.</li>
-<li><em>ParseReports</em>: logs from FastQC, any trimming, alignment, methylation extraction, and, if applicable, bisulfite conversion estimation, are parsed to extract key metrics into an R data frame. This data frame is produced as both a standalone <code>.rda</code> file, and included as part of the <code>colData</code> slots in each of the output <code>bsseq</code> objects.</li>
-<li><em>FormBsseqObjects</em>: <code>bsseq</code> R objects are formed, one for each canonical chromosome and all samples, from information provided in the “cytosine reports” generated in either the <code>MethylationExtraction</code> or <code>Coverage2Cytosine</code> process. These are typically considered intermediary files, as the next process merges the many <code>bsseq</code> objects from this step into just a pair of final outputs, but for very large experiments, the objects from this step may be more reasonable to work with (to reduce memory requirements).</li>
-<li><em>MergeBsseqObjects</em>: the final process in the pipeline, which combines all previous <code>bsseq</code> objects into just two objects- the first containing all cytosines in “CpG” context in the genome, and the other containing those in “CpH” context. The <code>colData</code> slot in each of these objects contain the metrics extracted in the <code>ParseReports</code> process, some of which might be useful covariates in potential downstream statistical analyses. See <a href="outputs.html#outputs">outputs</a> for more information.</li>
-</ul>
+<div id="resuming" class="section level2" number="10.2">
+<h2><span class="header-section-number">10.2</span> Resuming</h2>
+<p>An important feature of [INSERT PIPELINE NAME HERE] (because it is based on nextflow) is the ability to resume pipeline execution if an error occurs for any reason. To resume, you must add the <code>-resume</code> flag to your “main” script, determined <a href="quick-start.html#your-main-script">here</a>, and rerun. Otherwise, the default is to restart the entire pipeline, regardless of how much progress was made!</p>
+</div>
+<div id="docker-help" class="section level2" number="10.3">
+<h2><span class="header-section-number">10.3</span> Docker help</h2>
+<p>For those who wish to use <a href="https://www.docker.com/">docker</a> to manage [INSERT PIPELINE NAME HERE] software dependencies, we provide a brief set-up guide.</p>
+<ol style="list-style-type: decimal">
+<li><strong>Install docker</strong></li>
+</ol>
+<p>A set of instructions for different operating systems are available on the <a href="https://docs.docker.com/installation/">Docker site</a>.</p>
+<ol start="2" style="list-style-type: decimal">
+<li><strong>Create a docker group</strong></li>
+</ol>
+<div class="sourceCode" id="cb26"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb26-1"><a href="help.html#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> addgroup docker</span></code></pre></div>
+<ol start="3" style="list-style-type: decimal">
+<li><strong>Add user to docker group</strong></li>
+</ol>
+<div class="sourceCode" id="cb27"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb27-1"><a href="help.html#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> usermod <span class="at">-aG</span> docker <span class="op">&lt;</span>your_user<span class="op">&gt;</span></span></code></pre></div>
+<ol start="4" style="list-style-type: decimal">
+<li><strong>Checking installation</strong></li>
+</ol>
+<p>Log out and log back in to ensure your user is running with the correct permissions.</p>
+<p><a href="https://docs.docker.com/get-started/#test-docker-installation">Test Docker installation</a> by running:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb28-1"><a href="help.html#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run hello-world</span></code></pre></div>
 
 </div>
 </div>
@@ -313,8 +325,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           </div>
         </div>
       </div>
-<a href="command-opts.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="annotation.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="software.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

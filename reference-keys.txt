@@ -60,3 +60,7 @@ miscellaneous-settings
 software
 software-versions
 docker-images
+help
+common-errors
+resuming
+docker-help
