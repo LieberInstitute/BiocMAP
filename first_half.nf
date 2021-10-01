@@ -670,6 +670,7 @@ process AlignReads {
         file gap_ref_files
         file nongap_ref_files
         file encoded_ref_files
+        file query_gpu_script from file("${workflow.projectDir}/scripts/query_gpu.R")
         
     output:
         file "${prefix}.[dru].sam" optional true
@@ -708,7 +709,14 @@ process AlignReads {
             mv $filename encoded_reads/$(echo $filename | sed 's/%/$/')
         done
 
+        #  Modify the alignment config with the current working directory and
+        #  appropriate GPU mask (after checking availability now)
         sed -i "s|\\[future_work_dir\\]|$PWD|" !{prefix}_align_reads.cfg
+        Rscript !{query_gpu_script} \
+            -u !{params.gpu_perc_usage_cutoff} \
+            -m !{params.max_gpus}
+            
+        export CUDA_VISIBLE_DEVICES=$(paste -sd "," open_gpus.txt)
         
         #  Run alignment
         !{exec_name} !{prefix}_align_reads.cfg
