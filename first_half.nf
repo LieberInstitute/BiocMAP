@@ -668,7 +668,6 @@ process AlignReads {
         file gap_ref_files
         file nongap_ref_files
         file encoded_ref_files
-        file query_gpu_script from file("${workflow.projectDir}/scripts/query_gpu.R")
         
     output:
         file "${prefix}.[dru].sam" optional true
@@ -710,11 +709,15 @@ process AlignReads {
         #  Modify the alignment config with the current working directory and
         #  appropriate GPU mask (after checking availability now)
         sed -i "s|\\[future_work_dir\\]|$PWD|" !{prefix}_align_reads.cfg
-        Rscript !{query_gpu_script} \
-            -u !{params.gpu_perc_usage_cutoff} \
-            -m !{params.max_gpus}
-            
-        export CUDA_VISIBLE_DEVICES=$(paste -sd "," open_gpus.txt)
+        
+        avail_gpus=$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader | cut -d " " -f 1 | awk '$1 < !{params.gpu_perc_usage_cutoff} {print NR - 1}')
+
+        if [[ -z $avail_gpus ]]; then
+            echo "No GPUs are available."
+            exit
+        fi
+        
+        export CUDA_VISIBLE_DEVICES=$(echo "$avail_gpus" | paste -sd ",")
         
         #  Run alignment
         !{exec_name} !{prefix}_align_reads.cfg
