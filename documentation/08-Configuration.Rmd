@@ -71,6 +71,7 @@ A number of variables in your [config file](#your-config-file) exist to control 
 
 Below, we document how the names of settings accepted by [INSERT PIPELINE NAME HERE] correspond to variables in Arioc configuration. For documentation on those Arioc configuration variables, see [here](https://raw.githubusercontent.com/RWilton/Arioc/master/Arioc.guide.pdf).
 
+* *arioc_queue*: when running [INSERT PIPELINE NAME HERE] on an SGE/SLURM-based cluster, it is assumed GPU resources are available via a "queue" on the cluster. This variable must be set by the user to the queue name, in order to properly run [INSERT PIPELINE NAME HERE].
 * *batch_size*: this is passed to the "batchSize" attribute of the "AriocU" or "AriocP" element of the config for `AriocU` or `AriocP`.
 * *gapped_seed*: this is passed to the "seed" attribute of the "gapped" element of the config for `AriocU` or `AriocP`.
 * *nongapped_seed*: this is passed to the "seed" attribute of the "nongapped" of the config for `AriocU` or `AriocP`.
@@ -78,6 +79,8 @@ Below, we document how the names of settings accepted by [INSERT PIPELINE NAME H
 * *nongapped_args*: these arguments in string form are passed literally to the "nongapped" element of the config for `AriocU` or `AriocP`.
 * *x_args*: these arguments in string form are passed literally to the "AriocU" or "AriocP" element of the config for `AriocU` or `AriocP`.
 * *gpu_mask*: this is passed to the "gpuMask" attribute of the "AriocU" or "AriocP" element of the config for `AriocU` or `AriocP`.
+* *max_gpus*: an integer, specifying how many GPUs to use, per sample, during alignment. Generally, it is recommended to keep this value at `1` unless there are more GPUs available than samples in your dataset.
+* *gpu_perc_usage_cutoff*: a percentage, specified as an integer, of GPU utilization (as measured by `nvidia-smi`) below which a GPU is considered "unoccupied" and thus available to use during alignment with Arioc.
 
 ### Miscellaneous settings
 
