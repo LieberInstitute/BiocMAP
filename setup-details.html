@@ -266,12 +266,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1><span class="header-section-number">2</span> Setup Details</h1>
 <div id="requirements" class="section level2" number="2.1">
 <h2><span class="header-section-number">2.1</span> Requirements</h2>
-<p>[INSERT PIPELINE NAME HERE] is designed for execution on Linux, and requires that the following be installed:</p>
+<p>[INSERT PIPELINE NAME HERE] is designed for execution on Linux, and requires the following:</p>
 <ul>
 <li>Java 8 or later</li>
+<li>Access to NVIDIA GPU(s), locally or via a computing cluster, with recent stable NVIDIA video drivers and CUDA runtime</li>
+<li>(optional) docker or <a href="https://www.anaconda.com/products/individual">Anaconda</a>/ <a href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a></li>
+</ul>
+<p>If installing the pipeline locally (see <a href="setup-details.html#installation">installation</a>), the following are also required:</p>
+<ul>
 <li>Python 3 (tested with 3.7.3), with pip</li>
 <li>R (tested with R 3.6-4.1)</li>
-<li>(optional) docker or <a href="https://www.anaconda.com/products/individual">Anaconda</a>/ <a href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a></li>
 </ul>
 <p>Additionally, installation makes use of GNU make and requires a C compiler, such as GCC. Both of these tools come by default with most Linux distributions.</p>
 </div>
