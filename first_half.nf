@@ -583,9 +583,6 @@ process WriteAriocConfigs {
         
         //  Form strings containing lines to write in the Arioc configs, that
         //  are dependent on parameters from the first-half config
-        arioc_opts = '<' + exec_name + ' gpuMask="' + params.gpu_mask + \
-                     '" batchSize="' + params.batch_size + \
-                     '" verboseMask="0xE0000007">'
         nongapped_opts = '  <nongapped seed="' + params.nongapped_seed + \
                          '" ' + params.nongapped_args + '/>'
         gapped_opts = '  <gapped seed="' + params.gapped_seed + '" ' + \
@@ -600,7 +597,8 @@ process WriteAriocConfigs {
             -p !{params.sample} \
             -a !{params.all_alignments} \
             -f !{fq_prefix} \
-            -o \'!{arioc_opts}\' \
+            -b !{params.batch_size} \
+            -m !{params.max_gpus} \
             -g \'!{gapped_opts}\' \
             -n \'!{nongapped_opts}\' \
             -x \'!{x_opts}\' \

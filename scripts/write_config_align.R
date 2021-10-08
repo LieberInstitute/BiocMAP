@@ -1,14 +1,19 @@
 library('getopt')
 
-spec <- matrix(c('paired', 'p', 1, 'character', '"single" or "paired"',
-                 'prefix', 'f', 1, 'character', 'prefix to uniquely identify sample',
-                 'allAlign', 'a', 1, 'logical', 'whether to output nonconcordant alignments',
-                 'arioc_opts', 'o', 1, 'character', 'main alignment options',
-                 'gapped_opts', 'g', 1, 'character', 'gapped seed options',
-                 'nongapped_opts', 'n', 1, 'character', 'nongapped seed options',
-                 'x_opts', 'x', 1, 'character', 'opts to pass to <X>',
-                 'q_opts', 'q', 1, 'character', 'file-related options'),
-               byrow=TRUE, ncol=5)
+spec <- matrix(
+    c(
+        'paired', 'p', 1, 'character', '"single" or "paired"',
+        'prefix', 'f', 1, 'character', 'prefix to uniquely identify sample',
+        'allAlign', 'a', 1, 'logical', 'whether to output nonconcordant alignments',
+        'gapped_opts', 'g', 1, 'character', 'gapped seed options',
+        'nongapped_opts', 'n', 1, 'character', 'nongapped seed options',
+        'x_opts', 'x', 1, 'character', 'opts to pass to <X>',
+        'q_opts', 'q', 1, 'character', 'file-related options',
+        'max_gpus', 'm', 1, 'integer', 'number of GPUs to use per sample',
+        'batch_size', 'b', 1, 'character', '"batchSize" argument to Arioc'
+    ),
+    byrow=TRUE, ncol=5
+)
 opt <- getopt(spec)
 
 print("Writing configs for AriocP/AriocU...")
@@ -47,12 +52,21 @@ if (opt$allAlign) {
 #    Gather lines into a vector for writing
 #############################################################
 
+#  The AlignReads process sets CUDA_VISIBLE_DEVICES such that as far as Arioc
+#  knows, it has access to the "first" [opt$max_gpus] GPUs. Here we set
+#  'gpuMask' according to that knowledge.
+hex_ending = as.hexmode(sum(2 ** c(0:(opt$max_gpus - 1))))
+gpu_mask = paste0(substr('0x00000000', 1, 10 - nchar(hex_ending)), hex_ending)
+
 #  Lines related to alignment settings: here the literal '[future_work_dir]' is
 #  written and will be replaced with the working directory used in the
 #  AlignReads process
 config_lines = c(
     '<?xml version="1.0" encoding="utf-8"?>',
-    opt$arioc_opts,
+    paste0(
+        '<', exec_name, ' gpuMask="', gpu_mask, '" batchSize="',
+        opt$batch_size, '" verboseMask="0xE0000007">'
+    ),
     '  <R>[future_work_dir]</R>',
     '',
     opt$nongapped_opts,
