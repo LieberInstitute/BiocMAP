@@ -7,6 +7,7 @@ A brief guide to setting up [INSERT PIPELINE NAME HERE]. A more detailed and tho
 1. Clone the [INSERT PIPELINE NAME HERE] repository with `git clone git@github.com:LieberInstitute/[INSERT PIPELINE NAME HERE].git`
 2. Change directory into the repository with `cd [INSERT PIPELINE NAME HERE]`
 3. Run the command `bash install_software.sh [option]` to set up test files and software dependencies, where `[option]` must be replaced by `docker`, `conda`, `local`, or `jhpce`. These respectively (and in descending order of our recommendation) correspond to using docker to manage software dependencies, using conda, installing all software locally, or preparing [INSERT PIPELINE NAME HERE] for execution at the [JHPCE](https://jhpce.jhu.edu/) cluster.
+4. If using [INSERT PIPELINE NAME HERE] on a cluster, set the `arioc_queue` [Arioc setting](#arioc-settings) in [your config file](#your-config-file) for the first module.
 
 **Note:** JHPCE users must also make an edit to their `~/.bashrc` files, described [here](#installation).
 
