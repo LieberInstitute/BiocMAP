@@ -2,7 +2,7 @@ library('jaffelab')
 library('getopt')
 
 spec = matrix(
-    c("repo_dir", "d", 1, "character", "path to SPEAQeasy repo"),
+    c("repo_dir", "d", 1, "character", "path to this repo"),
     byrow = TRUE,
     ncol = 5
 )

@@ -2,12 +2,16 @@
 
 ## Requirements
 
-[INSERT PIPELINE NAME HERE] is designed for execution on Linux, and requires that the following be installed:
+[INSERT PIPELINE NAME HERE] is designed for execution on Linux, and requires the following:
 
 - Java 8 or later
+- Access to NVIDIA GPU(s), locally or via a computing cluster, with recent stable NVIDIA video drivers and CUDA runtime
+- (optional) docker or [Anaconda](https://www.anaconda.com/products/individual)/ [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
+
+If installing the pipeline locally (see [installation](#installation)), the following are also required:
+
 - Python 3 (tested with 3.7.3), with pip
 - R (tested with R 3.6-4.1)
-- (optional) docker or [Anaconda](https://www.anaconda.com/products/individual)/ [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
 
 Additionally, installation makes use of GNU make and requires a C compiler, such as GCC. Both of these tools come by default with most Linux distributions.
 
