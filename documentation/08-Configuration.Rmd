@@ -77,7 +77,7 @@ Below, we document how the names of settings accepted by [INSERT PIPELINE NAME H
 * *nongapped_seed*: this is passed to the "seed" attribute of the "nongapped" of the config for `AriocU` or `AriocP`.
 * *gapped_args*: these arguments in string form are passed literally to the "gapped" element of the config for `AriocU` or `AriocP`.
 * *nongapped_args*: these arguments in string form are passed literally to the "nongapped" element of the config for `AriocU` or `AriocP`.
-* *x_args*: these arguments in string form are passed literally to the "AriocU" or "AriocP" element of the config for `AriocU` or `AriocP`.
+* *x_args*: these arguments in string form are passed literally to the "X" element of the config for `AriocU` or `AriocP`.
 * *gpu_mask*: this is passed to the "gpuMask" attribute of the "AriocU" or "AriocP" element of the config for `AriocU` or `AriocP`.
 * *max_gpus*: an integer, specifying how many GPUs to use, per sample, during alignment. Generally, it is recommended to keep this value at `1` unless there are more GPUs available than samples in your dataset.
 * *gpu_perc_usage_cutoff*: a percentage, specified as an integer, of GPU utilization (as measured by `nvidia-smi`) below which a GPU is considered "unoccupied" and thus available to use during alignment with Arioc.
