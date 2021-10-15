@@ -4,7 +4,7 @@ bioc_packages = c('bsseq', 'GenomicRanges', 'HDF5Array', 'BiocParallel')
 #  Ordinary R packages
 for (p in ordinary_packages) {
     if (!requireNamespace(p, quietly=TRUE)) {
-        install.packages(p)
+        install.packages(p, repos='http://cran.us.r-project.org')
     }
 }
 
