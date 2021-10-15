@@ -96,10 +96,22 @@ elif [ "$1" == "jhpce" ]; then
     echo "Done."
     
 elif [ "$1" == "conda" ]; then
+    
+    BASE_DIR=$(pwd)
+    mkdir -p $BASE_DIR/Software/bin
+    cd $BASE_DIR/Software/bin
+    
+    #  Install nextflow (latest)
+    echo "Installing nextflow..."
+    wget -qO- https://get.nextflow.io | bash
+    
+    cd $BASE_DIR
 
     echo "Creating a conda environment containing required software..."
+    source $(conda info --base)/etc/profile.d/conda.sh
     conda env create -f conda/environment.yml -p $PWD/conda/pipeline_env
     conda activate $PWD/conda/pipeline_env
+    
     Rscript scripts/install_R_packages.R
     
     echo "Setting up test files..."
