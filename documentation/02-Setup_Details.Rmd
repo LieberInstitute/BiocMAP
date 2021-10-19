@@ -6,14 +6,15 @@
 
 - Java 8 or later
 - Access to NVIDIA GPU(s), locally or via a computing cluster, with recent stable NVIDIA video drivers and CUDA runtime
-- (optional) docker or [Anaconda](https://www.anaconda.com/products/individual)/ [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
+- (recommended) docker or [Anaconda](https://www.anaconda.com/products/individual)/ [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
 
 If installing the pipeline locally (see [installation](#installation)), the following are also required:
 
 - Python 3 (tested with 3.7.3), with pip
 - R (tested with R 3.6-4.1)
+- GNU make
 
-Additionally, installation makes use of GNU make and requires a C compiler, such as GCC. Both of these tools come by default with most Linux distributions.
+Additionally, installation via the "local" or "conda" modes (see below) require a C compiler, such as GCC. An up-to-date version of `gcc` is often required to ensure R packages get properly installed.
 
 ## Installation
 
