@@ -270,14 +270,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li>Java 8 or later</li>
 <li>Access to NVIDIA GPU(s), locally or via a computing cluster, with recent stable NVIDIA video drivers and CUDA runtime</li>
-<li>(optional) docker or <a href="https://www.anaconda.com/products/individual">Anaconda</a>/ <a href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a></li>
+<li>(recommended) docker or <a href="https://www.anaconda.com/products/individual">Anaconda</a>/ <a href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a></li>
 </ul>
 <p>If installing the pipeline locally (see <a href="setup-details.html#installation">installation</a>), the following are also required:</p>
 <ul>
 <li>Python 3 (tested with 3.7.3), with pip</li>
 <li>R (tested with R 3.6-4.1)</li>
+<li>GNU make</li>
 </ul>
-<p>Additionally, installation makes use of GNU make and requires a C compiler, such as GCC. Both of these tools come by default with most Linux distributions.</p>
+<p>Additionally, installation via the “local” or “conda” modes (see below) require a C compiler, such as GCC. An up-to-date version of <code>gcc</code> is often required to ensure R packages get properly installed.</p>
 </div>
 <div id="installation" class="section level2" number="2.2">
 <h2><span class="header-section-number">2.2</span> Installation</h2>
