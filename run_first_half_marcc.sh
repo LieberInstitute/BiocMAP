@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH -t 1:00:00
-#SBATCH --mem=20G
-#SBATCH --ntasks-per-node=6
+#SBATCH -t 15:00
+#SBATCH --mem=10G
+#SBATCH --cpus-per-task 3
 #SBATCH -N 1
 #SBATCH --output=run_first_half_marcc.log
 
@@ -10,7 +10,7 @@
 ORIG_DIR=$PWD
 
 module load java
-export _JAVA_OPTIONS="-Xms8g -Xmx10g"
+export _JAVA_OPTIONS="-Xms3g -Xmx4g"
 
 $ORIG_DIR/Software/bin/nextflow $ORIG_DIR/first_half.nf \
     --annotation "$ORIG_DIR/ref" \
