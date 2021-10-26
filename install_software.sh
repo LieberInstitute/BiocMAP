@@ -114,6 +114,23 @@ elif [ "$1" == "conda" ]; then
     
     Rscript scripts/install_R_packages.R
     
+    echo "Installing Arioc, which isn't available as a conda package..."
+    cd $BASE_DIR/Software/
+    mkdir arioc
+    cd arioc
+        
+    wget https://github.com/RWilton/Arioc/releases/download/v1.43/Arioc.x.143.zip
+    unzip Arioc.x.143.zip
+    
+    cd src
+    make clean
+    make AriocE
+    make AriocU
+    make AriocP
+    
+    cd $BASE_DIR
+    cp Software/arioc/bin/* conda/pipeline_env/bin/
+    
     echo "Setting up test files..."
     Rscript scripts/prepare_test_files.R -d $(pwd)
     conda deactivate
