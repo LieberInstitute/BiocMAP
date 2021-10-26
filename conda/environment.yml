@@ -8,7 +8,9 @@ dependencies:
     - r-essentials
     - r-base
     - bioconductor-biocinstaller
-    - cudatoolkit
+    - c-compiler
+    - cudatoolkit-dev
+    - cxx-compiler
     - bismark=0.23.0
     - fastqc=0.11.8
     - kallisto=0.46.1
