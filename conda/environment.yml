@@ -1,9 +1,7 @@
 name: pipeline_env
 channels:
     - conda-forge
-    - anaconda
     - bioconda
-    - defaults
 dependencies:
     - r-essentials
     - r-base
