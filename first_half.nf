@@ -714,7 +714,7 @@ process AlignReads {
 
         if [[ -z $avail_gpus ]]; then
             echo "No GPUs are available."
-            exit
+            exit 1
         fi
         
         export CUDA_VISIBLE_DEVICES=$(echo "$avail_gpus" | paste -sd ",")
