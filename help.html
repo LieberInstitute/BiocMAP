@@ -268,8 +268,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2><span class="header-section-number">10.1</span> Common Errors</h2>
 <p>[INSERT PIPELINE NAME HERE] should be configured so that fundamental issues related to pipeline function do not arise. If you encounter an error and believe it to be a design flaw in [INSERT PIPELINE NAME HERE], you can always <a href="https://github.com/LieberInstitute/%5BINSERT%20PIPELINE%20NAME%20HERE%5D/issues">submit a github issue</a>. However, please take a look at the following common issues:</p>
 <ul>
-<li><em>A job/ process is not given enough memory or time</em>: pipeline runs on large samples or datasets may require more memory or a higher time limit. When reported correctly, the pipeline will indicate an error status of 140 (for SGE or SLURM environments); however, memory issues can take many forms, and related error messages are not always clear. In this example case, the process FilterAlignments failed due to insufficient memory, but indicated a general error status (1):</li>
-</ul>
+<li><p><strong>A job/ process is not given enough memory or time</strong>: pipeline runs on large samples or datasets may require more memory or a higher time limit. When reported correctly, the pipeline will indicate an error status of 140 (for SGE or SLURM environments); however, memory issues can take many forms, and related error messages are not always clear. In this example case, the process FilterAlignments failed due to insufficient memory, but indicated a general error status (1):</p>
 <div class="figure">
 <img src="images/memory_error.png" alt="" />
 <p class="caption">How Nextflow may report memory-related errors</p>
@@ -281,10 +280,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb24-4"><a href="help.html#cb24-4" aria-hidden="true" tabindex="-1"></a>    memory <span class="op">=</span> <span class="fl">16.G</span>B</span>
 <span id="cb24-5"><a href="help.html#cb24-5" aria-hidden="true" tabindex="-1"></a>    clusterOptions <span class="op">=</span> <span class="st">&#39;-l h_fsize=800G&#39;</span></span>
 <span id="cb24-6"><a href="help.html#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>Note that disk space may also be the limitation. See the <a href="configuration.html#configuration">configuration</a> section for more info.</p>
-<ul>
-<li><em>The pipeline keeps halting during alignment</em>: In particular, the output log shows the error message <code>"No GPUs are available."</code>. This can have a few causes– if you are running the pipeline on an SGE/SLURM-based cluster, [INSERT PIPELINE NAME HERE] assumes that when GPUs are fully occupied, pending jobs will be held in queue, and will not be run until those resources become available. When this assumption is not met, some potential workarounds (which also apply to local runs/ without a cluster) are:</li>
-</ul>
+<p>Note that disk space may also be the limitation. See the <a href="configuration.html#configuration">configuration</a> section for more info.</p></li>
+<li><p><strong>The pipeline keeps halting during alignment</strong>: In particular, the output log shows the error message <code>"No GPUs are available."</code>. This can have a few causes– if you are running the pipeline on an SGE/SLURM-based cluster, [INSERT PIPELINE NAME HERE] assumes that when GPUs are fully occupied, pending jobs will be held in queue, and will not be run until those resources become available. When this assumption is not met, some potential workarounds (which also apply to local runs/ without a cluster) are:</p>
 <ol style="list-style-type: decimal">
 <li>Set the <code>max_gpus</code> variable in <a href="quick-start.html#your-config-file">your config file</a> for the first module to <code>1</code>, if you’ve raised it above this default value.</li>
 <li>Increase the number of CPUs required for the <code>AlignReads</code> process in <a href="quick-start.html#your-config-file">your config file</a> (see <a href="configuration.html#specifying-options-for-your-cluster">“Specifying Options for your Cluster”</a>. In particular, make sure the ratio of total CPUs available to this value exceeds the number of GPUs available. For example, if you are running the pipeline locally, have 2 GPUs and 8 CPU cores, set <code>cpus = 4</code> in the <code>AlignReads</code> process.</li>
@@ -295,16 +292,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb25-3"><a href="help.html#cb25-3" aria-hidden="true" tabindex="-1"></a>    queueSize <span class="op">=</span> <span class="dv">8</span>  <span class="co">// By default, this is set to 40</span></span>
 <span id="cb25-4"><a href="help.html#cb25-4" aria-hidden="true" tabindex="-1"></a>    submitRateLimit <span class="op">=</span> <span class="st">&#39;1 sec&#39;</span></span>
 <span id="cb25-5"><a href="help.html#cb25-5" aria-hidden="true" tabindex="-1"></a>    exitReadTimeout <span class="op">=</span> <span class="st">&#39;40 min&#39;</span></span>
-<span id="cb25-6"><a href="help.html#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<ul>
-<li><em>Nextflow has trouble communicating with your cluster</em>: a less common issue can occur on slower clusters, related to nextflow failing to poll your grid scheduler (like SGE or SLURM) for information it needs about the jobs that are running. This can show up in an error message like: <code>Process</code>FilterAlignments (Prefix: Sample_FE2P1_blood)<code>terminated for an unknown reason -- Likely it has been terminated by the external system</code>. We have found that raising the <code>exitReadTimeout</code> to a large value (such as 40 minutes) solves this issue, but consider raising it further if needed.</li>
-</ul>
+<span id="cb25-6"><a href="help.html#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div></li>
+<li><p><strong>Nextflow has trouble communicating with your cluster</strong>: a less common issue can occur on slower clusters, related to nextflow failing to poll your grid scheduler (like SGE or SLURM) for information it needs about the jobs that are running. This can show up in an error message like: <code>Process</code>FilterAlignments (Prefix: Sample_FE2P1_blood)<code>terminated for an unknown reason -- Likely it has been terminated by the external system</code>. We have found that raising the <code>exitReadTimeout</code> to a large value (such as 40 minutes) solves this issue, but consider raising it further if needed.</p>
 <div class="sourceCode" id="cb26"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb26-1"><a href="help.html#cb26-1" aria-hidden="true" tabindex="-1"></a>executor <span class="op">{</span></span>
 <span id="cb26-2"><a href="help.html#cb26-2" aria-hidden="true" tabindex="-1"></a>    name <span class="op">=</span> <span class="st">&#39;sge&#39;</span></span>
 <span id="cb26-3"><a href="help.html#cb26-3" aria-hidden="true" tabindex="-1"></a>    queueSize <span class="op">=</span> <span class="dv">40</span></span>
 <span id="cb26-4"><a href="help.html#cb26-4" aria-hidden="true" tabindex="-1"></a>    submitRateLimit <span class="op">=</span> <span class="st">&#39;1 sec&#39;</span></span>
 <span id="cb26-5"><a href="help.html#cb26-5" aria-hidden="true" tabindex="-1"></a>    exitReadTimeout <span class="op">=</span> <span class="st">&#39;40 min&#39;</span></span>
-<span id="cb26-6"><a href="help.html#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<span id="cb26-6"><a href="help.html#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div></li>
+</ul>
 </div>
 <div id="resuming" class="section level2" number="10.2">
 <h2><span class="header-section-number">10.2</span> Resuming</h2>
