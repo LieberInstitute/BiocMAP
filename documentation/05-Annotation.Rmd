@@ -2,9 +2,9 @@
 
 [INSERT PIPELINE NAME HERE] can be run with `hg38`, `hg19`, or `mm10` references. The pipeline has a default and automated process for pulling and building annotation-related files, but the user can opt to provide their own annotation as an alternative. Both of these options are documented below. Example annotation files below are the ones used with default [configuration](#configuration) when `hg38` reference is selected.
 
-* *A genome assembly fasta*: the reference genome to align reads to, like the file [here](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/GRCh38.primary_assembly.genome.fa.gz) (but unzipped).
-* *Gene annotation gtf*: containing transcript data, like the file [here](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.annotation.gtf.gz) (but unzipped).
-* *The lambda transcriptome*: for experiments utilizing spike-ins of the lambda bacteriophage genome, the transcriptome provided [here](ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/840/245/GCA_000840245.1_ViralProj14204/GCA_000840245.1_ViralProj14204_genomic.fna.gz) is used (but unzipped).
+- **A genome assembly fasta**: the reference genome to align reads to, like the file [here](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/GRCh38.primary_assembly.genome.fa.gz) (but unzipped).
+- **Gene annotation gtf**: containing transcript data, like the file [here](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.annotation.gtf.gz) (but unzipped).
+- **The lambda transcriptome**: for experiments utilizing spike-ins of the lambda bacteriophage genome, the transcriptome provided [here](ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/840/245/GCA_000840245.1_ViralProj14204/GCA_000840245.1_ViralProj14204_genomic.fna.gz) is used (but unzipped).
 
 ## Default Annotation
 

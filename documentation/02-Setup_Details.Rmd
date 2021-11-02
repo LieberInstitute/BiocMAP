@@ -48,7 +48,8 @@ Some users may encounter errors during the installation process, particularly wh
 
 [INSERT PIPELINE NAME HERE] has been tested on:
 
-{TODO]
+- CentOS 7 (Linux)
+- Ubuntu 18.04 (Linux)
 
 #### Required utilities are missing
 
