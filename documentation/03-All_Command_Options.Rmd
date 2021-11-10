@@ -1,8 +1,8 @@
 # All Command Options {#command-opts}
 
-## [INSERT PIPELINE NAME HERE] Options
+## BiocMAP Options
 
-Each of the below parameters, unless otherwise noted, applies to both the first and second module provided in [INSERT PIPELINE NAME HERE].
+Each of the below parameters, unless otherwise noted, applies to both the first and second module provided in BiocMAP.
 
 ### Mandatory Parameters
 
