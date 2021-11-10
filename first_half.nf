@@ -710,14 +710,16 @@ process AlignReads {
         #  appropriate GPU mask (after checking availability now)
         sed -i "s|\\[future_work_dir\\]|$PWD|" !{prefix}_align_reads.cfg
         
-        avail_gpus=$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader | cut -d " " -f 1 | awk '$1 < !{params.gpu_perc_usage_cutoff} {print NR - 1}')
-
-        if [[ -z $avail_gpus ]]; then
-            echo "No GPUs are available."
-            exit 1
+        if [[ !{params.manually_set_gpu} == true ]]; then
+            avail_gpus=$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader | cut -d " " -f 1 | awk '$1 < !{params.gpu_perc_usage_cutoff} {print NR - 1}')
+    
+            if [[ -z $avail_gpus ]]; then
+                echo "No GPUs are available."
+                exit 1
+            fi
+            
+            export CUDA_VISIBLE_DEVICES=$(echo "$avail_gpus" | paste -sd ",")
         fi
-        
-        export CUDA_VISIBLE_DEVICES=$(echo "$avail_gpus" | paste -sd ",")
         
         #  Run alignment
         !{exec_name} !{prefix}_align_reads.cfg

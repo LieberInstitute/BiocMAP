@@ -80,7 +80,8 @@ Below, we document how the names of settings accepted by BiocMAP correspond to v
 * *x_args*: these arguments in string form are passed literally to the "X" element of the config for `AriocU` or `AriocP`.
 * *gpu_mask*: this is passed to the "gpuMask" attribute of the "AriocU" or "AriocP" element of the config for `AriocU` or `AriocP`.
 * *max_gpus*: an integer, specifying how many GPUs to use, per sample, during alignment. Generally, it is recommended to keep this value at `1` unless there are more GPUs available than samples in your dataset.
-* *gpu_perc_usage_cutoff*: a percentage, specified as an integer, of GPU utilization (as measured by `nvidia-smi`) below which a GPU is considered "unoccupied" and thus available to use during alignment with Arioc.
+* *manually_set_gpu*: (`true` or `false`) a boolean specifying whether to have BiocMAP search for an available GPU and set `CUDA_VISIBLE_DEVICES` "manually" when performing alignment. Generally, this should be set to `false` on computing clusters managed by a job scheduler like SLURM or SGE, since typically a proper job scheduler handles these details on behalf of the user. By contrast, on a local machine (where typically there is no job scheduler), this variable should be set to `true` to ensure two samples don't get aligned simultaneously on the same GPU (which often results in crashing due to insufficient memory).
+* *gpu_perc_usage_cutoff*: a percentage, specified as an integer, of GPU utilization (as measured by `nvidia-smi`) below which a GPU is considered "unoccupied" and thus available to use during alignment with Arioc. This setting only applies if `manually_set_gpu` is `true`.
 
 ### Miscellaneous settings
 
