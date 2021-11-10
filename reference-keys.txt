@@ -17,7 +17,7 @@ example-main-script
 sharing
 customizing-execution-for-each-user
 command-opts
-insert-pipeline-name-here-options
+biocmap-options
 mandatory-parameters
 optional-parameters
 next-opts
@@ -53,7 +53,7 @@ time
 default-for-all-processes
 specify-per-process
 cluster-specific-options
-insert-pipeline-name-here-settings
+biocmap-settings
 annotation-settings
 arioc-settings
 miscellaneous-settings
