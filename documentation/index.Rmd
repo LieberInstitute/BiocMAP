@@ -1,5 +1,5 @@
 ---
-title: "[INSERT PIPELINE NAME HERE]"
+title: "BiocMAP"
 author:
   - name: Nicholas J. Eagles
     affiliation:
@@ -18,16 +18,16 @@ output:
 
 # Overview {-}
 
-[INSERT PIPELINE NAME HERE] is a pair of [Nextflow](https://www.nextflow.io/)-based pipelines for processing raw whole genome bisulfite sequencing data into [Bioconductor](https://bioconductor.org/)-friendly [bsseq](https://www.bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq.html) objects in R.
+BiocMAP is a pair of [Nextflow](https://www.nextflow.io/)-based pipelines for processing raw whole genome bisulfite sequencing data into [Bioconductor](https://bioconductor.org/)-friendly [bsseq](https://www.bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq.html) objects in R.
 
 We provide tips for achieving significant increases in throughput and customization [LINK TO MANUSCRIPT WHEN IT'S OUT], by implementing the earlier processing steps manually in place of the "first module" we provide in this repository. We recommend this manual approach to advanced users who handle large WGBS datasets or are particularly interested in performance. Otherwise, one can run the first module and second module in series for a complete WGBS processing workflow.
 
 ![](images/workflow.png)
-*Diagram representing the "conceptual" workflow traversed by [INSERT PIPELINE NAME HERE]. Here some nextflow [`processes`](https://www.nextflow.io/docs/latest/process.html) are grouped together for simplicity; the exact processes traversed are enumerated [here](#pipeline-overview). The red box indicates the FASTQ files are inputs to the pipeline; green coloring denotes major output files from the pipeline; the remaining boxes represent computational steps. Yellow-colored steps are optional or not always performed; for example, lambda pseudoalignment is an optional step intended for experiments with spike-ins of the lambda bacteriophage. Finally, blue-colored steps are ordinary processes which occur on every pipeline execution.*
+*Diagram representing the "conceptual" workflow traversed by BiocMAP. Here some nextflow [`processes`](https://www.nextflow.io/docs/latest/process.html) are grouped together for simplicity; the exact processes traversed are enumerated [here](#pipeline-overview). The red box indicates the FASTQ files are inputs to the pipeline; green coloring denotes major output files from the pipeline; the remaining boxes represent computational steps. Yellow-colored steps are optional or not always performed; for example, lambda pseudoalignment is an optional step intended for experiments with spike-ins of the lambda bacteriophage. Finally, blue-colored steps are ordinary processes which occur on every pipeline execution.*
 
-## Cite `[INSERT PIPELINE NAME HERE]` {-}
+## Cite `BiocMAP` {-}
 
-We hope that [`[INSERT PIPELINE NAME HERE]`]([DOCUMENTATION SITE]) will be useful for your research. Please use the following information to cite the workflow provided by this software. Thank you!
+We hope that [`BiocMAP`]([DOCUMENTATION SITE]) will be useful for your research. Please use the following information to cite the workflow provided by this software. Thank you!
 
 [TODO]
 
@@ -41,7 +41,7 @@ This is a project by the [R/Bioconductor-powered Team Data Science](https://lcol
 
 ## R session information {-}
 
-Details on the R version used for making this book. The source code is available at [`LieberInstitute/[INSERT PIPELINE NAME HERE]`](https://github.com/LieberInstitute/[INSERT PIPELINE NAME HERE]).
+Details on the R version used for making this book. The source code is available at [`LieberInstitute/BiocMAP`](https://github.com/LieberInstitute/BiocMAP).
 
 ```{r session_info_chunk, eval = FALSE}
 ## Load the package at the top of your script

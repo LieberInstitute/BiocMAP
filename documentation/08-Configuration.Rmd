@@ -1,10 +1,10 @@
 # Configuration {#configuration}
 
-[INSERT PIPELINE NAME HERE] is designed to be highly customizable, yet need no configuration from a user wishing to rely on sensible default settings. Most configuration, including software settings, hardware resources such as memory and CPU use, and more, can be done in a single file determined [here](#your-config-file). Please note that the common, "major" [options](#command-opts) are specified in your [main script](#your-main-script), and not in the configuration file. The config is intended to hold the "finer details", which are documented below.
+BiocMAP is designed to be highly customizable, yet need no configuration from a user wishing to rely on sensible default settings. Most configuration, including software settings, hardware resources such as memory and CPU use, and more, can be done in a single file determined [here](#your-config-file). Please note that the common, "major" [options](#command-opts) are specified in your [main script](#your-main-script), and not in the configuration file. The config is intended to hold the "finer details", which are documented below.
 
 ## Specifying Options for your Cluster
 
-In many cases, a user has access to a computing cluster which they intend to run [INSERT PIPELINE NAME HERE] on. If your cluster is SLURM or SGE-based, the pipeline is pre-configured with options you may be used to specifying (such as disk usage, time for a job to run, etc). However, these are straightforward to modify, should there be a need/desire. Common settings are described in detail below; however, a more comprehensive list of settings from nextflow can be found [here](https://www.nextflow.io/docs/latest/process.html#directives).
+In many cases, a user has access to a computing cluster which they intend to run BiocMAP on. If your cluster is SLURM or SGE-based, the pipeline is pre-configured with options you may be used to specifying (such as disk usage, time for a job to run, etc). However, these are straightforward to modify, should there be a need/desire. Common settings are described in detail below; however, a more comprehensive list of settings from nextflow can be found [here](https://www.nextflow.io/docs/latest/process.html#directives).
 
 ### Time
 
@@ -57,7 +57,7 @@ withName: FilterAlignments {
 
 As with the time option, this can be specified per-process or for all processes. Any option recognized by your cluster may be used.
 
-## [INSERT PIPELINE NAME HERE] settings
+## BiocMAP settings
 
 A number of variables in your [config file](#your-config-file) exist to control choices about annotation to use, options passed to software tools, and more. These need not necessarily be changed, but allow more precise control over the pipeline if desired. Values for these variables may be changed in the "params" section of your config (near the top). A full descriptive list is provided below.
 
@@ -69,9 +69,9 @@ A number of variables in your [config file](#your-config-file) exist to control 
 
 ### Arioc settings
 
-Below, we document how the names of settings accepted by [INSERT PIPELINE NAME HERE] correspond to variables in Arioc configuration. For documentation on those Arioc configuration variables, see [here](https://raw.githubusercontent.com/RWilton/Arioc/master/Arioc.guide.pdf).
+Below, we document how the names of settings accepted by BiocMAP correspond to variables in Arioc configuration. For documentation on those Arioc configuration variables, see [here](https://raw.githubusercontent.com/RWilton/Arioc/master/Arioc.guide.pdf).
 
-* *arioc_queue*: when running [INSERT PIPELINE NAME HERE] on an SGE/SLURM-based cluster, it is assumed GPU resources are available via a "queue" on the cluster. This variable must be set by the user to the queue name, in order to properly run [INSERT PIPELINE NAME HERE].
+* *arioc_queue*: when running BiocMAP on an SGE/SLURM-based cluster, it is assumed GPU resources are available via a "queue" on the cluster. This variable must be set by the user to the queue name, in order to properly run BiocMAP.
 * *batch_size*: this is passed to the "batchSize" attribute of the "AriocU" or "AriocP" element of the config for `AriocU` or `AriocP`.
 * *gapped_seed*: this is passed to the "seed" attribute of the "gapped" element of the config for `AriocU` or `AriocP`.
 * *nongapped_seed*: this is passed to the "seed" attribute of the "nongapped" of the config for `AriocU` or `AriocP`.

@@ -2,7 +2,7 @@
 
 ## Common Errors
 
-[INSERT PIPELINE NAME HERE] should be configured so that fundamental issues related to pipeline function do not arise. If you encounter an error and believe it to be a design flaw in [INSERT PIPELINE NAME HERE], you can always [submit a github issue](https://github.com/LieberInstitute/[INSERT PIPELINE NAME HERE]/issues). However, please take a look at the following common issues:
+BiocMAP should be configured so that fundamental issues related to pipeline function do not arise. If you encounter an error and believe it to be a design flaw in BiocMAP, you can always [submit a github issue](https://github.com/LieberInstitute/BiocMAP/issues). However, please take a look at the following common issues:
 
 - **A job/ process is not given enough memory or time**: pipeline runs on large samples or datasets may require more memory or a higher time limit. When reported correctly, the pipeline will indicate an error status of 140 (for SGE or SLURM environments); however, memory issues can take many forms, and related error messages are not always clear. In this example case, the process FilterAlignments failed due to insufficient memory, but indicated a general error status (1):
 
@@ -20,7 +20,7 @@
     ```
     Note that disk space may also be the limitation. See the [configuration](#configuration) section for more info.
 
-- **The pipeline keeps halting during alignment**: In particular, the output log shows the error message `"No GPUs are available."`. This can have a few causes-- if you are running the pipeline on an SGE/SLURM-based cluster, [INSERT PIPELINE NAME HERE] assumes that when GPUs are fully occupied, pending jobs will be held in queue, and will not be run until those resources become available. When this assumption is not met, some potential workarounds (which also apply to local runs/ without a cluster) are:
+- **The pipeline keeps halting during alignment**: In particular, the output log shows the error message `"No GPUs are available."`. This can have a few causes-- if you are running the pipeline on an SGE/SLURM-based cluster, BiocMAP assumes that when GPUs are fully occupied, pending jobs will be held in queue, and will not be run until those resources become available. When this assumption is not met, some potential workarounds (which also apply to local runs/ without a cluster) are:
 
     1. Set the `max_gpus` variable in [your config file](#your-config-file) for the first module to `1`, if you've raised it above this default value.
     2. Increase the number of CPUs required for the `AlignReads` process in [your config file](#your-config-file) (see ["Specifying Options for your Cluster"](#specifying-options-for-your-cluster). In particular, make sure the ratio of total CPUs available to this value exceeds the number of GPUs available. For example, if you are running the pipeline locally, have 2 GPUs and 8 CPU cores, set `cpus = 4` in the `AlignReads` process.
@@ -48,12 +48,12 @@
 
 ## Resuming {#resuming}
 
-An important feature of [INSERT PIPELINE NAME HERE] (because it is based on nextflow) is the ability to resume pipeline execution if an error occurs for any reason. To resume, you must add the `-resume` flag to your "main" script, determined [here](#your-main-script), and rerun. Otherwise, the default is to restart the entire pipeline, regardless of how much progress was made!
+An important feature of BiocMAP (because it is based on nextflow) is the ability to resume pipeline execution if an error occurs for any reason. To resume, you must add the `-resume` flag to your "main" script, determined [here](#your-main-script), and rerun. Otherwise, the default is to restart the entire pipeline, regardless of how much progress was made!
 
 
 ## Docker help
 
-For those who wish to use [docker](https://www.docker.com/) to manage [INSERT PIPELINE NAME HERE] software dependencies, we provide a brief set-up guide.
+For those who wish to use [docker](https://www.docker.com/) to manage BiocMAP software dependencies, we provide a brief set-up guide.
 
 1. **Install docker**
 

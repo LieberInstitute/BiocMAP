@@ -68,7 +68,7 @@ The `colData` slot of each `bsseq` object includes metrics collected from variou
 
 ## Intermediary Outputs
 
-[INSERT PIPELINE NAME HERE] generates a number of files along the process before producing the main outputs of interest in each module. Each of these "intermediary" files is described below.
+BiocMAP generates a number of files along the process before producing the main outputs of interest in each module. Each of these "intermediary" files is described below.
 
 ### First Module
 

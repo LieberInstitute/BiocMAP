@@ -1,6 +1,6 @@
 # Software {#software}
 
-[INSERT PIPELINE NAME HERE] makes use of several external software tools. The pipeline additionally supports the use of these tools via docker containers- this section also documents the docker images used in this mode.
+BiocMAP makes use of several external software tools. The pipeline additionally supports the use of these tools via docker containers- this section also documents the docker images used in this mode.
 
 ## Software Versions
 
@@ -25,7 +25,7 @@ Software | Version | Command used by the pipeline |
 
 ## Docker Images {#docker-images}
 
-The following image versions are used in this pipeline. These are automatically managed by [INSERT PIPELINE NAME HERE].
+The following image versions are used in this pipeline. These are automatically managed by BiocMAP.
 
 | Image | Tag | Software |
 | ----- | ---- | ------- |

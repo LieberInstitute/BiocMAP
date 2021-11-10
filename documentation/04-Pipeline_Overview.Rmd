@@ -1,7 +1,7 @@
 # Pipeline Overview {#pipeline-overview}
 
 ![](images/workflow.png)
-*Diagram representing the "conceptual" workflow traversed by [INSERT PIPELINE NAME HERE]. Here some nextflow [`processes`](https://www.nextflow.io/docs/latest/process.html) are grouped together for simplicity; the exact processes traversed are enumerated below. The red box indicates the FASTQ files are inputs to the pipeline; green coloring denotes major output files from the pipeline; the remaining boxes represent computational steps. Yellow-colored steps are optional or not always performed; for example, preparing a particular set of annotation files occurs once and uses a cache for further runs. Finally, blue-colored steps are ordinary processes which occur on every pipeline execution.*
+*Diagram representing the "conceptual" workflow traversed by BiocMAP. Here some nextflow [`processes`](https://www.nextflow.io/docs/latest/process.html) are grouped together for simplicity; the exact processes traversed are enumerated below. The red box indicates the FASTQ files are inputs to the pipeline; green coloring denotes major output files from the pipeline; the remaining boxes represent computational steps. Yellow-colored steps are optional or not always performed; for example, preparing a particular set of annotation files occurs once and uses a cache for further runs. Finally, blue-colored steps are ordinary processes which occur on every pipeline execution.*
 
 ## Preparation Steps
 
@@ -17,7 +17,7 @@ The following processes in the pipeline are done only once for a given configura
 
 ## Main Workflow Steps: First Module
 
-- **PreprocessInputs**: Merge FASTQ files where specified in `samples.manifest` and create conveniently named soft links of each FASTQ file for internal use in [INSERT PIPELINE NAME HERE].
+- **PreprocessInputs**: Merge FASTQ files where specified in `samples.manifest` and create conveniently named soft links of each FASTQ file for internal use in BiocMAP.
 - **FastQC_Untrimmed**: FASTQ files are ran through FastQC as a preliminary quality control measure. By default, the presence of "adapter content" determined in this process decides whether a given sample is trimmed in the next step. See the `--trim_mode` [command option](#command-opts) for modifying this default behavior.
 - **Trimming**: See "FastQC_Untrimmed" above- FASTQ inputs are trimmed with `Trim Galore!` either based on adapter content from FastQC, or differently based on the `--trim_mode` [command option]. FastQC is also run as a confirmation step after trimming. For samples that are trimmed, post-trimming FastQC metrics are collected and later gathered into an R data frame; for all other samples, these metrics are collected from the FastQC run prior to any trimming.
 - **WriteAriocConfigs**: Generate configurations file for use in `AriocE`, followed by `AriocU` or `AriocP`, using configuration settings specified in [the appropriate config](#quick-config). Note two configuration files are created for each sample.

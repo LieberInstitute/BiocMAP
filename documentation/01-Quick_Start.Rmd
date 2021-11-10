@@ -1,13 +1,13 @@
 # Quick Start {#quick-start}
 
-A brief guide to setting up [INSERT PIPELINE NAME HERE]. A more detailed and thorough guide is [here](#setup-details).
+A brief guide to setting up BiocMAP. A more detailed and thorough guide is [here](#setup-details).
 
 ## Setup
 
-1. Clone the [INSERT PIPELINE NAME HERE] repository with `git clone git@github.com:LieberInstitute/[INSERT PIPELINE NAME HERE].git`
-2. Change directory into the repository with `cd [INSERT PIPELINE NAME HERE]`
-3. Run the command `bash install_software.sh [option]` to set up test files and software dependencies, where `[option]` must be replaced by `docker`, `conda`, `local`, or `jhpce`. These respectively (and in descending order of our recommendation) correspond to using docker to manage software dependencies, using conda, installing all software locally, or preparing [INSERT PIPELINE NAME HERE] for execution at the [JHPCE](https://jhpce.jhu.edu/) cluster.
-4. If using [INSERT PIPELINE NAME HERE] on a cluster, set the `arioc_queue` [Arioc setting](#arioc-settings) in [your config file](#your-config-file) for the first module.
+1. Clone the BiocMAP repository with `git clone git@github.com:LieberInstitute/BiocMAP.git`
+2. Change directory into the repository with `cd BiocMAP`
+3. Run the command `bash install_software.sh [option]` to set up test files and software dependencies, where `[option]` must be replaced by `docker`, `conda`, `local`, or `jhpce`. These respectively (and in descending order of our recommendation) correspond to using docker to manage software dependencies, using conda, installing all software locally, or preparing BiocMAP for execution at the [JHPCE](https://jhpce.jhu.edu/) cluster.
+4. If using BiocMAP on a cluster, set the `arioc_queue` [Arioc setting](#arioc-settings) in [your config file](#your-config-file) for the first module.
 
 **Note:** JHPCE users must also make an edit to their `~/.bashrc` files, described [here](#installation).
 
@@ -33,7 +33,7 @@ The script you will use to run the pipeline depends on the system ("executor") y
 
 ### Your config file ###
 
-Your combination of "executor" (SLURM cluster, SGE cluster, or local) and "module" (first half or second half) determine the name of your configuration file. Find your file under `[INSERT PIPELINE NAME HERE]/conf/`.
+Your combination of "executor" (SLURM cluster, SGE cluster, or local) and "module" (first half or second half) determine the name of your configuration file. Find your file under `BiocMAP/conf/`.
 
 | Executor | Module | Config Filename |
 | -----  | --- | ----- |
@@ -46,4 +46,4 @@ Your combination of "executor" (SLURM cluster, SGE cluster, or local) and "modul
 | The [JHPCE](https://jhpce.jhu.edu/) cluster | first | first_half_jhpce.config |
 | The JHPCE cluster | second | second_half_jhpce.config |
 
-As an example, suppose you have access to a SLURM cluster, and wish to run the second module to process existing alignments. Your config file is then `[INSERT PIPELINE NAME HERE]/conf/second_half_slurm.config`.
+As an example, suppose you have access to a SLURM cluster, and wish to run the second module to process existing alignments. Your config file is then `BiocMAP/conf/second_half_slurm.config`.

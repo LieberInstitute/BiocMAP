@@ -2,7 +2,7 @@
 
 ## Requirements
 
-[INSERT PIPELINE NAME HERE] is designed for execution on Linux, and requires the following:
+BiocMAP is designed for execution on Linux, and requires the following:
 
 - Java 8 or later
 - Access to NVIDIA GPU(s), locally or via a computing cluster, with recent stable NVIDIA video drivers and CUDA runtime
@@ -18,11 +18,11 @@ Additionally, installation via the "local" or "conda" modes (see below) require 
 
 ## Installation
 
-[INSERT PIPELINE NAME HERE] makes use of a number of different additional software tools. The user is provided three installation "modes" to automatically manage these dependencies: "docker", "conda", or "local" (which we recommend in descending order).
+BiocMAP makes use of a number of different additional software tools. The user is provided three installation "modes" to automatically manage these dependencies: "docker", "conda", or "local" (which we recommend in descending order).
 
-- *Docker*: The recommended option is to manage software with docker, if it is available. From within the repository, perform the one-time setup by running `bash install_software.sh "docker"`. This installs nextflow and sets up some test files. When running [INSERT PIPELINE NAME HERE], the required docker images are automatically pulled if not already present, and components of the pipeline run within the associated containers. A full list of the images that are used is [here](#docker-images). If root permissions are needed to run docker, one can instruct the installation script to use `sudo` in front of any docker commands by running `bash install_software.sh "docker" "sudo"`. Finally, if using [INSERT PIPELINE NAME HERE] on a cluster, set the `arioc_queue` [Arioc setting](#arioc-settings) in [your config file](#your-config-file) for the first module.
+- *Docker*: The recommended option is to manage software with docker, if it is available. From within the repository, perform the one-time setup by running `bash install_software.sh "docker"`. This installs nextflow and sets up some test files. When running BiocMAP, the required docker images are automatically pulled if not already present, and components of the pipeline run within the associated containers. A full list of the images that are used is [here](#docker-images). If root permissions are needed to run docker, one can instruct the installation script to use `sudo` in front of any docker commands by running `bash install_software.sh "docker" "sudo"`. Finally, if using BiocMAP on a cluster, set the `arioc_queue` [Arioc setting](#arioc-settings) in [your config file](#your-config-file) for the first module.
 
-- *Conda*: If `conda` is available (through `Anaconda` or `Miniconda`), a user can run `bash install_software.sh "conda"` to fully install [INSERT PIPELINE NAME HERE]. This creates a conda environment within which the required software is locally installed, and sets up some test files. Note that this is a one-time procedure even on a shared machine (new users automatically make use of the installed conda environment). Finally, if using [INSERT PIPELINE NAME HERE] on a cluster, set the `arioc_queue` [Arioc setting](#arioc-settings) in [your config file](#your-config-file) for the first module.
+- *Conda*: If `conda` is available (through `Anaconda` or `Miniconda`), a user can run `bash install_software.sh "conda"` to fully install BiocMAP. This creates a conda environment within which the required software is locally installed, and sets up some test files. Note that this is a one-time procedure even on a shared machine (new users automatically make use of the installed conda environment). Finally, if using BiocMAP on a cluster, set the `arioc_queue` [Arioc setting](#arioc-settings) in [your config file](#your-config-file) for the first module.
 
 - *Local install*: Installation is performed by running `bash install_software.sh "local"` from within the repository. This installs nextflow, several bioinformatics tools, R and packages, and sets up some test files. A full list of software used is [here](#software). The script `install_software.sh` builds each software tool from source, and hence relies on some common utilities which are often pre-installed in many unix-like systems:
 
@@ -32,7 +32,7 @@ Additionally, installation via the "local" or "conda" modes (see below) require 
     * [git](https://git-scm.com/), for downloading some software from their GitHub repositories
     * The `unzip` utility
     
-  Please note that this installation method is experimental, and can be more error-prone than installation via the "docker" or "conda" modes. Finally, if using [INSERT PIPELINE NAME HERE] on a cluster, set the `arioc_queue` [Arioc setting](#arioc-settings) in [your config file](#your-config-file) for the first module.
+  Please note that this installation method is experimental, and can be more error-prone than installation via the "docker" or "conda" modes. Finally, if using BiocMAP on a cluster, set the `arioc_queue` [Arioc setting](#arioc-settings) in [your config file](#your-config-file) for the first module.
     
 **Note:** users at the JHPCE cluster do not need to worry about managing software via the above methods (required software is automatically available through modules). Simply run `bash install_software.sh "jhpce"` to install any missing R packages and set up some test files. Next, make sure you have the following lines added to your `~/.bashrc` file:
 
@@ -46,14 +46,14 @@ fi
 
 Some users may encounter errors during the installation process, particularly when installing software locally. We provide a list below of the most common installation-related issues.
 
-[INSERT PIPELINE NAME HERE] has been tested on:
+BiocMAP has been tested on:
 
 - CentOS 7 (Linux)
 - Ubuntu 18.04 (Linux)
 
 #### Required utilities are missing
 
-This is particularly common issue for users trying to get [INSERT PIPELINE NAME HERE] running on a local machine. We will assume the user has root privileges for the solutions suggested below.
+This is particularly common issue for users trying to get BiocMAP running on a local machine. We will assume the user has root privileges for the solutions suggested below.
 
 ```{bash,eval=FALSE}
 #  On Debian or Ubuntu:
@@ -92,7 +92,7 @@ See [here](https://www.nextflow.io/docs/latest/executor.html#sge) for additional
 
 ### Example main script
 
-Below is a full example of a typical main script for the first module, modified from the `run_first_half_jhpce.sh` script. At the top are some cluster-specific options, recognized by SGE, the grid scheduler at the JHPCE cluster. These are optional, and you may consider adding appropriate options similarly, if you plan to use [INSERT PIPELINE NAME HERE] on a computing cluster.
+Below is a full example of a typical main script for the first module, modified from the `run_first_half_jhpce.sh` script. At the top are some cluster-specific options, recognized by SGE, the grid scheduler at the JHPCE cluster. These are optional, and you may consider adding appropriate options similarly, if you plan to use BiocMAP on a computing cluster.
 
 After the main command, `nextflow first_half.nf`, each command option can be described line by line:
 
@@ -101,9 +101,9 @@ After the main command, `nextflow first_half.nf`, each command option can be des
 - `--input "/users/neagles/wgbs_test"`: `/users/neagles/wgbs_test` is a directory that contains the `samples.manifest` file, describing the samples.
 - `--output "/users/neagles/wgbs_test/out"`: `/users/neagles/wgbs_test/out` is the directory (which possibly exists already) where pipeline outputs should be placed.
 - `-profile jhpce`: configuration of hardware resource usage, and more detailed pipeline settings, is described at `conf/jhpce.config`, since this is a run using the JHPCE cluster
-- `-w "/fastscratch/myscratch/neagles/nextflow_work"`: this is a nextflow-specific command option (note the single dash), telling [INSERT PIPELINE NAME HERE] that temporary files for the pipeline run can be placed under `/fastscratch/myscratch/neagles/nextflow_work`.
-- `--trim_mode "force"`: this optional argument instructs [INSERT PIPELINE NAME HERE] to trim all samples. Note there are [alternative options](#command-opts).
-- `-profile first_half_jhpce`: this line, which should typically always be included, tells [INSERT PIPELINE NAME HERE] to use `conf/first_half_jhpce.config` as the configuration file applicable to this pipeline run.
+- `-w "/fastscratch/myscratch/neagles/nextflow_work"`: this is a nextflow-specific command option (note the single dash), telling BiocMAP that temporary files for the pipeline run can be placed under `/fastscratch/myscratch/neagles/nextflow_work`.
+- `--trim_mode "force"`: this optional argument instructs BiocMAP to trim all samples. Note there are [alternative options](#command-opts).
+- `-profile first_half_jhpce`: this line, which should typically always be included, tells BiocMAP to use `conf/first_half_jhpce.config` as the configuration file applicable to this pipeline run.
 
 ```{bash, eval=FALSE}
 #!/bin/bash
@@ -127,22 +127,22 @@ nextflow first_half.nf \
 
 ## Sharing the pipeline with many users {#sharing}
 
-A single installation of [INSERT PIPELINE NAME HERE] can be shared among potentially many users. New users can simply copy the appropriate "main" script (determined above) to a different desired directory, and modify the contents as appropriate for the particular experiment. Similarly, a single user can copy the "main" script and modify the copy whenever there is a new experiment/ set of samples to process, reusing a single installation of [INSERT PIPELINE NAME HERE] arbitrarily many times.
+A single installation of BiocMAP can be shared among potentially many users. New users can simply copy the appropriate "main" script (determined above) to a different desired directory, and modify the contents as appropriate for the particular experiment. Similarly, a single user can copy the "main" script and modify the copy whenever there is a new experiment/ set of samples to process, reusing a single installation of BiocMAP arbitrarily many times.
 
 **Note** It is recommended to use a unique working directory with the `-w` [option](#next-opts) for each experiment. This ensures:
 
-- [INSERT PIPELINE NAME HERE] resumes from the correct point, if ever stopped while multiple users are running the pipeline
-- Deleting the work directory (which can take a large amount of disk space) does not affect [INSERT PIPELINE NAME HERE] execution for other users or other experiments
+- BiocMAP resumes from the correct point, if ever stopped while multiple users are running the pipeline
+- Deleting the work directory (which can take a large amount of disk space) does not affect BiocMAP execution for other users or other experiments
 
 
 ### Customizing execution for each user
 
-By default, all users will share the same [configuration](#configuration). This likely suffices for many use cases, but alternatively new configuration files can be created. Below we will walk through an example where a new user of a SLURM-based cluster wishes to use an existing [INSERT PIPELINE NAME HERE] installation to run the first module, but wants a personal configuration file to specify different annotation settings.
+By default, all users will share the same [configuration](#configuration). This likely suffices for many use cases, but alternatively new configuration files can be created. Below we will walk through an example where a new user of a SLURM-based cluster wishes to use an existing BiocMAP installation to run the first module, but wants a personal configuration file to specify different annotation settings.
 
 1. **Copy the existing configuration to a new file**
 
 ```{bash, eval=FALSE}
-#  Verify we are in the [INSERT PIPELINE NAME HERE] repository
+#  Verify we are in the BiocMAP repository
 pwd
 
 #  Create the new configuration file
@@ -163,7 +163,7 @@ params {
     anno_build = "main" // main or primary (main is canonical seqs only)
 ```
 
-See [configuration](#configuration) for details on customizing [INSERT PIPELINE NAME HERE] settings.
+See [configuration](#configuration) for details on customizing BiocMAP settings.
 
 3. **Add the new file as a "profile"**
 
