@@ -68,7 +68,9 @@ print('Done.')
 #  Note the entire CpG object is realized into memory- at the time of writing
 #  this script, strand collapsing takes an unreasonable time to block process
 print('Subsetting to CpG context, strand collapsing, and saving...')
-dir.create(file.path(opt$dir, opt$chr, 'CpG'), recursive=TRUE)
+dir.create(
+    file.path(opt$dir, opt$chr, 'CpG'), recursive=TRUE, showWarnings = FALSE
+)
 BS_CpG = strandCollapse(realize(BSobj[which(rowRanges(BSobj)$c_context == 'CG'),]))
 BS_CpG = saveHDF5SummarizedExperiment(BS_CpG,
                                       dir=file.path(opt$dir, opt$chr, 'CpG'),
@@ -85,7 +87,9 @@ rm(BS_CpG, bs_smooth)
 gc()
 
 print('Subsetting to CpH context, sorting ranges, and saving...')
-dir.create(file.path(opt$dir, opt$chr, 'CpH'), recursive=TRUE)
+dir.create(
+    file.path(opt$dir, opt$chr, 'CpH'), recursive=TRUE, showWarnings = FALSE
+)
 BS_CpH = BSobj[which(rowRanges(BSobj)$c_context != 'CG'),]
 BS_CpH = BS_CpH[order(ranges(BS_CpH)),]
 saveHDF5SummarizedExperiment(BS_CpH, dir=file.path(opt$dir, opt$chr, 'CpH'),
