@@ -51,6 +51,31 @@ BiocMAP has been tested on:
 - CentOS 7 (Linux)
 - Ubuntu 18.04 (Linux)
 
+#### CUDA runtime is not installed
+
+BiocMAP aligns samples to a reference genome using Arioc, a GPU-based software built with CUDA-- we require that the CUDA toolkit is installed. During installation, if you encounter an error message like this:
+
+```
+g++ -std=c++14 -c -Wall -Wno-unknown-pragmas -O3 -m64 -I /include -o CudaCommon/ThrustSpecializations.o CudaCommon/ThrustSpecializations.cpp
+In file included from CudaCommon/ThrustSpecializations.cpp:11:0:
+CudaCommon/stdafx.h:26:60: fatal error: cuda_runtime.h: No such file or directory
+ #include <cuda_runtime.h>               // CUDA runtime API
+                                                            ^
+compilation terminated.
+```
+
+it's possible that the CUDA toolkit is not installed (and should be). On a computing cluster, it's also possible CUDA-related software must be loaded, or is only available on a particular queue (associated with GPU resources). In the former case, check documentation or contact tech support to see if there is a proper way to load the CUDA toolkit for your cluster. For example, if your cluster uses [Lmod environment modules](https://lmod.readthedocs.io/en/latest/), there might be a command like `module load cuda` that should be run before the BiocMAP installation script. In the latter case, try running the installation script from the queue containing the GPU(s).
+
+#### `g++` compilation errors
+
+For "conda" or "local" installation methods, `g++` is used to compile Arioc. If your `gcc` version is too old, you may encounter errors during the installation process, likely during the step that compiles Arioc. Here is an example of an error message that could occur:
+
+```
+g++: error: unrecognized command line option '-std=c++14'
+```
+
+On a local machine, consider installing a newer `gcc` and `g++` (though please note that versions later than 7 cannot compile Arioc!). On a cluster, similar to [the advice here](#cuda-runtime-is-not-installed), contact tech support or your cluster's documentation to see if there is a way to load particular versions of `gcc`. If your cluster uses [Lmod environment modules](https://lmod.readthedocs.io/en/latest/), there might be a command like `module load gcc` that should be run before the BiocMAP installation script. We have successfully used `gcc` 5.5.0.
+
 #### Required utilities are missing
 
 This is particularly common issue for users trying to get BiocMAP running on a local machine. We will assume the user has root privileges for the solutions suggested below.
