@@ -107,10 +107,14 @@ elif [ "$1" == "conda" ]; then
     
     cd $BASE_DIR
 
+    #  Create an initial small conda environment, just containing mamba
     echo "Creating a conda environment containing required software..."
     source $(conda info --base)/etc/profile.d/conda.sh
-    conda env create -f conda/environment.yml -p $PWD/conda/pipeline_env
+    conda env create -p $PWD/conda/pipeline_env -f conda/mamba.yml
     conda activate $PWD/conda/pipeline_env
+    
+    #  Install software using mamba rather than conda
+    mamba install -y -c bioconda -c conda-forge r-essentials r-base bioconductor-biocinstaller bismark=0.23.0 fastqc=0.11.8 kallisto=0.46.1 methyldackel=0.6.0 samblaster=0.1.26 samtools=1.12 trim-galore=0.6.6
     
     Rscript scripts/install_R_packages.R
     
@@ -142,7 +146,6 @@ elif [ "$1" == "conda" ]; then
     
     #  Add 'conda' specification to generic process scope; remove use of
     #  modules in JHPCE configs
-    git checkout conf
     sed -i "s|cache = 'lenient'|cache = 'lenient'\n    conda = '$PWD/conda/pipeline_env'|" conf/*_half_*.config
     sed -i "/module = '.*\/.*'/d" conf/*_half_jhpce.config
     

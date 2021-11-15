@@ -1,0 +1,7 @@
+#  Specification for a minimal conda environment, simply containing mamba. The
+#  idea is to create an environment just "large" enough to use mamba (a faster
+#  and more informative drop-in replacement for conda), then install the
+#  remaining dependencies using mamba. See 'install_software.sh' for more
+#  details.
+dependencies:
+    - conda-forge::mamba
