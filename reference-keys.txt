@@ -7,6 +7,8 @@ setup-details
 requirements
 installation
 troubleshooting
+cuda-runtime-is-not-installed
+g-compilation-errors
 required-utilities-are-missing
 run-the-pipeline
 run-in-a-slurm-environment-cluster

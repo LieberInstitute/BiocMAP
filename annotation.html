@@ -276,14 +276,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="choosing-a-release" class="section level3" number="5.1.1">
 <h3><span class="header-section-number">5.1.1</span> Choosing a release</h3>
 <p>With genome annotation constantly being updated, the user may want to use a particular GENCODE release. The <a href="configuration.html#configuration">configuration</a> variables <code>gencode_version_human</code> and <code>gencode_version_mouse</code> control which GENCODE release is used for the human and mouse genomes, respectively.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb13-1"><a href="annotation.html#cb13-1" aria-hidden="true" tabindex="-1"></a>params <span class="op">{</span>    </span>
-<span id="cb13-2"><a href="annotation.html#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">//----------------------------------------------------</span></span>
-<span id="cb13-3"><a href="annotation.html#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">//  Annotation-related settings</span></span>
-<span id="cb13-4"><a href="annotation.html#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">//----------------------------------------------------</span></span>
-<span id="cb13-5"><a href="annotation.html#cb13-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb13-6"><a href="annotation.html#cb13-6" aria-hidden="true" tabindex="-1"></a>    gencode_version_human <span class="op">=</span> <span class="st">&quot;34&quot;</span></span>
-<span id="cb13-7"><a href="annotation.html#cb13-7" aria-hidden="true" tabindex="-1"></a>    gencode_version_mouse <span class="op">=</span> <span class="st">&quot;M23&quot;</span></span>
-<span id="cb13-8"><a href="annotation.html#cb13-8" aria-hidden="true" tabindex="-1"></a>    anno_build <span class="op">=</span> <span class="st">&quot;main&quot;</span> <span class="co">// main or primary (main is canonical seqs only)</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb15-1"><a href="annotation.html#cb15-1" aria-hidden="true" tabindex="-1"></a>params <span class="op">{</span>    </span>
+<span id="cb15-2"><a href="annotation.html#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">//----------------------------------------------------</span></span>
+<span id="cb15-3"><a href="annotation.html#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">//  Annotation-related settings</span></span>
+<span id="cb15-4"><a href="annotation.html#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">//----------------------------------------------------</span></span>
+<span id="cb15-5"><a href="annotation.html#cb15-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-6"><a href="annotation.html#cb15-6" aria-hidden="true" tabindex="-1"></a>    gencode_version_human <span class="op">=</span> <span class="st">&quot;34&quot;</span></span>
+<span id="cb15-7"><a href="annotation.html#cb15-7" aria-hidden="true" tabindex="-1"></a>    gencode_version_mouse <span class="op">=</span> <span class="st">&quot;M23&quot;</span></span>
+<span id="cb15-8"><a href="annotation.html#cb15-8" aria-hidden="true" tabindex="-1"></a>    anno_build <span class="op">=</span> <span class="st">&quot;main&quot;</span> <span class="co">// main or primary (main is canonical seqs only)</span></span></code></pre></div>
 </div>
 <div id="choosing-build" class="section level3" number="5.1.2">
 <h3><span class="header-section-number">5.1.2</span> Choosing a “build”</h3>

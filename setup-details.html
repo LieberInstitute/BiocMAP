@@ -308,13 +308,30 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>CentOS 7 (Linux)</li>
 <li>Ubuntu 18.04 (Linux)</li>
 </ul>
-<div id="required-utilities-are-missing" class="section level4" number="2.2.1.1">
-<h4><span class="header-section-number">2.2.1.1</span> Required utilities are missing</h4>
+<div id="cuda-runtime-is-not-installed" class="section level4" number="2.2.1.1">
+<h4><span class="header-section-number">2.2.1.1</span> CUDA runtime is not installed</h4>
+<p>BiocMAP aligns samples to a reference genome using Arioc, a GPU-based software built with CUDA– we require that the CUDA toolkit is installed. During installation, if you encounter an error message like this:</p>
+<pre><code>g++ -std=c++14 -c -Wall -Wno-unknown-pragmas -O3 -m64 -I /include -o CudaCommon/ThrustSpecializations.o CudaCommon/ThrustSpecializations.cpp
+In file included from CudaCommon/ThrustSpecializations.cpp:11:0:
+CudaCommon/stdafx.h:26:60: fatal error: cuda_runtime.h: No such file or directory
+ #include &lt;cuda_runtime.h&gt;               // CUDA runtime API
+                                                            ^
+compilation terminated.</code></pre>
+<p>it’s possible that the CUDA toolkit is not installed (and should be). On a computing cluster, it’s also possible CUDA-related software must be loaded, or is only available on a particular queue (associated with GPU resources). In the former case, check documentation or contact tech support to see if there is a proper way to load the CUDA toolkit for your cluster. For example, if your cluster uses <a href="https://lmod.readthedocs.io/en/latest/">Lmod environment modules</a>, there might be a command like <code>module load cuda</code> that should be run before the BiocMAP installation script. In the latter case, try running the installation script from the queue containing the GPU(s).</p>
+</div>
+<div id="g-compilation-errors" class="section level4" number="2.2.1.2">
+<h4><span class="header-section-number">2.2.1.2</span> <code>g++</code> compilation errors</h4>
+<p>For “conda” or “local” installation methods, <code>g++</code> is used to compile Arioc. If your <code>gcc</code> version is too old, you may encounter errors during the installation process, likely during the step that compiles Arioc. Here is an example of an error message that could occur:</p>
+<pre><code>g++: error: unrecognized command line option &#39;-std=c++14&#39;</code></pre>
+<p>On a local machine, consider installing a newer <code>gcc</code> and <code>g++</code> (though please note that versions later than 7 cannot compile Arioc!). On a cluster, similar to <a href="setup-details.html#cuda-runtime-is-not-installed">the advice here</a>, contact tech support or your cluster’s documentation to see if there is a way to load particular versions of <code>gcc</code>. If your cluster uses <a href="https://lmod.readthedocs.io/en/latest/">Lmod environment modules</a>, there might be a command like <code>module load gcc</code> that should be run before the BiocMAP installation script. We have successfully used <code>gcc</code> 5.5.0.</p>
+</div>
+<div id="required-utilities-are-missing" class="section level4" number="2.2.1.3">
+<h4><span class="header-section-number">2.2.1.3</span> Required utilities are missing</h4>
 <p>This is particularly common issue for users trying to get BiocMAP running on a local machine. We will assume the user has root privileges for the solutions suggested below.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="setup-details.html#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#  On Debian or Ubuntu:</span></span>
-<span id="cb7-2"><a href="setup-details.html#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install [TODO]</span>
-<span id="cb7-3"><a href="setup-details.html#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  On RedHat or CentOS:</span></span>
-<span id="cb7-4"><a href="setup-details.html#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> yum install [TODO]</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="setup-details.html#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#  On Debian or Ubuntu:</span></span>
+<span id="cb9-2"><a href="setup-details.html#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install [TODO]</span>
+<span id="cb9-3"><a href="setup-details.html#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  On RedHat or CentOS:</span></span>
+<span id="cb9-4"><a href="setup-details.html#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> yum install [TODO]</span></code></pre></div>
 </div>
 </div>
 </div>
@@ -365,23 +382,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li><code>--trim_mode "force"</code>: this optional argument instructs BiocMAP to trim all samples. Note there are <a href="command-opts.html#command-opts">alternative options</a>.</li>
 <li><code>-profile first_half_jhpce</code>: this line, which should typically always be included, tells BiocMAP to use <code>conf/first_half_jhpce.config</code> as the configuration file applicable to this pipeline run.</li>
 </ul>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="setup-details.html#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
-<span id="cb8-2"><a href="setup-details.html#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#$ -l bluejay,mem_free=25G,h_vmem=25G,h_fsize=800G</span></span>
-<span id="cb8-3"><a href="setup-details.html#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#$ -o ./run_first_half_jhpce.log</span></span>
-<span id="cb8-4"><a href="setup-details.html#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#$ -e ./run_first_half_jhpce.log</span></span>
-<span id="cb8-5"><a href="setup-details.html#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">#$ -cwd</span></span>
-<span id="cb8-6"><a href="setup-details.html#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="setup-details.html#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load nextflow</span>
-<span id="cb8-8"><a href="setup-details.html#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">_JAVA_OPTIONS</span><span class="op">=</span><span class="st">&quot;-Xms8g -Xmx10g&quot;</span></span>
-<span id="cb8-9"><a href="setup-details.html#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-10"><a href="setup-details.html#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="ex">nextflow</span> first_half.nf <span class="dt">\</span></span>
-<span id="cb8-11"><a href="setup-details.html#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">--sample</span> <span class="st">&quot;paired&quot;</span> <span class="dt">\</span></span>
-<span id="cb8-12"><a href="setup-details.html#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">--reference</span> <span class="st">&quot;hg38&quot;</span> <span class="dt">\</span></span>
-<span id="cb8-13"><a href="setup-details.html#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">--input</span> <span class="st">&quot;/users/neagles/wgbs_test&quot;</span> <span class="dt">\</span></span>
-<span id="cb8-14"><a href="setup-details.html#cb8-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">--output</span> <span class="st">&quot;/users/neagles/wgbs_test/out&quot;</span> <span class="dt">\</span></span>
-<span id="cb8-15"><a href="setup-details.html#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">-w</span> <span class="st">&quot;/fastscratch/myscratch/neagles/nextflow_work&quot;</span> <span class="dt">\</span></span>
-<span id="cb8-16"><a href="setup-details.html#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">--trim_mode</span> <span class="st">&quot;force&quot;</span> <span class="dt">\</span></span>
-<span id="cb8-17"><a href="setup-details.html#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">-profile</span> first_half_jhpce</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="setup-details.html#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb10-2"><a href="setup-details.html#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">#$ -l bluejay,mem_free=25G,h_vmem=25G,h_fsize=800G</span></span>
+<span id="cb10-3"><a href="setup-details.html#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">#$ -o ./run_first_half_jhpce.log</span></span>
+<span id="cb10-4"><a href="setup-details.html#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">#$ -e ./run_first_half_jhpce.log</span></span>
+<span id="cb10-5"><a href="setup-details.html#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">#$ -cwd</span></span>
+<span id="cb10-6"><a href="setup-details.html#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="setup-details.html#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load nextflow</span>
+<span id="cb10-8"><a href="setup-details.html#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">_JAVA_OPTIONS</span><span class="op">=</span><span class="st">&quot;-Xms8g -Xmx10g&quot;</span></span>
+<span id="cb10-9"><a href="setup-details.html#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="setup-details.html#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="ex">nextflow</span> first_half.nf <span class="dt">\</span></span>
+<span id="cb10-11"><a href="setup-details.html#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">--sample</span> <span class="st">&quot;paired&quot;</span> <span class="dt">\</span></span>
+<span id="cb10-12"><a href="setup-details.html#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">--reference</span> <span class="st">&quot;hg38&quot;</span> <span class="dt">\</span></span>
+<span id="cb10-13"><a href="setup-details.html#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">--input</span> <span class="st">&quot;/users/neagles/wgbs_test&quot;</span> <span class="dt">\</span></span>
+<span id="cb10-14"><a href="setup-details.html#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">--output</span> <span class="st">&quot;/users/neagles/wgbs_test/out&quot;</span> <span class="dt">\</span></span>
+<span id="cb10-15"><a href="setup-details.html#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">-w</span> <span class="st">&quot;/fastscratch/myscratch/neagles/nextflow_work&quot;</span> <span class="dt">\</span></span>
+<span id="cb10-16"><a href="setup-details.html#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">--trim_mode</span> <span class="st">&quot;force&quot;</span> <span class="dt">\</span></span>
+<span id="cb10-17"><a href="setup-details.html#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">-profile</span> first_half_jhpce</span></code></pre></div>
 </div>
 </div>
 <div id="sharing" class="section level2" number="2.4">
@@ -398,43 +415,43 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ol style="list-style-type: decimal">
 <li><strong>Copy the existing configuration to a new file</strong></li>
 </ol>
-<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="setup-details.html#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#  Verify we are in the BiocMAP repository</span></span>
-<span id="cb9-2"><a href="setup-details.html#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">pwd</span></span>
-<span id="cb9-3"><a href="setup-details.html#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="setup-details.html#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">#  Create the new configuration file</span></span>
-<span id="cb9-5"><a href="setup-details.html#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> conf/first_half_slurm.config conf/my_first_half_slurm.config</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="setup-details.html#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#  Verify we are in the BiocMAP repository</span></span>
+<span id="cb11-2"><a href="setup-details.html#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="bu">pwd</span></span>
+<span id="cb11-3"><a href="setup-details.html#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="setup-details.html#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co">#  Create the new configuration file</span></span>
+<span id="cb11-5"><a href="setup-details.html#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> conf/first_half_slurm.config conf/my_first_half_slurm.config</span></code></pre></div>
 <ol start="2" style="list-style-type: decimal">
 <li><strong>Modify the new file as desired</strong></li>
 </ol>
 <p>Below we will change the GENCODE release to the older release 25, for human, via the <code>gencode_version_human</code> variable.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb10-1"><a href="setup-details.html#cb10-1" aria-hidden="true" tabindex="-1"></a>params <span class="op">{</span>    </span>
-<span id="cb10-2"><a href="setup-details.html#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">//----------------------------------------------------</span></span>
-<span id="cb10-3"><a href="setup-details.html#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">//  Annotation-related settings</span></span>
-<span id="cb10-4"><a href="setup-details.html#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">//----------------------------------------------------</span></span>
-<span id="cb10-5"><a href="setup-details.html#cb10-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-6"><a href="setup-details.html#cb10-6" aria-hidden="true" tabindex="-1"></a>    gencode_version_human <span class="op">=</span> <span class="st">&quot;25&quot;</span> <span class="co">// originally was &quot;34&quot;!</span></span>
-<span id="cb10-7"><a href="setup-details.html#cb10-7" aria-hidden="true" tabindex="-1"></a>    gencode_version_mouse <span class="op">=</span> <span class="st">&quot;M23&quot;</span></span>
-<span id="cb10-8"><a href="setup-details.html#cb10-8" aria-hidden="true" tabindex="-1"></a>    anno_build <span class="op">=</span> <span class="st">&quot;main&quot;</span> <span class="co">// main or primary (main is canonical seqs only)</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb12-1"><a href="setup-details.html#cb12-1" aria-hidden="true" tabindex="-1"></a>params <span class="op">{</span>    </span>
+<span id="cb12-2"><a href="setup-details.html#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">//----------------------------------------------------</span></span>
+<span id="cb12-3"><a href="setup-details.html#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">//  Annotation-related settings</span></span>
+<span id="cb12-4"><a href="setup-details.html#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">//----------------------------------------------------</span></span>
+<span id="cb12-5"><a href="setup-details.html#cb12-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-6"><a href="setup-details.html#cb12-6" aria-hidden="true" tabindex="-1"></a>    gencode_version_human <span class="op">=</span> <span class="st">&quot;25&quot;</span> <span class="co">// originally was &quot;34&quot;!</span></span>
+<span id="cb12-7"><a href="setup-details.html#cb12-7" aria-hidden="true" tabindex="-1"></a>    gencode_version_mouse <span class="op">=</span> <span class="st">&quot;M23&quot;</span></span>
+<span id="cb12-8"><a href="setup-details.html#cb12-8" aria-hidden="true" tabindex="-1"></a>    anno_build <span class="op">=</span> <span class="st">&quot;main&quot;</span> <span class="co">// main or primary (main is canonical seqs only)</span></span></code></pre></div>
 <p>See <a href="configuration.html#configuration">configuration</a> for details on customizing BiocMAP settings.</p>
 <ol start="3" style="list-style-type: decimal">
 <li><strong>Add the new file as a “profile”</strong></li>
 </ol>
 <p>This involves adding some code to <code>nextflow.config</code>, as shown below.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb11-1"><a href="setup-details.html#cb11-1" aria-hidden="true" tabindex="-1"></a>profiles <span class="op">{</span></span>
-<span id="cb11-2"><a href="setup-details.html#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Here we&#39;ve named the new profile &quot;my_new_config&quot;, and pointed it to the</span></span>
-<span id="cb11-3"><a href="setup-details.html#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// file &quot;conf/my_first_half_slurm.config&quot;.</span></span>
-<span id="cb11-4"><a href="setup-details.html#cb11-4" aria-hidden="true" tabindex="-1"></a>    my_new_config <span class="op">{</span></span>
-<span id="cb11-5"><a href="setup-details.html#cb11-5" aria-hidden="true" tabindex="-1"></a>        includeConfig <span class="st">&#39;conf/my_first_half_slurm.config&#39;</span></span>
-<span id="cb11-6"><a href="setup-details.html#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb13-1"><a href="setup-details.html#cb13-1" aria-hidden="true" tabindex="-1"></a>profiles <span class="op">{</span></span>
+<span id="cb13-2"><a href="setup-details.html#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Here we&#39;ve named the new profile &quot;my_new_config&quot;, and pointed it to the</span></span>
+<span id="cb13-3"><a href="setup-details.html#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// file &quot;conf/my_first_half_slurm.config&quot;.</span></span>
+<span id="cb13-4"><a href="setup-details.html#cb13-4" aria-hidden="true" tabindex="-1"></a>    my_new_config <span class="op">{</span></span>
+<span id="cb13-5"><a href="setup-details.html#cb13-5" aria-hidden="true" tabindex="-1"></a>        includeConfig <span class="st">&#39;conf/my_first_half_slurm.config&#39;</span></span>
+<span id="cb13-6"><a href="setup-details.html#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span></code></pre></div>
 <ol start="4" style="list-style-type: decimal">
 <li><strong>Reference the new profile in the “main” script</strong></li>
 </ol>
 <p>Recall that new users should copy the “main” script and modify the copy as appropriate. In this case, we open a copy of the original <code>run_first_half_slurm.sh</code>:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb12-1"><a href="setup-details.html#cb12-1" aria-hidden="true" tabindex="-1"></a>#  At the nextflow command<span class="op">,</span> we change the <span class="st">&#39;-profile&#39;</span> argument at the bottom</span>
-<span id="cb12-2"><a href="setup-details.html#cb12-2" aria-hidden="true" tabindex="-1"></a>$ORIG_DIR<span class="op">/</span>Software<span class="op">/</span>bin<span class="op">/</span>nextflow $ORIG_DIR<span class="op">/</span>first_half<span class="op">.</span>nf \</span>
-<span id="cb12-3"><a href="setup-details.html#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">--</span>sample <span class="st">&quot;paired&quot;</span> \</span>
-<span id="cb12-4"><a href="setup-details.html#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">--</span>reference <span class="st">&quot;hg38&quot;</span> \</span>
-<span id="cb12-5"><a href="setup-details.html#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">-</span>profile my_new_config # <span class="kw">this</span> was changed from <span class="st">&quot;-profile first_half_slurm&quot;</span><span class="op">!</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb14-1"><a href="setup-details.html#cb14-1" aria-hidden="true" tabindex="-1"></a>#  At the nextflow command<span class="op">,</span> we change the <span class="st">&#39;-profile&#39;</span> argument at the bottom</span>
+<span id="cb14-2"><a href="setup-details.html#cb14-2" aria-hidden="true" tabindex="-1"></a>$ORIG_DIR<span class="op">/</span>Software<span class="op">/</span>bin<span class="op">/</span>nextflow $ORIG_DIR<span class="op">/</span>first_half<span class="op">.</span>nf \</span>
+<span id="cb14-3"><a href="setup-details.html#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">--</span>sample <span class="st">&quot;paired&quot;</span> \</span>
+<span id="cb14-4"><a href="setup-details.html#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">--</span>reference <span class="st">&quot;hg38&quot;</span> \</span>
+<span id="cb14-5"><a href="setup-details.html#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">-</span>profile my_new_config # <span class="kw">this</span> was changed from <span class="st">&quot;-profile first_half_slurm&quot;</span><span class="op">!</span></span></code></pre></div>
 
 </div>
 </div>
