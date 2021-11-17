@@ -66,7 +66,7 @@ CudaCommon/stdafx.h:26:60: fatal error: cuda_runtime.h: No such file or director
 compilation terminated.
 ```
 
-it's possible that the CUDA toolkit is not installed (and should be). On a computing cluster, it's also possible CUDA-related software must be loaded, or is only available on a particular queue (associated with GPU resources). In the former case, check documentation or contact tech support to see if there is a proper way to load the CUDA toolkit for your cluster. For example, if your cluster uses [Lmod environment modules](https://lmod.readthedocs.io/en/latest/), there might be a command like `module load cuda` that should be run before the BiocMAP installation script. In the latter case, try running the installation script from the queue containing the GPU(s).
+it's possible that the CUDA toolkit is not installed (and should be). On a computing cluster, it's also possible CUDA-related software must be loaded, or is only available on a particular queue (associated with GPU resources). In the former case, check documentation or contact tech support to see if there is a proper way to load the CUDA toolkit for your cluster. For example, if your cluster uses [Lmod environment modules](https://lmod.readthedocs.io/en/latest/), there might be a command like `module load cuda` that should be run before the BiocMAP installation script. If this works, you'll need to adjust your configuration file for the first module following the advice [here](#using_lmod_modules_with_arioc). In the latter case, try running the installation script from the queue containing the GPU(s).
 
 #### `g++` compilation errors
 
@@ -76,7 +76,7 @@ For "conda" or "local" installation methods, `g++` is used to compile Arioc. If 
 g++: error: unrecognized command line option '-std=c++14'
 ```
 
-On a local machine, consider installing a newer `gcc` and `g++` (though please note that versions later than 7 cannot compile Arioc!). On a cluster, similar to [the advice here](#cuda-runtime-is-not-installed), contact tech support or your cluster's documentation to see if there is a way to load particular versions of `gcc`. If your cluster uses [Lmod environment modules](https://lmod.readthedocs.io/en/latest/), there might be a command like `module load gcc` that should be run before the BiocMAP installation script. We have successfully used `gcc` 5.5.0.
+On a local machine, consider installing a newer `gcc` and `g++` (though please note that versions later than 7 cannot compile Arioc!). On a cluster, similar to [the advice here](#cuda-runtime-is-not-installed), contact tech support or your cluster's documentation to see if there is a way to load particular versions of `gcc`. If your cluster uses [Lmod environment modules](https://lmod.readthedocs.io/en/latest/), there might be a command like `module load gcc` that should be run before the BiocMAP installation script. We have successfully used `gcc` 5.5.0. If this works, you'll need to adjust your configuration file for the first module following the advice [here](#using_lmod_modules_with_arioc).
 
 #### Required utilities are missing
 
@@ -88,6 +88,23 @@ sudo apt install [TODO]
 #  On RedHat or CentOS:
 sudo yum install [TODO]
 ```
+
+#### Using Lmod modules with Arioc
+
+For users encountering specific issues during installation via the "conda" or "local" modes on a computing cluster (in particular, see [g++ compilation errors](#g-compilation-errors) and [cuda-related errors](#cuda-runtime-is-not-installed)), loading an Lmod environment module before [installation](#installation) with `install_software.sh` might provide a solution if this is an option. After successful [installation](#installation) with `install_software.sh` while using a module, it will also be necessary to instruct BiocMAP to load this module whenever it performs alignment-related steps.
+
+To do this, locate [your configuration file](#your-config-file) for the first module. As an example, if you needed a module called 'cuda/10.0' to perform installation, you can add the line `module = 'cuda/10.0'` in the processes `EncodeReference`, `EncodeReads`, and `AlignReads`. Here is what the modified configuration would look like for the `EncodeReference` process for SLURM users:
+
+```{java,eval=FALSE}
+withName: EncodeReference {
+    cpus = 1
+    memory = 80.GB
+    queue = params.arioc_queue
+    module = 'cuda/10.0'
+}
+```
+
+To load two modules, such as `gcc/5.5.0` and `cuda/10.0`, the syntax looks like: `module = 'gcc/5.5.0:cuda/10.0'`.
 
 ## Run the Pipeline
 
