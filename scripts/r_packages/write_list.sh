@@ -13,4 +13,4 @@ grep -E "library\(.*\)" ../*.R \
     | sort -u > r_package_list.R
     
 #  Then manually remove lines associated with Bioconductor packages and
-#  "jaffelab", and add "BiocManager"
+#  "jaffelab", and add "BiocManager" and "remotes"
