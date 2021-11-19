@@ -85,7 +85,7 @@ elif [ "$1" == "jhpce" ]; then
 
     echo "User selected set-up at JHPCE. Installing any missing R packages..."
     module load conda_R/4.1
-    Rscript scripts/install_R_packages.R
+    Rscript scripts/install_r_packages_jhpce.R
     
     echo "Setting up test files..."
     Rscript scripts/prepare_test_files.R -d $(pwd)
@@ -114,9 +114,12 @@ elif [ "$1" == "conda" ]; then
     conda activate $PWD/conda/pipeline_env
     
     #  Install software using mamba rather than conda
-    mamba install -y -c bioconda -c conda-forge r-essentials r-base bioconductor-biocinstaller bismark=0.23.0 fastqc=0.11.8 kallisto=0.46.1 methyldackel=0.6.0 samblaster=0.1.26 samtools=1.12 trim-galore=0.6.6
+    mamba install -y -c bioconda -c conda-forge r-essentials=4.1.0 r-base=4.1.0 bioconductor-biocinstaller bismark=0.23.0 fastqc=0.11.8 kallisto=0.46.1 methyldackel=0.6.0 samblaster=0.1.26 samtools=1.12 trim-galore=0.6.6
     
-    Rscript scripts/install_R_packages.R
+    Rscript scripts/install_r_packages_local.R
+    
+    #  Signal to load ordinary R packages with 'checkpoint' in each R script
+    sed -i '1i #  Added during installation\nlibrary("checkpoint")\ncheckpoint("2021-09-01",\n    project_dir = here("scripts", "r_packages"),\n    checkpoint_location = here("Software")\n)\n' scripts/*.R
     
     echo "Installing Arioc, which isn't available as a conda package..."
     cd $BASE_DIR/Software/
@@ -250,10 +253,13 @@ elif [ "$1" == "local" ]; then
           
         #  Install packages and set up test files
         echo "Installing R packages..."
-        Rscript ../scripts/install_R_packages.R -d $BASE_DIR
+        Rscript ../scripts/install_r_packages_local.R
         
         echo "Setting up test files..."
         Rscript ../scripts/prepare_test_files.R -d $BASE_DIR
+        
+        #  Signal to load ordinary R packages with 'checkpoint' in each R script
+        sed -i '1i #  Added during installation\nlibrary("checkpoint")\ncheckpoint("2021-09-01",\n    project_dir = here("scripts", "r_packages"),\n    checkpoint_location = here("Software")\n)\n' scripts/*.R
         
         #  samblaster (v.0.1.26) ----------------------------------------------
         
