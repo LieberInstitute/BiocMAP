@@ -116,10 +116,13 @@ elif [ "$1" == "conda" ]; then
     #  Install software using mamba rather than conda
     mamba install -y -c bioconda -c conda-forge r-essentials=4.1.0 r-base=4.1.0 bioconductor-biocinstaller bismark=0.23.0 fastqc=0.11.8 kallisto=0.46.1 methyldackel=0.6.0 samblaster=0.1.26 samtools=1.12 trim-galore=0.6.6
     
-    Rscript scripts/install_r_packages_local.R
+    Rscript scripts/install_r_packages_conda.R
+    
+    #  Install Bioc R packages using mamba
+    mamba install -y -c bioconda -c conda-forge bioconductor-bsseq=1.28.0 bioconductor-genomicranges=1.44.0 bioconductor-hdf5array=1.20.0 bioconductor-biocparallel=1.26.0
     
     #  Signal to load ordinary R packages with 'checkpoint' in each R script
-    sed -i '1i #  Added during installation\nlibrary("checkpoint")\ncheckpoint("2021-09-01",\n    project_dir = here("scripts", "r_packages"),\n    checkpoint_location = here("Software")\n)\n' scripts/*.R
+    sed -i '1i #  Added during installation\nlibrary("here")\nlibrary("checkpoint")\ncheckpoint("2021-09-01",\n    project_dir = here("scripts", "r_packages"),\n    checkpoint_location = here("Software")\n)\n' scripts/*.R
     
     echo "Installing Arioc, which isn't available as a conda package..."
     cd $BASE_DIR/Software/
@@ -259,7 +262,7 @@ elif [ "$1" == "local" ]; then
         Rscript ../scripts/prepare_test_files.R -d $BASE_DIR
         
         #  Signal to load ordinary R packages with 'checkpoint' in each R script
-        sed -i '1i #  Added during installation\nlibrary("checkpoint")\ncheckpoint("2021-09-01",\n    project_dir = here("scripts", "r_packages"),\n    checkpoint_location = here("Software")\n)\n' scripts/*.R
+        sed -i '1i #  Added during installation\nlibrary("here")\nlibrary("checkpoint")\ncheckpoint("2021-09-01",\n    project_dir = here("scripts", "r_packages"),\n    checkpoint_location = here("Software")\n)\n' scripts/*.R
         
         #  samblaster (v.0.1.26) ----------------------------------------------
         
