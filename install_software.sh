@@ -122,7 +122,7 @@ elif [ "$1" == "conda" ]; then
     mamba install -y -c bioconda -c conda-forge bioconductor-bsseq=1.28.0 bioconductor-genomicranges=1.44.0 bioconductor-hdf5array=1.20.0 bioconductor-biocparallel=1.26.0
     
     #  Signal to load ordinary R packages with 'checkpoint' in each R script
-    sed -i '1i #  Added during installation\nlibrary("here")\nlibrary("checkpoint")\ncheckpoint("2021-09-01",\n    project_dir = here("scripts", "r_packages"),\n    checkpoint_location = here("Software")\n)\n' scripts/*.R
+    sed -i "1i #  Added during installation\nlibrary('checkpoint')\ncheckpoint('2021-09-01',\n    project_dir = '$BASE_DIR/scripts/r_packages',\n    checkpoint_location = '$BASE_DIR/Software'\n)\n" scripts/*.R
     
     echo "Installing Arioc, which isn't available as a conda package..."
     cd $BASE_DIR/Software/
