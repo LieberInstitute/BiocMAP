@@ -27,7 +27,7 @@ We provide tips for achieving significant increases in throughput and customizat
 
 ## Cite `BiocMAP` {-}
 
-We hope that [`BiocMAP`]([DOCUMENTATION SITE]) will be useful for your research. Please use the following information to cite the workflow provided by this software. Thank you!
+We hope that [`BiocMAP`](http://research.libd.org/BiocMAP/) will be useful for your research. Please use the following information to cite the workflow provided by this software. Thank you!
 
 [TODO]
 
