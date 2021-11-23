@@ -16,7 +16,7 @@
 
 set -e
 
-REPO_NAME="WGBS-Pipeline"
+REPO_NAME="BiocMAP"
 
 if [ "$(basename $(pwd))" == "$REPO_NAME" ]; then
 
