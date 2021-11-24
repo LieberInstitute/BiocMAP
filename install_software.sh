@@ -259,11 +259,11 @@ elif [ "$1" == "local" ]; then
         echo "Installing R packages..."
         Rscript ../scripts/install_r_packages_local.R
         
+        #  Signal to load ordinary R packages with 'checkpoint' in each R script
+        sed -i "1i #  Added during installation\nlibrary('checkpoint')\ncheckpoint('2021-09-01',\n    project_dir = '$BASE_DIR/scripts/r_packages',\n    checkpoint_location = '$BASE_DIR/Software'\n)\n" ../scripts/*.R
+        
         echo "Setting up test files..."
         Rscript ../scripts/prepare_test_files.R -d $BASE_DIR
-        
-        #  Signal to load ordinary R packages with 'checkpoint' in each R script
-        sed -i '1i #  Added during installation\nlibrary("here")\nlibrary("checkpoint")\ncheckpoint("2021-09-01",\n    project_dir = here("scripts", "r_packages"),\n    checkpoint_location = here("Software")\n)\n' scripts/*.R
         
         #  samblaster (v.0.1.26) ----------------------------------------------
         
