@@ -126,20 +126,21 @@ rename_links(glob, orig_paths_long, sym_paths_short, '_arioc.log', 'arioc_log', 
 
 #  XMC logs
 glob = get_paths(rules, 'xmc_log', ids, FALSE) # now we have one glob per ID
-if (!is.na(glob)) {
+if (!is.na(glob[1])) {
     print('Looking for XMC logs, since the "xmc_log" key was specified...')
     rename_links(glob, orig_paths_long, sym_paths_short, '_xmc.log', 'xmc_log', 1)
 }
 
 #  FastQC logs
 print('Looking for FastQC logs...')
-glob_last = get_paths(rules, 'fastqc_log_last', ids, TRUE)
+glob_last = get_paths(rules, 'fastqc_log_last', ids, FALSE)
 glob_first = get_paths(rules, 'fastqc_log_first', ids, FALSE)
 
 num_matches = ifelse(paired, 2, 1)
-if (is.na(glob_first)) {
+if (is.na(glob_first[1]) && !is.na(glob_last[1])) {
+    #  If only 'last' FastQC logs exist, these will be the ones we parse
     rename_links(glob_last, orig_paths_long, sym_paths_short, '_fastqc.log', 'fastqc_log_last', num_matches)
-} else {
+} else if (!is.na(glob_last[1])) {
     #  For simplicity given the existing code/functions, all "first fastqc logs"
     #  are renamed, and renaming for any "last fastqc logs" is performed afterward,
     #  thus overwriting "first fastqc logs" for applicable IDs
@@ -149,7 +150,7 @@ if (is.na(glob_first)) {
 
 #  Trim Galore reports
 glob = get_paths(rules, 'trim_report', ids, FALSE) # now we have one glob per ID
-if (!is.na(glob)) {
+if (!is.na(glob[1])) {
     print('Looking for Trim Galore logs, since the "trim_report" key was specified...')
     rename_links(glob, orig_paths_long, sym_paths_short, '_trim_report.log', 'trim_report', 1, TRUE)
 }
