@@ -102,7 +102,8 @@ if [[ "$1" == "docker" || "$1" == "singularity" ]]; then
         
         #  Set modules used correctly for JHPCE users
         sed -i "/module = '.*\/.*'/d" conf/*_half_jhpce.config
-        sed -i "s|cache = 'lenient'|cache = 'lenient'\n    module = 'singularity/3.2.1'|" conf/*_half_jhpce.config
+        sed -i "s|cache = 'lenient'|cache = 'lenient'\n    module = 'singularity/3.6.0'|" conf/*_half_jhpce.config
+        sed -i "s|module load nextflow|module load nextflow\nmodule load singularity/3.6.0|" run_*_half_jhpce.sh
     fi
         
     echo "Done."
