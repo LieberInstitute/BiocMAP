@@ -36,20 +36,21 @@ else
     
 fi
 
-if [ "$1" == "docker" ]; then
+if [[ "$1" == "docker" || "$1" == "singularity" ]]; then
 
-    #  This is the docker image to be used for execution of R via docker (with
-    #  docker mode)
+    #  This is the docker image to be used for execution of R via docker/
+    #  singularity
     R_container="libddocker/bioc_kallisto:3.13"
     
     #  Point to original repo's main script to facilitate pipeline sharing
     sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_*_half_*.sh
     
-    #  Add docker configuration to each config profile in 'nextflow.config'
-    sed -i "s|includeConfig 'conf/\(.*\)_half_\(.*\)\.config'|includeConfig 'conf/\1_half_\2.config'\n        includeConfig 'conf/\1_half_docker.config'|" nextflow.config
+    #  Add docker/singularity configuration to each config profile in
+    #  'nextflow.config'
+    sed -i "s|includeConfig 'conf/\(.*\)_half_\(.*\)\.config'|includeConfig 'conf/\1_half_\2.config'\n        includeConfig 'conf/\1_half_$1.config'|" nextflow.config
     
-    #  Remove a variable from configs that disables docker settings
-    sed -i "/using_docker = false/d" conf/second_half_{jhpce,local,sge,slurm}.config
+    #  Remove a variable from configs that disables docker/singularity settings
+    sed -i "/using_containers = false/d" conf/second_half_{jhpce,local,sge,slurm}.config
     
     BASE_DIR=$(pwd)
     mkdir -p $BASE_DIR/Software/bin
@@ -65,19 +66,33 @@ if [ "$1" == "docker" ]; then
     
     echo "Setting up test files..."
     
-    if [[ "$2" == "sudo" ]]; then
-        command="sudo docker run"
-    else
-        command="docker run"
+    if [[ "$1" == "docker" ]]; then
+        if [[ "$2" == "sudo" ]]; then
+            command="sudo docker run"
+        else
+            command="docker run"
+        fi
+        
+        $command \
+            -it \
+            -u $(id -u):$(id -g) \
+            -v $BASE_DIR/scripts:/usr/local/src/scripts/ \
+            -v $BASE_DIR/test:/usr/local/src/test \
+            $R_container \
+            Rscript /usr/local/src/scripts/prepare_test_files.R -d $BASE_DIR
+    else # using singularity
+        cd $BASE_DIR
+        
+        singularity exec \
+            -B $BASE_DIR/scripts:/usr/local/src/scripts/ \
+            -B $BASE_DIR/test:/usr/local/src/test \
+            docker://$R_container \
+            Rscript /usr/local/src/scripts/prepare_test_files.R -d $BASE_DIR
+        
+        #  Set modules used correctly for JHPCE users
+        sed -i "/module = '.*\/.*'/d" conf/*_half_jhpce.config
+        sed -i "s|cache = 'lenient'|cache = 'lenient'\n    module = 'singularity/3.2.1'|" conf/*_half_jhpce.config
     fi
-    
-    $command \
-        -it \
-        -u $(id -u):$(id -g) \
-        -v $BASE_DIR/scripts:/usr/local/src/scripts/ \
-        -v $BASE_DIR/test:/usr/local/src/test \
-        $R_container \
-        Rscript /usr/local/src/scripts/prepare_test_files.R -d $BASE_DIR
         
     echo "Done."
     
