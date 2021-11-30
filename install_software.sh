@@ -83,6 +83,17 @@ if [[ "$1" == "docker" || "$1" == "singularity" ]]; then
     else # using singularity
         cd $BASE_DIR
         
+        #  Pull images in advance, since it seems to use very large amounts of
+        #  memory to build the '.sif' file from each docker image (we don't
+        #  want to allocate large amounts of memory in each process just for
+        #  this purpose)
+        mkdir -p docker/singularity_cache
+        images=$(grep 'container = ' conf/*_half_singularity.config | tr -d " |'" | cut -d '=' -f 2 | sort -u)
+        for image in $images; do
+            image_name=$(echo $image | sed 's/[:\/]/-/g').sif
+            singularity pull docker/singularity_cache/$image_name docker://$image
+        done
+        
         singularity exec \
             -B $BASE_DIR/scripts:/usr/local/src/scripts/ \
             -B $BASE_DIR/test:/usr/local/src/test \
