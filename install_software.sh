@@ -5,14 +5,17 @@
 #
 #  Usage:  bash install_software.sh [installation_type]
 #
-#    installation_type may be "docker", "local", or "jhpce":
-#        docker:   user plans to run pipeline with docker to manage software
-#                  dependencies
-#        local:    user wishes to install all dependencies locally (regardless
-#                  of whether the pipeline will be run on a cluster or with
-#                  local resources)
-#        conda:    required software is installed within a conda environment
-#        jhpce:    user is setting up the pipeline on the JHPCE cluster
+#    installation_type may be "docker", "local", "conda", "jhpce", or
+#    "singularity":
+#        docker:      user plans to run BiocMAP with docker to manage software
+#                     dependencies
+#        local:       user wishes to install all dependencies locally (regardless
+#                     of whether BiocMAP will be run on a cluster or with
+#                     local resources)
+#        conda:       required software is installed within a conda environment
+#        jhpce:       user is setting up BiocMAP on the JHPCE cluster
+#        singularity: user plans to run BiocMAP with singularity to manage
+#                     software dependencies
 
 set -e
 
@@ -330,9 +333,9 @@ elif [ "$1" == "local" ]; then
         echo "A java runtime could not be found or accessed. Is it installed and on the PATH? You can install it by running 'apt install default-jre', which requires sudo/ root privileges."
         echo "After installing Java, rerun this script to finish the installation procedure."
     fi
-else # neither "docker", "local", "conda", nor "jhpce" were chosen
+else # neither "docker", "local", "conda", "jhpce", nor "singularity" were chosen
     
-    echo 'Error: please specify "docker", "local", "conda", or "jhpce" and rerun this script.'
+    echo 'Error: please specify "docker", "local", "conda", "jhpce", or "singularity" and rerun this script.'
     echo '    eg. bash install_software.sh "local"'
     exit 1
     
