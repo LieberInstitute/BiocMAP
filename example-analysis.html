@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>5 Annotation | BiocMAP</title>
-  <meta name="description" content="5 Annotation | BiocMAP" />
+  <title>11 Example Analysis | BiocMAP</title>
+  <meta name="description" content="11 Example Analysis | BiocMAP" />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="5 Annotation | BiocMAP" />
+  <meta property="og:title" content="11 Example Analysis | BiocMAP" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="5 Annotation | BiocMAP" />
+  <meta name="twitter:title" content="11 Example Analysis | BiocMAP" />
   
   
   
@@ -29,8 +29,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="pipeline-overview.html"/>
-<link rel="next" href="inputs.html"/>
+<link rel="prev" href="help.html"/>
+
 <script src="libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -270,44 +270,41 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="annotation" class="section level1" number="5">
-<h1><span class="header-section-number">5</span> Annotation</h1>
-<p>BiocMAP can be run with <code>hg38</code>, <code>hg19</code>, or <code>mm10</code> references. The pipeline has a default and automated process for pulling and building annotation-related files, but the user can opt to provide their own annotation as an alternative. Both of these options are documented below. Example annotation files below are the ones used with default <a href="configuration.html#configuration">configuration</a> when <code>hg38</code> reference is selected.</p>
-<ul>
-<li><strong>A genome assembly fasta</strong>: the reference genome to align reads to, like the file <a href="ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/GRCh38.primary_assembly.genome.fa.gz">here</a> (but unzipped).</li>
-<li><strong>Gene annotation gtf</strong>: containing transcript data, like the file <a href="ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.annotation.gtf.gz">here</a> (but unzipped).</li>
-<li><strong>The lambda transcriptome</strong>: for experiments utilizing spike-ins of the lambda bacteriophage genome, the transcriptome provided <a href="ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/840/245/GCA_000840245.1_ViralProj14204/GCA_000840245.1_ViralProj14204_genomic.fna.gz">here</a> is used (but unzipped).</li>
-</ul>
-<div id="default-annotation" class="section level2" number="5.1">
-<h2><span class="header-section-number">5.1</span> Default Annotation</h2>
-<p>BiocMAP uses annotation files provided by <a href="ftp://ftp.ebi.ac.uk/pub/databases/gencode/">GENCODE</a>.</p>
-<div id="choosing-a-release" class="section level3" number="5.1.1">
-<h3><span class="header-section-number">5.1.1</span> Choosing a release</h3>
-<p>With genome annotation constantly being updated, the user may want to use a particular GENCODE release. The <a href="configuration.html#configuration">configuration</a> variables <code>gencode_version_human</code> and <code>gencode_version_mouse</code> control which GENCODE release is used for the human and mouse genomes, respectively.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb16-1"><a href="annotation.html#cb16-1" aria-hidden="true" tabindex="-1"></a>params <span class="op">{</span>    </span>
-<span id="cb16-2"><a href="annotation.html#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">//----------------------------------------------------</span></span>
-<span id="cb16-3"><a href="annotation.html#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">//  Annotation-related settings</span></span>
-<span id="cb16-4"><a href="annotation.html#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">//----------------------------------------------------</span></span>
-<span id="cb16-5"><a href="annotation.html#cb16-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb16-6"><a href="annotation.html#cb16-6" aria-hidden="true" tabindex="-1"></a>    gencode_version_human <span class="op">=</span> <span class="st">&quot;34&quot;</span></span>
-<span id="cb16-7"><a href="annotation.html#cb16-7" aria-hidden="true" tabindex="-1"></a>    gencode_version_mouse <span class="op">=</span> <span class="st">&quot;M23&quot;</span></span>
-<span id="cb16-8"><a href="annotation.html#cb16-8" aria-hidden="true" tabindex="-1"></a>    anno_build <span class="op">=</span> <span class="st">&quot;main&quot;</span> <span class="co">// main or primary (main is canonical seqs only)</span></span></code></pre></div>
+<div id="example-analysis" class="section level1" number="11">
+<h1><span class="header-section-number">11</span> Example Analysis</h1>
+<p>This is a work in progress!</p>
+<div id="add-experiment-metadata-to-biocmap-outputs" class="section level2" number="11.1">
+<h2><span class="header-section-number">11.1</span> Add Experiment Metadata to BiocMAP Outputs</h2>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="example-analysis.html#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co">#  Load required R packages</span></span>
+<span id="cb33-2"><a href="example-analysis.html#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&#39;bsseq&#39;</span>)</span>
+<span id="cb33-3"><a href="example-analysis.html#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&#39;HDF5Array&#39;</span>)</span>
+<span id="cb33-4"><a href="example-analysis.html#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="example-analysis.html#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="co">#  Later these should changed (not hardcoded!)</span></span>
+<span id="cb33-6"><a href="example-analysis.html#cb33-6" aria-hidden="true" tabindex="-1"></a>meta_file <span class="ot">=</span> <span class="st">&#39;/dcl02/lieber/ajaffe/FlowRNA_RNAseq/WGBS/FlowRNA_WGBS_Sample_Information_with_Pheno_Info.csv&#39;</span></span>
+<span id="cb33-7"><a href="example-analysis.html#cb33-7" aria-hidden="true" tabindex="-1"></a>out_dir <span class="ot">=</span> <span class="st">&#39;/dcs04/lieber/lcolladotor/flowRNA_LIBD001/flowRNA_WGBS/processed-data/03_BiocMAP/BiocMAP_output&#39;</span></span>
+<span id="cb33-8"><a href="example-analysis.html#cb33-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-9"><a href="example-analysis.html#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="co">#  Load the &#39;CpG&#39;-context object</span></span>
+<span id="cb33-10"><a href="example-analysis.html#cb33-10" aria-hidden="true" tabindex="-1"></a>bs_cpg <span class="ot">=</span> <span class="fu">loadHDF5SummarizedExperiment</span>(</span>
+<span id="cb33-11"><a href="example-analysis.html#cb33-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">file.path</span>(out_dir, <span class="st">&#39;BSobjects&#39;</span>, <span class="st">&#39;objects&#39;</span>, <span class="st">&#39;combined&#39;</span>),</span>
+<span id="cb33-12"><a href="example-analysis.html#cb33-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">prefix =</span> <span class="st">&#39;CpG&#39;</span></span>
+<span id="cb33-13"><a href="example-analysis.html#cb33-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb33-14"><a href="example-analysis.html#cb33-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-15"><a href="example-analysis.html#cb33-15" aria-hidden="true" tabindex="-1"></a><span class="co">#  Read in experiment-specific metadata and ensure sample ID orders match</span></span>
+<span id="cb33-16"><a href="example-analysis.html#cb33-16" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">=</span> <span class="fu">read.csv</span>(meta_file)</span>
+<span id="cb33-17"><a href="example-analysis.html#cb33-17" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">=</span> meta[<span class="fu">match</span>(<span class="fu">colnames</span>(bs_cpg), meta<span class="sc">$</span>LIBD.),]</span>
+<span id="cb33-18"><a href="example-analysis.html#cb33-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-19"><a href="example-analysis.html#cb33-19" aria-hidden="true" tabindex="-1"></a><span class="co">#  Add this metadata to the Bioconductor object</span></span>
+<span id="cb33-20"><a href="example-analysis.html#cb33-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colData</span>(bs_cpg) <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">colData</span>(bs_cpg), meta)</span></code></pre></div>
 </div>
-<div id="choosing-build" class="section level3" number="5.1.2">
-<h3><span class="header-section-number">5.1.2</span> Choosing a “build”</h3>
-<p>Depending on the analysis you are doing, you may wish to only consider the reference chromosomes (for humans, the 25 sequences “chr1” through “chrM”) for alignment and methylation extraction. BiocMAP provides the option to choose from two annotation “builds” for a given release and reference, called “main” and “primary” (following the naming convention from GENCODE databases).</p>
-<ul>
-<li>The “main” build consists of only the canonical “reference” sequences for each species</li>
-<li>The “primary” build consists of the canonical “reference” sequences and additional scaffolds, as a genome <a href="ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_35/GRCh38.primary_assembly.genome.fa.gz">primary assembly fasta from GENCODE</a> would contain.</li>
-</ul>
-<p>See the variable <code>annotation_build</code> in your <a href="configuration.html#configuration">configuration</a> file for making this selection for your pipeline run.</p>
-</div>
-</div>
-<div id="custom-annotation" class="section level2" number="5.2">
-<h2><span class="header-section-number">5.2</span> Custom Annotation</h2>
-<p>You may wish to provide a genome FASTA (the reference genome to align reads to), such as the file <a href="ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/GRCh38.primary_assembly.genome.fa.gz">here</a>, in place of the automatically managed GENCODE files described in the above section.</p>
-<p>You must also add the <code>--custom_anno [label]</code> argument to your <a href="quick-start.html#quick-config">execution scripts</a>, to specify you are using custom annotation files. The “label” is a string you want to include in filenames generated from the annotation files you provided. This is intended to allow the use of potentially many different custom annotations, assigned a unique and informative name you choose each time. This can be anything except an empty string (which internally signifies not to use custom annotation).</p>
+<div id="exploratory-plots" class="section level2" number="11.2">
+<h2><span class="header-section-number">11.2</span> Exploratory Plots</h2>
+<div id="bisulfite-conversion-efficiency-by-cell-population" class="section level3" number="11.2.1">
+<h3><span class="header-section-number">11.2.1</span> Bisulfite-Conversion Efficiency by Cell Population</h3>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="example-analysis.html#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="fu">colData</span>(bs_cpg)), <span class="fu">aes</span>(<span class="at">x =</span> Cell.Population, <span class="at">y =</span> lambda_bs_conv_eff)) <span class="sc">+</span></span>
+<span id="cb34-2"><a href="example-analysis.html#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>(<span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb34-3"><a href="example-analysis.html#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>()</span></code></pre></div>
 
+</div>
 </div>
 </div>
             </section>
@@ -315,8 +312,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           </div>
         </div>
       </div>
-<a href="pipeline-overview.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="inputs.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="help.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

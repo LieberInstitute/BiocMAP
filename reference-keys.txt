@@ -67,3 +67,7 @@ help
 common-errors
 resuming
 docker-help
+example-analysis
+add-experiment-metadata-to-biocmap-outputs
+exploratory-plots
+bisulfite-conversion-efficiency-by-cell-population
