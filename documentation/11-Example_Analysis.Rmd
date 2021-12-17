@@ -26,3 +26,13 @@ meta = meta[match(colnames(bs_cpg), meta$LIBD.),]
 #  Add this metadata to the Bioconductor object
 colData(bs_cpg) = cbind(colData(bs_cpg), meta)
 ```
+
+## Exploratory Plots
+
+### Bisulfite-Conversion Efficiency by Cell Population
+
+```{r, eval=FALSE}
+ggplot(data.frame(colData(bs_cpg)), aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point()
+```
