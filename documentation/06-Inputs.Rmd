@@ -2,7 +2,7 @@
 
 The only input to the first module is a file called `samples.manifest`. This user-created file associates each FASTQ file with a path and ID, and allows the pipeline to automatically merge files if necessary. After creating the `samples.manifest` file, one must add the `--input` [argument](#command-opts) to [the approriate execution script for the first module](#quick-config), and its value should be the path to the directory containing `samples.manifest`. For example, if the full path is `/users/neagles/samples.manifest`, the full argument in the execution script should be `--input "/users/neagles"`.
 
-The second module requires the same `samples.manifest` file and an additional file called `rules.txt`. The latter specifies where relevant logs and the `samples.manifest` file are located. Similarly as in the first module, one must add the `--input` [argument](#command-opts) to [the approriate execution script for the second module](#quick-config), but its value should be the path to the directory containing `rules.txt`.
+The second module requires the same `samples.manifest` file and an additional file called `rules.txt`. The latter specifies where relevant logs and the `samples.manifest` file are located. Similarly as in the first module, one must add the `--input` [argument](#command-opts) to [the approriate execution script for the second module](#quick-config), but its value should be the path to the directory containing `rules.txt`. Please note that running the first module automatically creates a `rules.txt` file in the same directory as the input `samples.manifest`, so one can use the same `--input` argument for both the first and second module when running them in series.
 
 ## The `samples.manifest` File
 
@@ -89,6 +89,8 @@ writeLines(manifest, con = "samples.manifest")
 ```
 
 ## The `rules.txt` File
+
+This input file to the second module is automatically produced when running the first module, and placed in the same directory as the input `samples.manifest`. The below documentation exists primarily to describe how to manually produce `rules.txt` if the first and second modules are run on different systems, or if the steps corresponding to the first module are performed outside of BiocMAP.
 
 ### What `rules.txt` should look like
 

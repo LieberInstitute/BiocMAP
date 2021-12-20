@@ -1,0 +1,38 @@
+# Example Analysis
+
+This is a work in progress!
+
+## Add Experiment Metadata to BiocMAP Outputs
+
+```{r, eval=FALSE}
+#  Load required R packages
+library('bsseq')
+library('HDF5Array')
+
+#  Later these should changed (not hardcoded!)
+meta_file = '/dcl02/lieber/ajaffe/FlowRNA_RNAseq/WGBS/FlowRNA_WGBS_Sample_Information_with_Pheno_Info.csv'
+out_dir = '/dcs04/lieber/lcolladotor/flowRNA_LIBD001/flowRNA_WGBS/processed-data/03_BiocMAP/BiocMAP_output'
+
+#  Load the 'CpG'-context object
+bs_cpg = loadHDF5SummarizedExperiment(
+    file.path(out_dir, 'BSobjects', 'objects', 'combined'),
+    prefix = 'CpG'
+)
+
+#  Read in experiment-specific metadata and ensure sample ID orders match
+meta = read.csv(meta_file)
+meta = meta[match(colnames(bs_cpg), meta$LIBD.),]
+
+#  Add this metadata to the Bioconductor object
+colData(bs_cpg) = cbind(colData(bs_cpg), meta)
+```
+
+## Exploratory Plots
+
+### Bisulfite-Conversion Efficiency by Cell Population
+
+```{r, eval=FALSE}
+ggplot(data.frame(colData(bs_cpg)), aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point()
+```
