@@ -71,3 +71,4 @@ example-analysis
 add-experiment-metadata-to-biocmap-outputs
 exploratory-plots
 bisulfite-conversion-efficiency-by-cell-population
+relationship-between-methylation-fractions-across-cytosine-context-by-cell-population

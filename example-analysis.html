@@ -251,6 +251,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="11.2" data-path="example-analysis.html"><a href="example-analysis.html#exploratory-plots"><i class="fa fa-check"></i><b>11.2</b> Exploratory Plots</a>
 <ul>
 <li class="chapter" data-level="11.2.1" data-path="example-analysis.html"><a href="example-analysis.html#bisulfite-conversion-efficiency-by-cell-population"><i class="fa fa-check"></i><b>11.2.1</b> Bisulfite-Conversion Efficiency by Cell Population</a></li>
+<li class="chapter" data-level="11.2.2" data-path="example-analysis.html"><a href="example-analysis.html#relationship-between-methylation-fractions-across-cytosine-context-by-cell-population"><i class="fa fa-check"></i><b>11.2.2</b> Relationship between Methylation Fractions across Cytosine Context, by Cell Population</a></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -278,23 +279,24 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="example-analysis.html#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co">#  Load required R packages</span></span>
 <span id="cb33-2"><a href="example-analysis.html#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&#39;bsseq&#39;</span>)</span>
 <span id="cb33-3"><a href="example-analysis.html#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&#39;HDF5Array&#39;</span>)</span>
-<span id="cb33-4"><a href="example-analysis.html#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-5"><a href="example-analysis.html#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="co">#  Later these should changed (not hardcoded!)</span></span>
-<span id="cb33-6"><a href="example-analysis.html#cb33-6" aria-hidden="true" tabindex="-1"></a>meta_file <span class="ot">=</span> <span class="st">&#39;/dcl02/lieber/ajaffe/FlowRNA_RNAseq/WGBS/FlowRNA_WGBS_Sample_Information_with_Pheno_Info.csv&#39;</span></span>
-<span id="cb33-7"><a href="example-analysis.html#cb33-7" aria-hidden="true" tabindex="-1"></a>out_dir <span class="ot">=</span> <span class="st">&#39;/dcs04/lieber/lcolladotor/flowRNA_LIBD001/flowRNA_WGBS/processed-data/03_BiocMAP/BiocMAP_output&#39;</span></span>
-<span id="cb33-8"><a href="example-analysis.html#cb33-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-9"><a href="example-analysis.html#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="co">#  Load the &#39;CpG&#39;-context object</span></span>
-<span id="cb33-10"><a href="example-analysis.html#cb33-10" aria-hidden="true" tabindex="-1"></a>bs_cpg <span class="ot">=</span> <span class="fu">loadHDF5SummarizedExperiment</span>(</span>
-<span id="cb33-11"><a href="example-analysis.html#cb33-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">file.path</span>(out_dir, <span class="st">&#39;BSobjects&#39;</span>, <span class="st">&#39;objects&#39;</span>, <span class="st">&#39;combined&#39;</span>),</span>
-<span id="cb33-12"><a href="example-analysis.html#cb33-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">prefix =</span> <span class="st">&#39;CpG&#39;</span></span>
-<span id="cb33-13"><a href="example-analysis.html#cb33-13" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb33-14"><a href="example-analysis.html#cb33-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-15"><a href="example-analysis.html#cb33-15" aria-hidden="true" tabindex="-1"></a><span class="co">#  Read in experiment-specific metadata and ensure sample ID orders match</span></span>
-<span id="cb33-16"><a href="example-analysis.html#cb33-16" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">=</span> <span class="fu">read.csv</span>(meta_file)</span>
-<span id="cb33-17"><a href="example-analysis.html#cb33-17" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">=</span> meta[<span class="fu">match</span>(<span class="fu">colnames</span>(bs_cpg), meta<span class="sc">$</span>LIBD.),]</span>
-<span id="cb33-18"><a href="example-analysis.html#cb33-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-19"><a href="example-analysis.html#cb33-19" aria-hidden="true" tabindex="-1"></a><span class="co">#  Add this metadata to the Bioconductor object</span></span>
-<span id="cb33-20"><a href="example-analysis.html#cb33-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colData</span>(bs_cpg) <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">colData</span>(bs_cpg), meta)</span></code></pre></div>
+<span id="cb33-4"><a href="example-analysis.html#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&#39;ggplot2&#39;</span>)</span>
+<span id="cb33-5"><a href="example-analysis.html#cb33-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-6"><a href="example-analysis.html#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="co">#  Later these should changed (not hardcoded!)</span></span>
+<span id="cb33-7"><a href="example-analysis.html#cb33-7" aria-hidden="true" tabindex="-1"></a>meta_file <span class="ot">=</span> <span class="st">&#39;/dcl02/lieber/ajaffe/FlowRNA_RNAseq/WGBS/FlowRNA_WGBS_Sample_Information_with_Pheno_Info.csv&#39;</span></span>
+<span id="cb33-8"><a href="example-analysis.html#cb33-8" aria-hidden="true" tabindex="-1"></a>out_dir <span class="ot">=</span> <span class="st">&#39;/dcs04/lieber/lcolladotor/flowRNA_LIBD001/flowRNA_WGBS/processed-data/03_BiocMAP/BiocMAP_output&#39;</span></span>
+<span id="cb33-9"><a href="example-analysis.html#cb33-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-10"><a href="example-analysis.html#cb33-10" aria-hidden="true" tabindex="-1"></a><span class="co">#  Load the &#39;CpG&#39;-context object</span></span>
+<span id="cb33-11"><a href="example-analysis.html#cb33-11" aria-hidden="true" tabindex="-1"></a>bs_cpg <span class="ot">=</span> <span class="fu">loadHDF5SummarizedExperiment</span>(</span>
+<span id="cb33-12"><a href="example-analysis.html#cb33-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">file.path</span>(out_dir, <span class="st">&#39;BSobjects&#39;</span>, <span class="st">&#39;objects&#39;</span>, <span class="st">&#39;combined&#39;</span>),</span>
+<span id="cb33-13"><a href="example-analysis.html#cb33-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">prefix =</span> <span class="st">&#39;CpG&#39;</span></span>
+<span id="cb33-14"><a href="example-analysis.html#cb33-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb33-15"><a href="example-analysis.html#cb33-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-16"><a href="example-analysis.html#cb33-16" aria-hidden="true" tabindex="-1"></a><span class="co">#  Read in experiment-specific metadata and ensure sample ID orders match</span></span>
+<span id="cb33-17"><a href="example-analysis.html#cb33-17" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">=</span> <span class="fu">read.csv</span>(meta_file)</span>
+<span id="cb33-18"><a href="example-analysis.html#cb33-18" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">=</span> meta[<span class="fu">match</span>(<span class="fu">colnames</span>(bs_cpg), meta<span class="sc">$</span>LIBD.),]</span>
+<span id="cb33-19"><a href="example-analysis.html#cb33-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-20"><a href="example-analysis.html#cb33-20" aria-hidden="true" tabindex="-1"></a><span class="co">#  Add this metadata to the Bioconductor object</span></span>
+<span id="cb33-21"><a href="example-analysis.html#cb33-21" aria-hidden="true" tabindex="-1"></a><span class="fu">colData</span>(bs_cpg) <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">colData</span>(bs_cpg), meta)</span></code></pre></div>
 </div>
 <div id="exploratory-plots" class="section level2" number="11.2">
 <h2><span class="header-section-number">11.2</span> Exploratory Plots</h2>
@@ -303,6 +305,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="example-analysis.html#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="fu">colData</span>(bs_cpg)), <span class="fu">aes</span>(<span class="at">x =</span> Cell.Population, <span class="at">y =</span> lambda_bs_conv_eff)) <span class="sc">+</span></span>
 <span id="cb34-2"><a href="example-analysis.html#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>(<span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
 <span id="cb34-3"><a href="example-analysis.html#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>()</span></code></pre></div>
+</div>
+<div id="relationship-between-methylation-fractions-across-cytosine-context-by-cell-population" class="section level3" number="11.2.2">
+<h3><span class="header-section-number">11.2.2</span> Relationship between Methylation Fractions across Cytosine Context, by Cell Population</h3>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="example-analysis.html#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">#  Clean this up: code should be written around the idea we are plotting each</span></span>
+<span id="cb35-2"><a href="example-analysis.html#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  combination of methylation fractions (CpG, CHG, CHH), and plots should be</span></span>
+<span id="cb35-3"><a href="example-analysis.html#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  placed in a single grid</span></span>
+<span id="cb35-4"><a href="example-analysis.html#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-5"><a href="example-analysis.html#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="fu">colData</span>(bs_cpg)), <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CpG, <span class="at">y =</span> perc_M_CHG)) <span class="sc">+</span></span>
+<span id="cb35-6"><a href="example-analysis.html#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">color =</span> Cell.Population)</span>
+<span id="cb35-7"><a href="example-analysis.html#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-8"><a href="example-analysis.html#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="fu">colData</span>(bs_cpg)), <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CpG, <span class="at">y =</span> perc_M_CHH)) <span class="sc">+</span></span>
+<span id="cb35-9"><a href="example-analysis.html#cb35-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">color =</span> Cell.Population)</span>
+<span id="cb35-10"><a href="example-analysis.html#cb35-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-11"><a href="example-analysis.html#cb35-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="fu">colData</span>(bs_cpg)), <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CHG, <span class="at">y =</span> perc_M_CHH)) <span class="sc">+</span></span>
+<span id="cb35-12"><a href="example-analysis.html#cb35-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">color =</span> Cell.Population)</span></code></pre></div>
 
 </div>
 </div>
