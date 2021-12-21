@@ -20,12 +20,23 @@ bs_cpg = loadHDF5SummarizedExperiment(
     prefix = 'CpG'
 )
 
+#  Load the 'CpH'-context object. Note: this requires quite a bit of memory
+#  (~23GB) even though the assays are disk-backed!
+bs_cph = loadHDF5SummarizedExperiment(
+    file.path(out_dir, 'BSobjects', 'objects', 'combined'),
+    prefix = 'CpH'
+)
+
 #  Read in experiment-specific metadata and ensure sample ID orders match
 meta = read.csv(meta_file)
 meta = meta[match(colnames(bs_cpg), meta$LIBD.),]
 
-#  Add this metadata to the Bioconductor object
+#  Add this metadata to the Bioconductor objects
 colData(bs_cpg) = cbind(colData(bs_cpg), meta)
+colData(bs_cph) = cbind(colData(bs_cph), meta)
+
+#  Keep a copy of the metadata as a data frame, for easy plotting
+meta_df = data.frame(colData(bs_cpg))
 ```
 
 ## Exploratory Plots
@@ -33,7 +44,7 @@ colData(bs_cpg) = cbind(colData(bs_cpg), meta)
 ### Bisulfite-Conversion Efficiency by Cell Population
 
 ```{r, eval=FALSE}
-ggplot(data.frame(colData(bs_cpg)), aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
+ggplot(meta_df, aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
     geom_boxplot(outlier.shape = NA) +
     geom_point()
 ```
@@ -45,12 +56,35 @@ ggplot(data.frame(colData(bs_cpg)), aes(x = Cell.Population, y = lambda_bs_conv_
 #  combination of methylation fractions (CpG, CHG, CHH), and plots should be
 #  placed in a single grid
 
-ggplot(data.frame(colData(bs_cpg)), aes(x = perc_M_CpG, y = perc_M_CHG)) +
+ggplot(meta_df, aes(x = perc_M_CpG, y = perc_M_CHG)) +
     geom_point(color = Cell.Population)
 
-ggplot(data.frame(colData(bs_cpg)), aes(x = perc_M_CpG, y = perc_M_CHH)) +
+ggplot(meta_df, aes(x = perc_M_CpG, y = perc_M_CHH)) +
     geom_point(color = Cell.Population)
 
-ggplot(data.frame(colData(bs_cpg)), aes(x = perc_M_CHG, y = perc_M_CHH)) +
+ggplot(meta_df, aes(x = perc_M_CHG, y = perc_M_CHH)) +
     geom_point(color = Cell.Population)
+```
+
+### Fraction of Covered Cytosines by Cell Population
+
+```{r, eval=FALSE}
+#  The matrices in 'assays(bs_cpg)' and 'assays(bs_cph)' are stored on disk. To
+#  speed up some below computations, we raise the per-block memory size
+setAutoBlockSize(1e9)
+
+#  Get the proportion of cytosines in each object (context) that have non-zero
+#  coverage in at least one sample
+meta_df$frac_covered_c_cpg = DelayedArray::colMeans(assays(bs_cpg)$Cov > 0)
+meta_df$frac_covered_c_cph = DelayedArray::colMeans(assays(bs_cph)$Cov > 0)
+
+ggplot(meta_df, aes(x = Cell.Population, y = frac_covered_c_cpg)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(position = "jitter") +
+    labs(title = "Fraction of covered cytosines in CpG context")
+
+ggplot(meta_df, aes(x = Cell.Population, y = frac_covered_c_cph)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point(position = "jitter") +
+    labs(title = "Fraction of covered cytosines in CpH context")
 ```
