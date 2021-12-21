@@ -8,6 +8,7 @@ This is a work in progress!
 #  Load required R packages
 library('bsseq')
 library('HDF5Array')
+library('ggplot2')
 
 #  Later these should changed (not hardcoded!)
 meta_file = '/dcl02/lieber/ajaffe/FlowRNA_RNAseq/WGBS/FlowRNA_WGBS_Sample_Information_with_Pheno_Info.csv'
@@ -35,4 +36,21 @@ colData(bs_cpg) = cbind(colData(bs_cpg), meta)
 ggplot(data.frame(colData(bs_cpg)), aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
     geom_boxplot(outlier.shape = NA) +
     geom_point()
+```
+
+### Relationship between Methylation Fractions across Cytosine Context, by Cell Population
+
+```{r, eval=FALSE}
+#  Clean this up: code should be written around the idea we are plotting each
+#  combination of methylation fractions (CpG, CHG, CHH), and plots should be
+#  placed in a single grid
+
+ggplot(data.frame(colData(bs_cpg)), aes(x = perc_M_CpG, y = perc_M_CHG)) +
+    geom_point(color = Cell.Population)
+
+ggplot(data.frame(colData(bs_cpg)), aes(x = perc_M_CpG, y = perc_M_CHH)) +
+    geom_point(color = Cell.Population)
+
+ggplot(data.frame(colData(bs_cpg)), aes(x = perc_M_CHG, y = perc_M_CHH)) +
+    geom_point(color = Cell.Population)
 ```
