@@ -252,6 +252,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="11.2.1" data-path="example-analysis.html"><a href="example-analysis.html#bisulfite-conversion-efficiency-by-cell-population"><i class="fa fa-check"></i><b>11.2.1</b> Bisulfite-Conversion Efficiency by Cell Population</a></li>
 <li class="chapter" data-level="11.2.2" data-path="example-analysis.html"><a href="example-analysis.html#relationship-between-methylation-fractions-across-cytosine-context-by-cell-population"><i class="fa fa-check"></i><b>11.2.2</b> Relationship between Methylation Fractions across Cytosine Context, by Cell Population</a></li>
+<li class="chapter" data-level="11.2.3" data-path="example-analysis.html"><a href="example-analysis.html#fraction-of-covered-cytosines-by-cell-population"><i class="fa fa-check"></i><b>11.2.3</b> Fraction of Covered Cytosines by Cell Population</a></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -291,18 +292,29 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb33-13"><a href="example-analysis.html#cb33-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">prefix =</span> <span class="st">&#39;CpG&#39;</span></span>
 <span id="cb33-14"><a href="example-analysis.html#cb33-14" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb33-15"><a href="example-analysis.html#cb33-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-16"><a href="example-analysis.html#cb33-16" aria-hidden="true" tabindex="-1"></a><span class="co">#  Read in experiment-specific metadata and ensure sample ID orders match</span></span>
-<span id="cb33-17"><a href="example-analysis.html#cb33-17" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">=</span> <span class="fu">read.csv</span>(meta_file)</span>
-<span id="cb33-18"><a href="example-analysis.html#cb33-18" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">=</span> meta[<span class="fu">match</span>(<span class="fu">colnames</span>(bs_cpg), meta<span class="sc">$</span>LIBD.),]</span>
-<span id="cb33-19"><a href="example-analysis.html#cb33-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-20"><a href="example-analysis.html#cb33-20" aria-hidden="true" tabindex="-1"></a><span class="co">#  Add this metadata to the Bioconductor object</span></span>
-<span id="cb33-21"><a href="example-analysis.html#cb33-21" aria-hidden="true" tabindex="-1"></a><span class="fu">colData</span>(bs_cpg) <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">colData</span>(bs_cpg), meta)</span></code></pre></div>
+<span id="cb33-16"><a href="example-analysis.html#cb33-16" aria-hidden="true" tabindex="-1"></a><span class="co">#  Load the &#39;CpH&#39;-context object. Note: this requires quite a bit of memory</span></span>
+<span id="cb33-17"><a href="example-analysis.html#cb33-17" aria-hidden="true" tabindex="-1"></a><span class="co">#  (~23GB) even though the assays are disk-backed!</span></span>
+<span id="cb33-18"><a href="example-analysis.html#cb33-18" aria-hidden="true" tabindex="-1"></a>bs_cph <span class="ot">=</span> <span class="fu">loadHDF5SummarizedExperiment</span>(</span>
+<span id="cb33-19"><a href="example-analysis.html#cb33-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">file.path</span>(out_dir, <span class="st">&#39;BSobjects&#39;</span>, <span class="st">&#39;objects&#39;</span>, <span class="st">&#39;combined&#39;</span>),</span>
+<span id="cb33-20"><a href="example-analysis.html#cb33-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">prefix =</span> <span class="st">&#39;CpH&#39;</span></span>
+<span id="cb33-21"><a href="example-analysis.html#cb33-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb33-22"><a href="example-analysis.html#cb33-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-23"><a href="example-analysis.html#cb33-23" aria-hidden="true" tabindex="-1"></a><span class="co">#  Read in experiment-specific metadata and ensure sample ID orders match</span></span>
+<span id="cb33-24"><a href="example-analysis.html#cb33-24" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">=</span> <span class="fu">read.csv</span>(meta_file)</span>
+<span id="cb33-25"><a href="example-analysis.html#cb33-25" aria-hidden="true" tabindex="-1"></a>meta <span class="ot">=</span> meta[<span class="fu">match</span>(<span class="fu">colnames</span>(bs_cpg), meta<span class="sc">$</span>LIBD.),]</span>
+<span id="cb33-26"><a href="example-analysis.html#cb33-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-27"><a href="example-analysis.html#cb33-27" aria-hidden="true" tabindex="-1"></a><span class="co">#  Add this metadata to the Bioconductor objects</span></span>
+<span id="cb33-28"><a href="example-analysis.html#cb33-28" aria-hidden="true" tabindex="-1"></a><span class="fu">colData</span>(bs_cpg) <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">colData</span>(bs_cpg), meta)</span>
+<span id="cb33-29"><a href="example-analysis.html#cb33-29" aria-hidden="true" tabindex="-1"></a><span class="fu">colData</span>(bs_cph) <span class="ot">=</span> <span class="fu">cbind</span>(<span class="fu">colData</span>(bs_cph), meta)</span>
+<span id="cb33-30"><a href="example-analysis.html#cb33-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-31"><a href="example-analysis.html#cb33-31" aria-hidden="true" tabindex="-1"></a><span class="co">#  Keep a copy of the metadata as a data frame, for easy plotting</span></span>
+<span id="cb33-32"><a href="example-analysis.html#cb33-32" aria-hidden="true" tabindex="-1"></a>meta_df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">colData</span>(bs_cpg))</span></code></pre></div>
 </div>
 <div id="exploratory-plots" class="section level2" number="11.2">
 <h2><span class="header-section-number">11.2</span> Exploratory Plots</h2>
 <div id="bisulfite-conversion-efficiency-by-cell-population" class="section level3" number="11.2.1">
 <h3><span class="header-section-number">11.2.1</span> Bisulfite-Conversion Efficiency by Cell Population</h3>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="example-analysis.html#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="fu">colData</span>(bs_cpg)), <span class="fu">aes</span>(<span class="at">x =</span> Cell.Population, <span class="at">y =</span> lambda_bs_conv_eff)) <span class="sc">+</span></span>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="example-analysis.html#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> Cell.Population, <span class="at">y =</span> lambda_bs_conv_eff)) <span class="sc">+</span></span>
 <span id="cb34-2"><a href="example-analysis.html#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>(<span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
 <span id="cb34-3"><a href="example-analysis.html#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>()</span></code></pre></div>
 </div>
@@ -312,14 +324,35 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb35-2"><a href="example-analysis.html#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  combination of methylation fractions (CpG, CHG, CHH), and plots should be</span></span>
 <span id="cb35-3"><a href="example-analysis.html#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  placed in a single grid</span></span>
 <span id="cb35-4"><a href="example-analysis.html#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-5"><a href="example-analysis.html#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="fu">colData</span>(bs_cpg)), <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CpG, <span class="at">y =</span> perc_M_CHG)) <span class="sc">+</span></span>
+<span id="cb35-5"><a href="example-analysis.html#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CpG, <span class="at">y =</span> perc_M_CHG)) <span class="sc">+</span></span>
 <span id="cb35-6"><a href="example-analysis.html#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">color =</span> Cell.Population)</span>
 <span id="cb35-7"><a href="example-analysis.html#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-8"><a href="example-analysis.html#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="fu">colData</span>(bs_cpg)), <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CpG, <span class="at">y =</span> perc_M_CHH)) <span class="sc">+</span></span>
+<span id="cb35-8"><a href="example-analysis.html#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CpG, <span class="at">y =</span> perc_M_CHH)) <span class="sc">+</span></span>
 <span id="cb35-9"><a href="example-analysis.html#cb35-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">color =</span> Cell.Population)</span>
 <span id="cb35-10"><a href="example-analysis.html#cb35-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-11"><a href="example-analysis.html#cb35-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="fu">colData</span>(bs_cpg)), <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CHG, <span class="at">y =</span> perc_M_CHH)) <span class="sc">+</span></span>
+<span id="cb35-11"><a href="example-analysis.html#cb35-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CHG, <span class="at">y =</span> perc_M_CHH)) <span class="sc">+</span></span>
 <span id="cb35-12"><a href="example-analysis.html#cb35-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">color =</span> Cell.Population)</span></code></pre></div>
+</div>
+<div id="fraction-of-covered-cytosines-by-cell-population" class="section level3" number="11.2.3">
+<h3><span class="header-section-number">11.2.3</span> Fraction of Covered Cytosines by Cell Population</h3>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="example-analysis.html#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co">#  The matrices in &#39;assays(bs_cpg)&#39; and &#39;assays(bs_cph)&#39; are stored on disk. To</span></span>
+<span id="cb36-2"><a href="example-analysis.html#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  speed up some below computations, we raise the per-block memory size</span></span>
+<span id="cb36-3"><a href="example-analysis.html#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="fu">setAutoBlockSize</span>(<span class="fl">1e9</span>)</span>
+<span id="cb36-4"><a href="example-analysis.html#cb36-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-5"><a href="example-analysis.html#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="co">#  Get the proportion of cytosines in each object (context) that have non-zero</span></span>
+<span id="cb36-6"><a href="example-analysis.html#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="co">#  coverage in at least one sample</span></span>
+<span id="cb36-7"><a href="example-analysis.html#cb36-7" aria-hidden="true" tabindex="-1"></a>meta_df<span class="sc">$</span>frac_covered_c_cpg <span class="ot">=</span> DelayedArray<span class="sc">::</span><span class="fu">colMeans</span>(<span class="fu">assays</span>(bs_cpg)<span class="sc">$</span>Cov <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb36-8"><a href="example-analysis.html#cb36-8" aria-hidden="true" tabindex="-1"></a>meta_df<span class="sc">$</span>frac_covered_c_cph <span class="ot">=</span> DelayedArray<span class="sc">::</span><span class="fu">colMeans</span>(<span class="fu">assays</span>(bs_cph)<span class="sc">$</span>Cov <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb36-9"><a href="example-analysis.html#cb36-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-10"><a href="example-analysis.html#cb36-10" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> Cell.Population, <span class="at">y =</span> frac_covered_c_cpg)) <span class="sc">+</span></span>
+<span id="cb36-11"><a href="example-analysis.html#cb36-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>(<span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb36-12"><a href="example-analysis.html#cb36-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="st">&quot;jitter&quot;</span>) <span class="sc">+</span></span>
+<span id="cb36-13"><a href="example-analysis.html#cb36-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Fraction of covered cytosines in CpG context&quot;</span>)</span>
+<span id="cb36-14"><a href="example-analysis.html#cb36-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-15"><a href="example-analysis.html#cb36-15" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> Cell.Population, <span class="at">y =</span> frac_covered_c_cph)) <span class="sc">+</span></span>
+<span id="cb36-16"><a href="example-analysis.html#cb36-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>(<span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb36-17"><a href="example-analysis.html#cb36-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="st">&quot;jitter&quot;</span>) <span class="sc">+</span></span>
+<span id="cb36-18"><a href="example-analysis.html#cb36-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Fraction of covered cytosines in CpH context&quot;</span>)</span></code></pre></div>
 
 </div>
 </div>
