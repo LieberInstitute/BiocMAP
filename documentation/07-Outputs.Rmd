@@ -61,9 +61,9 @@ The `colData` slot of each `bsseq` object includes metrics collected from variou
 | maxQlen | Arioc | Value for "maximum Q length" field in "SAM output" section of verbose output from alignment |      
 | max_diag_band_width | Arioc | Value for "maximum diagonal band width" field in "SAM output" section of verbose output from alignment |      
 | TLEN mean | Arioc | Value for "TLEN mean (stdev, skewness)" field in "SAM output" section of verbose output from alignment |        
-| perc_M_CpG | Methylation extraction | Percentage of methylated cytosines appearing in CpG context |      
-| perc_M_CHG | Methylation extraction | Percentage of methylated cytosines appearing in CHG context |
-| perc_M_CHH | Methylation extraction | Percentage of methylated cytosines appearing in CHH context |
+| perc_M_CpG | Methylation extraction | Among all cytosines observed in CpG context, the percent that are methylated |      
+| perc_M_CHG | Methylation extraction | Among all cytosines observed in CHG context, the percent that are methylated |
+| perc_M_CHH | Methylation extraction | Among all cytosines observed in CHH context, the percent that are methylated |
 | lambda_bs_conv_eff | Lambda pseudo-alignment | Estimated bisulfite conversion efficiency as a percentage |
 
 ## Intermediary Outputs
