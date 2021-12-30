@@ -6,7 +6,7 @@ A brief guide to setting up BiocMAP. A more detailed and thorough guide is [here
 
 1. Clone the BiocMAP repository with `git clone git@github.com:LieberInstitute/BiocMAP.git`
 2. Change directory into the repository with `cd BiocMAP`
-3. Run the command `bash install_software.sh [option]` to set up test files and software dependencies, where `[option]` must be replaced by `docker`, `conda`, `local`, or `jhpce`. These respectively (and in descending order of our recommendation) correspond to using docker to manage software dependencies, using conda, installing all software locally, or preparing BiocMAP for execution at the [JHPCE](https://jhpce.jhu.edu/) cluster.
+3. Run the command `bash install_software.sh [option]` to set up test files and software dependencies, where `[option]` must be replaced by `docker`, `singularity`, `conda`, `local`, or `jhpce`. These respectively (and in descending order of our recommendation) correspond to using docker to manage software dependencies, using singularity, using conda, installing all software locally, or preparing BiocMAP for execution at the [JHPCE](https://jhpce.jhu.edu/) cluster.
 4. If using BiocMAP on a cluster, set the `arioc_queue` [Arioc setting](#arioc-settings) in [your config file](#your-config-file) for the first module.
 
 **Note:** JHPCE users must also make an edit to their `~/.bashrc` files, described [here](#installation).

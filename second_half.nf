@@ -658,8 +658,8 @@ process FormBsseqObjects {
     // normally. Otherwise, use a shortcut where we directly write objects to
     // the output folder during creation. The shortcut saves a significant
     // amount of disk space as well as some I/O strain and time
-    publishDir "${params.output}/BSobjects/objects/$chr/CpG", mode:'copy', pattern: '*_CpG.{h5,rds}', saveAs: { filename -> filename.replaceAll("_${chr}_CpG", "") }, enabled: params.using_docker
-    publishDir "${params.output}/BSobjects/objects/$chr/CpH", mode:'copy', pattern: '*_CpH.{h5,rds}', saveAs: { filename -> filename.replaceAll("_${chr}_CpH", "") }, enabled: params.using_docker
+    publishDir "${params.output}/BSobjects/objects/$chr/CpG", mode:'copy', pattern: '*_CpG.{h5,rds}', saveAs: { filename -> filename.replaceAll("_${chr}_CpG", "") }, enabled: params.using_containers
+    publishDir "${params.output}/BSobjects/objects/$chr/CpH", mode:'copy', pattern: '*_CpH.{h5,rds}', saveAs: { filename -> filename.replaceAll("_${chr}_CpH", "") }, enabled: params.using_containers
     
     tag "$chr"
         
@@ -673,7 +673,7 @@ process FormBsseqObjects {
         
     shell:
         '''
-        if [[ !{params.using_docker} == "true" ]]; then
+        if [[ !{params.using_containers} == "true" ]]; then
             out_dir=$(pwd)
         else
             out_dir=!{params.output}/BSobjects/objects
@@ -685,7 +685,7 @@ process FormBsseqObjects {
             -c !{task.cpus} \
             -d ${out_dir}
            
-        if [[ !{params.using_docker} == "true" ]]; then
+        if [[ !{params.using_containers} == "true" ]]; then
             #  Give unique filenames so that nextflow knows how to manage the
             #  files
             mv !{chr}/CpG/assays.h5 assays_!{chr}_CpG.h5
@@ -721,7 +721,7 @@ process MergeBsseqObjects {
     // normally. Otherwise, use a shortcut where we directly write objects to
     // the output folder during creation. The shortcut saves a significant
     // amount of disk space as well as some I/O strain and time
-    publishDir "${params.output}/BSobjects/objects/combined", pattern: '*.{rds,h5}', mode:'move', enabled: params.using_docker
+    publishDir "${params.output}/BSobjects/objects/combined", pattern: '*.{rds,h5}', mode:'move', enabled: params.using_containers
     
     input:
         set val(context), file(bsobj) from bsseq_objects_in
@@ -735,7 +735,7 @@ process MergeBsseqObjects {
         
     shell:
         '''
-        if [[ !{params.using_docker} == "true" ]]; then
+        if [[ !{params.using_containers} == "true" ]]; then
             #  Organize bsseq objects into directories as they were
             #  originally produced
             for chr in $(cat !{chr_names}); do

@@ -25,7 +25,7 @@ Software | Version | Command used by the pipeline |
 
 ## Docker Images {#docker-images}
 
-The following image versions are used in this pipeline. These are automatically managed by BiocMAP.
+The following image versions are used in this pipeline, when it is [installed](#installation) via the "docker" or "singularity" modes. These are automatically managed by BiocMAP.
 
 | Image | Tag | Software |
 | ----- | ---- | ------- |

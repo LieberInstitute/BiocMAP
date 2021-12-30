@@ -2,6 +2,7 @@
 .nextflow*
 work/*
 run_*_half_*.log
+docker/singularity_cache
 
 #	Personal data- related
 out/*

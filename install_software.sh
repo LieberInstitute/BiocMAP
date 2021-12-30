@@ -5,14 +5,17 @@
 #
 #  Usage:  bash install_software.sh [installation_type]
 #
-#    installation_type may be "docker", "local", or "jhpce":
-#        docker:   user plans to run pipeline with docker to manage software
-#                  dependencies
-#        local:    user wishes to install all dependencies locally (regardless
-#                  of whether the pipeline will be run on a cluster or with
-#                  local resources)
-#        conda:    required software is installed within a conda environment
-#        jhpce:    user is setting up the pipeline on the JHPCE cluster
+#    installation_type may be "docker", "local", "conda", "jhpce", or
+#    "singularity":
+#        docker:      user plans to run BiocMAP with docker to manage software
+#                     dependencies
+#        local:       user wishes to install all dependencies locally (regardless
+#                     of whether BiocMAP will be run on a cluster or with
+#                     local resources)
+#        conda:       required software is installed within a conda environment
+#        jhpce:       user is setting up BiocMAP on the JHPCE cluster
+#        singularity: user plans to run BiocMAP with singularity to manage
+#                     software dependencies
 
 set -e
 
@@ -36,20 +39,21 @@ else
     
 fi
 
-if [ "$1" == "docker" ]; then
+if [[ "$1" == "docker" || "$1" == "singularity" ]]; then
 
-    #  This is the docker image to be used for execution of R via docker (with
-    #  docker mode)
+    #  This is the docker image to be used for execution of R via docker/
+    #  singularity
     R_container="libddocker/bioc_kallisto:3.13"
     
     #  Point to original repo's main script to facilitate pipeline sharing
     sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_*_half_*.sh
     
-    #  Add docker configuration to each config profile in 'nextflow.config'
-    sed -i "s|includeConfig 'conf/\(.*\)_half_\(.*\)\.config'|includeConfig 'conf/\1_half_\2.config'\n        includeConfig 'conf/\1_half_docker.config'|" nextflow.config
+    #  Add docker/singularity configuration to each config profile in
+    #  'nextflow.config'
+    sed -i "s|includeConfig 'conf/\(.*\)_half_\(.*\)\.config'|includeConfig 'conf/\1_half_\2.config'\n        includeConfig 'conf/\1_half_$1.config'|" nextflow.config
     
-    #  Remove a variable from configs that disables docker settings
-    sed -i "/using_docker = false/d" conf/second_half_{jhpce,local,sge,slurm}.config
+    #  Remove a variable from configs that disables docker/singularity settings
+    sed -i "/using_containers = false/d" conf/second_half_{jhpce,local,sge,slurm}.config
     
     BASE_DIR=$(pwd)
     mkdir -p $BASE_DIR/Software/bin
@@ -65,19 +69,45 @@ if [ "$1" == "docker" ]; then
     
     echo "Setting up test files..."
     
-    if [[ "$2" == "sudo" ]]; then
-        command="sudo docker run"
-    else
-        command="docker run"
+    if [[ "$1" == "docker" ]]; then
+        if [[ "$2" == "sudo" ]]; then
+            command="sudo docker run"
+        else
+            command="docker run"
+        fi
+        
+        $command \
+            -it \
+            -u $(id -u):$(id -g) \
+            -v $BASE_DIR/scripts:/usr/local/src/scripts/ \
+            -v $BASE_DIR/test:/usr/local/src/test \
+            $R_container \
+            Rscript /usr/local/src/scripts/prepare_test_files.R -d $BASE_DIR
+    else # using singularity
+        cd $BASE_DIR
+        
+        #  Pull images in advance, since it seems to use very large amounts of
+        #  memory to build the '.sif' file from each docker image (we don't
+        #  want to allocate large amounts of memory in each process just for
+        #  this purpose)
+        mkdir -p docker/singularity_cache
+        images=$(grep 'container = ' conf/*_half_singularity.config | tr -d " |'" | cut -d '=' -f 2 | sort -u)
+        for image in $images; do
+            image_name=$(echo $image | sed 's/[:\/]/-/g').sif
+            singularity pull docker/singularity_cache/$image_name docker://$image
+        done
+        
+        singularity exec \
+            -B $BASE_DIR/scripts:/usr/local/src/scripts/ \
+            -B $BASE_DIR/test:/usr/local/src/test \
+            docker://$R_container \
+            Rscript /usr/local/src/scripts/prepare_test_files.R -d $BASE_DIR
+        
+        #  Set modules used correctly for JHPCE users
+        sed -i "/module = '.*\/.*'/d" conf/*_half_jhpce.config
+        sed -i "s|cache = 'lenient'|cache = 'lenient'\n    module = 'singularity/3.6.0'|" conf/*_half_jhpce.config
+        sed -i "s|module load nextflow|module load nextflow\nmodule load singularity/3.6.0|" run_*_half_jhpce.sh
     fi
-    
-    $command \
-        -it \
-        -u $(id -u):$(id -g) \
-        -v $BASE_DIR/scripts:/usr/local/src/scripts/ \
-        -v $BASE_DIR/test:/usr/local/src/test \
-        $R_container \
-        Rscript /usr/local/src/scripts/prepare_test_files.R -d $BASE_DIR
         
     echo "Done."
     
@@ -303,9 +333,9 @@ elif [ "$1" == "local" ]; then
         echo "A java runtime could not be found or accessed. Is it installed and on the PATH? You can install it by running 'apt install default-jre', which requires sudo/ root privileges."
         echo "After installing Java, rerun this script to finish the installation procedure."
     fi
-else # neither "docker", "local", "conda", nor "jhpce" were chosen
+else # neither "docker", "local", "conda", "jhpce", nor "singularity" were chosen
     
-    echo 'Error: please specify "docker", "local", "conda", or "jhpce" and rerun this script.'
+    echo 'Error: please specify "docker", "local", "conda", "jhpce", or "singularity" and rerun this script.'
     echo '    eg. bash install_software.sh "local"'
     exit 1
     
