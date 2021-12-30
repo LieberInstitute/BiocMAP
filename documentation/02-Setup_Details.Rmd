@@ -14,7 +14,7 @@ If installing the pipeline locally (see [installation](#installation)), the foll
 - R (tested with R 3.6-4.1)
 - GNU make
 
-If installing the pipeline for use with docker (see [installation](#installation)), the [NVIDIA container toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker) is also required.
+If installing the pipeline for use with docker (see [installation](#installation)), the [NVIDIA container toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker) is also required. A CUDA runtime >= 10.1 is required for docker/singularity users.
 
 Additionally, installation via the "local" or "conda" modes (see below) require a C compiler, such as GCC. An up-to-date version of `gcc` is often required to ensure R packages get properly installed.
 

@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.4.1-devel-ubuntu18.04
+FROM nvidia/cuda:10.1-devel-ubuntu18.04
 
 WORKDIR /usr/local/src
 
@@ -12,7 +12,7 @@ RUN mkdir arioc && \
         
 RUN cd arioc/src && \
     make clean && \
-    make AriocE && \
-    make AriocU && \
-    make AriocP && \
+    make AriocE debug && \
+    make AriocU debug && \
+    make AriocP debug && \
     cp ../bin/* /usr/local/bin/
