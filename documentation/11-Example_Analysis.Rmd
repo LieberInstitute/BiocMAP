@@ -56,27 +56,27 @@ ggplot(meta_df, aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
 #  combination of methylation fractions (CpG, CHG, CHH), and plots should be
 #  placed in a single grid
 
-ggplot(meta_df, aes(x = perc_M_CpG, y = perc_M_CHG)) +
-    geom_point(color = Cell.Population)
+ggplot(meta_df, aes(x = perc_M_CpG, y = perc_M_CHG, color = Cell.Population)) +
+    geom_point()
 
-ggplot(meta_df, aes(x = perc_M_CpG, y = perc_M_CHH)) +
-    geom_point(color = Cell.Population)
+ggplot(meta_df, aes(x = perc_M_CpG, y = perc_M_CHH, color = Cell.Population)) +
+    geom_point()
 
-ggplot(meta_df, aes(x = perc_M_CHG, y = perc_M_CHH)) +
-    geom_point(color = Cell.Population)
+ggplot(meta_df, aes(x = perc_M_CHG, y = perc_M_CHH, color = Cell.Population)) +
+    geom_point()
 ```
 
 ### Fraction of Covered Cytosines by Cell Population
 
-```{r, eval=FALSE}
+```{r "coverage_fraction", eval=FALSE}
 #  The matrices in 'assays(bs_cpg)' and 'assays(bs_cph)' are stored on disk. To
 #  speed up some below computations, we raise the per-block memory size
 setAutoBlockSize(1e9)
 
 #  Get the proportion of cytosines in each object (context) that have non-zero
 #  coverage in at least one sample
-meta_df$frac_covered_c_cpg = DelayedArray::colMeans(assays(bs_cpg)$Cov > 0)
-meta_df$frac_covered_c_cph = DelayedArray::colMeans(assays(bs_cph)$Cov > 0)
+meta_df$frac_covered_c_cpg = DelayedArray::colMeans(assays(bs_cpg)$Cov > 3)
+meta_df$frac_covered_c_cph = DelayedArray::colMeans(assays(bs_cph)$Cov > 3)
 
 ggplot(meta_df, aes(x = Cell.Population, y = frac_covered_c_cpg)) +
     geom_boxplot(outlier.shape = NA) +
@@ -88,3 +88,17 @@ ggplot(meta_df, aes(x = Cell.Population, y = frac_covered_c_cph)) +
     geom_point(position = "jitter") +
     labs(title = "Fraction of covered cytosines in CpH context")
 ```
+
+### Distribution of Methylation Fractions across Cytosines by Cell Population
+
+```{r "methylation_fractions", eval=FALSE}
+max_sites = 1000
+
+indices = sample(nrow(bs_cpg), max_sites)
+m_frac = assays(bs_cpg)$M[indices,] / assays(bs_cpg)$Cov[indices,]
+
+#  Form df:
+#
+#  index, rowMean, cell population (4000 x 3)
+#
+#  x = cell population, y = rowMean
