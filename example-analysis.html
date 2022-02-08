@@ -253,6 +253,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="11.2.1" data-path="example-analysis.html"><a href="example-analysis.html#bisulfite-conversion-efficiency-by-cell-population"><i class="fa fa-check"></i><b>11.2.1</b> Bisulfite-Conversion Efficiency by Cell Population</a></li>
 <li class="chapter" data-level="11.2.2" data-path="example-analysis.html"><a href="example-analysis.html#relationship-between-methylation-fractions-across-cytosine-context-by-cell-population"><i class="fa fa-check"></i><b>11.2.2</b> Relationship between Methylation Fractions across Cytosine Context, by Cell Population</a></li>
 <li class="chapter" data-level="11.2.3" data-path="example-analysis.html"><a href="example-analysis.html#fraction-of-covered-cytosines-by-cell-population"><i class="fa fa-check"></i><b>11.2.3</b> Fraction of Covered Cytosines by Cell Population</a></li>
+<li class="chapter" data-level="11.2.4" data-path="example-analysis.html"><a href="example-analysis.html#distribution-of-methylation-fractions-across-cytosines-by-cell-population"><i class="fa fa-check"></i><b>11.2.4</b> Distribution of Methylation Fractions across Cytosines by Cell Population</a></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -277,6 +278,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>This is a work in progress!</p>
 <div id="add-experiment-metadata-to-biocmap-outputs" class="section level2" number="11.1">
 <h2><span class="header-section-number">11.1</span> Add Experiment Metadata to BiocMAP Outputs</h2>
+<p>The <code>bsseq</code> output objects from BiocMAP contain methylation and coverage info for our samples in the dataset. However, we’re interested in exploring how this information relates back to sample metadata and phenotype information, present in an external file. Our first step will therefore be to load the BiocMAP output objects into memory, and manually attach the additional sample metadata to each object.</p>
 <div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="example-analysis.html#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co">#  Load required R packages</span></span>
 <span id="cb33-2"><a href="example-analysis.html#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&#39;bsseq&#39;</span>)</span>
 <span id="cb33-3"><a href="example-analysis.html#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&#39;HDF5Array&#39;</span>)</span>
@@ -314,35 +316,39 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2><span class="header-section-number">11.2</span> Exploratory Plots</h2>
 <div id="bisulfite-conversion-efficiency-by-cell-population" class="section level3" number="11.2.1">
 <h3><span class="header-section-number">11.2.1</span> Bisulfite-Conversion Efficiency by Cell Population</h3>
+<p>This experiment used spike-ins of the lambda bacteriophage genome, which were quantified via BiocMAP to infer bisulfite-conversion rate. Successful bisulfite conversion is a pre-requisite for accurate methylation calls, so we’d like to see both that values are close to 1, and that values are not significantly different by sample (or by sample-related variables like cell population). We’ll explore this visually below.</p>
 <div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="example-analysis.html#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> Cell.Population, <span class="at">y =</span> lambda_bs_conv_eff)) <span class="sc">+</span></span>
 <span id="cb34-2"><a href="example-analysis.html#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>(<span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
 <span id="cb34-3"><a href="example-analysis.html#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>()</span></code></pre></div>
 </div>
 <div id="relationship-between-methylation-fractions-across-cytosine-context-by-cell-population" class="section level3" number="11.2.2">
 <h3><span class="header-section-number">11.2.2</span> Relationship between Methylation Fractions across Cytosine Context, by Cell Population</h3>
+<p>Next, we’ll explore if average methylation rate for each cytosine context correlates with that of other contexts across sample. For example, is a sample with highly methylated CpGs likely to have highly methylated CHGs (the first plot)?</p>
+<p>We observe a few interesting facts; first, there is a visibly obvious correlation between average methylation rates of different cytosine contexts by sample. This is highly pronounced between CpH contexts (CHG vs. CHH). In each case, the relation appears roughly linear, though this is questionable for CpG vs. CHH context comparison. Another observation is that samples tend to cluster fairly well by cell population. Finally, for comparisons of CpG vs. CpH context, the strength of correlation between methylation rates varies significantly by cell type, with <code>MBPpos</code> and <code>TripleNeg</code> showing only weak correlation at best.</p>
 <div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="example-analysis.html#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">#  Clean this up: code should be written around the idea we are plotting each</span></span>
 <span id="cb35-2"><a href="example-analysis.html#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  combination of methylation fractions (CpG, CHG, CHH), and plots should be</span></span>
 <span id="cb35-3"><a href="example-analysis.html#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  placed in a single grid</span></span>
 <span id="cb35-4"><a href="example-analysis.html#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-5"><a href="example-analysis.html#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CpG, <span class="at">y =</span> perc_M_CHG)) <span class="sc">+</span></span>
-<span id="cb35-6"><a href="example-analysis.html#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">color =</span> Cell.Population)</span>
+<span id="cb35-5"><a href="example-analysis.html#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CpG, <span class="at">y =</span> perc_M_CHG, <span class="at">color =</span> Cell.Population)) <span class="sc">+</span></span>
+<span id="cb35-6"><a href="example-analysis.html#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>()</span>
 <span id="cb35-7"><a href="example-analysis.html#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-8"><a href="example-analysis.html#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CpG, <span class="at">y =</span> perc_M_CHH)) <span class="sc">+</span></span>
-<span id="cb35-9"><a href="example-analysis.html#cb35-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">color =</span> Cell.Population)</span>
+<span id="cb35-8"><a href="example-analysis.html#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CpG, <span class="at">y =</span> perc_M_CHH, <span class="at">color =</span> Cell.Population)) <span class="sc">+</span></span>
+<span id="cb35-9"><a href="example-analysis.html#cb35-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>()</span>
 <span id="cb35-10"><a href="example-analysis.html#cb35-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-11"><a href="example-analysis.html#cb35-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CHG, <span class="at">y =</span> perc_M_CHH)) <span class="sc">+</span></span>
-<span id="cb35-12"><a href="example-analysis.html#cb35-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">color =</span> Cell.Population)</span></code></pre></div>
+<span id="cb35-11"><a href="example-analysis.html#cb35-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> perc_M_CHG, <span class="at">y =</span> perc_M_CHH, <span class="at">color =</span> Cell.Population)) <span class="sc">+</span></span>
+<span id="cb35-12"><a href="example-analysis.html#cb35-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>()</span></code></pre></div>
 </div>
 <div id="fraction-of-covered-cytosines-by-cell-population" class="section level3" number="11.2.3">
 <h3><span class="header-section-number">11.2.3</span> Fraction of Covered Cytosines by Cell Population</h3>
+<p>Another useful piece of information is how well-covered the genome is with methylation information. Does coverage of cytosines vary by a sample’s cell type?</p>
 <div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="example-analysis.html#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co">#  The matrices in &#39;assays(bs_cpg)&#39; and &#39;assays(bs_cph)&#39; are stored on disk. To</span></span>
 <span id="cb36-2"><a href="example-analysis.html#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  speed up some below computations, we raise the per-block memory size</span></span>
 <span id="cb36-3"><a href="example-analysis.html#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="fu">setAutoBlockSize</span>(<span class="fl">1e9</span>)</span>
 <span id="cb36-4"><a href="example-analysis.html#cb36-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb36-5"><a href="example-analysis.html#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="co">#  Get the proportion of cytosines in each object (context) that have non-zero</span></span>
 <span id="cb36-6"><a href="example-analysis.html#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="co">#  coverage in at least one sample</span></span>
-<span id="cb36-7"><a href="example-analysis.html#cb36-7" aria-hidden="true" tabindex="-1"></a>meta_df<span class="sc">$</span>frac_covered_c_cpg <span class="ot">=</span> DelayedArray<span class="sc">::</span><span class="fu">colMeans</span>(<span class="fu">assays</span>(bs_cpg)<span class="sc">$</span>Cov <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb36-8"><a href="example-analysis.html#cb36-8" aria-hidden="true" tabindex="-1"></a>meta_df<span class="sc">$</span>frac_covered_c_cph <span class="ot">=</span> DelayedArray<span class="sc">::</span><span class="fu">colMeans</span>(<span class="fu">assays</span>(bs_cph)<span class="sc">$</span>Cov <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb36-7"><a href="example-analysis.html#cb36-7" aria-hidden="true" tabindex="-1"></a>meta_df<span class="sc">$</span>frac_covered_c_cpg <span class="ot">=</span> DelayedArray<span class="sc">::</span><span class="fu">colMeans</span>(<span class="fu">assays</span>(bs_cpg)<span class="sc">$</span>Cov <span class="sc">&gt;</span> <span class="dv">3</span>)</span>
+<span id="cb36-8"><a href="example-analysis.html#cb36-8" aria-hidden="true" tabindex="-1"></a>meta_df<span class="sc">$</span>frac_covered_c_cph <span class="ot">=</span> DelayedArray<span class="sc">::</span><span class="fu">colMeans</span>(<span class="fu">assays</span>(bs_cph)<span class="sc">$</span>Cov <span class="sc">&gt;</span> <span class="dv">3</span>)</span>
 <span id="cb36-9"><a href="example-analysis.html#cb36-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb36-10"><a href="example-analysis.html#cb36-10" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meta_df, <span class="fu">aes</span>(<span class="at">x =</span> Cell.Population, <span class="at">y =</span> frac_covered_c_cpg)) <span class="sc">+</span></span>
 <span id="cb36-11"><a href="example-analysis.html#cb36-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>(<span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
@@ -353,6 +359,59 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb36-16"><a href="example-analysis.html#cb36-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>(<span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
 <span id="cb36-17"><a href="example-analysis.html#cb36-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="st">&quot;jitter&quot;</span>) <span class="sc">+</span></span>
 <span id="cb36-18"><a href="example-analysis.html#cb36-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Fraction of covered cytosines in CpH context&quot;</span>)</span></code></pre></div>
+</div>
+<div id="distribution-of-methylation-fractions-across-cytosines-by-cell-population" class="section level3" number="11.2.4">
+<h3><span class="header-section-number">11.2.4</span> Distribution of Methylation Fractions across Cytosines by Cell Population</h3>
+<p>Grouping together all samples of a particular cell type, we’ll explore the methylation-fraction distribution across cytosines, separately for both CpG and CpH contexts.</p>
+<p>For both cytosine contexts, we observe a bimodal distribution with peaks at fractions of 0 and 1. This suggests that within a particular sample, a cytosine site is disproportionately likely to have consistent methylation pattern. For example, many sites are such that all observations of the cytosine are methylated for a particular sample. Similarly, we don’t see many sites where around half of the observed site are methylated for a given sample. It’s also worth noting that the apparent bimodal form is likely not an artifact of low coverage– i.e., only a small fraction of sites are covered just once or twice, a circumstance that would cause over-representation of the fractions of 0 or 1.</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="example-analysis.html#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co">#   Randomly subset to a particular number of cytosines, to both control memory</span></span>
+<span id="cb37-2"><a href="example-analysis.html#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   and speed up plotting</span></span>
+<span id="cb37-3"><a href="example-analysis.html#cb37-3" aria-hidden="true" tabindex="-1"></a>max_sites <span class="ot">=</span> <span class="dv">1000</span></span>
+<span id="cb37-4"><a href="example-analysis.html#cb37-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-5"><a href="example-analysis.html#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   Look at CpG sites first</span></span>
+<span id="cb37-6"><a href="example-analysis.html#cb37-6" aria-hidden="true" tabindex="-1"></a>indices <span class="ot">=</span> <span class="fu">sample</span>(<span class="fu">nrow</span>(bs_cpg), max_sites)</span>
+<span id="cb37-7"><a href="example-analysis.html#cb37-7" aria-hidden="true" tabindex="-1"></a>m_frac <span class="ot">=</span> <span class="fu">assays</span>(bs_cpg)<span class="sc">$</span>M[indices,] <span class="sc">/</span> <span class="fu">assays</span>(bs_cpg)<span class="sc">$</span>Cov[indices,]</span>
+<span id="cb37-8"><a href="example-analysis.html#cb37-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-9"><a href="example-analysis.html#cb37-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   It&#39;s worth looking at the distribution of coverage by site, since in theory</span></span>
+<span id="cb37-10"><a href="example-analysis.html#cb37-10" aria-hidden="true" tabindex="-1"></a><span class="co">#   this could be cause for the bimodality observed in the plot below</span></span>
+<span id="cb37-11"><a href="example-analysis.html#cb37-11" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">assays</span>(bs_cpg)<span class="sc">$</span>Cov[indices,])</span>
+<span id="cb37-12"><a href="example-analysis.html#cb37-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-13"><a href="example-analysis.html#cb37-13" aria-hidden="true" tabindex="-1"></a>meth_df <span class="ot">=</span> <span class="fu">data.frame</span>(</span>
+<span id="cb37-14"><a href="example-analysis.html#cb37-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;m_frac&#39;</span> <span class="ot">=</span> <span class="fu">as.numeric</span>(m_frac),</span>
+<span id="cb37-15"><a href="example-analysis.html#cb37-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;LIBD.&#39;</span> <span class="ot">=</span> <span class="fu">rep</span>(<span class="fu">colnames</span>(m_frac), <span class="at">each =</span> max_sites)</span>
+<span id="cb37-16"><a href="example-analysis.html#cb37-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-17"><a href="example-analysis.html#cb37-17" aria-hidden="true" tabindex="-1"></a>meth_df<span class="sc">$</span>Cell.Population <span class="ot">=</span> meta_df<span class="sc">$</span>Cell.Population[</span>
+<span id="cb37-18"><a href="example-analysis.html#cb37-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">match</span>(meth_df<span class="sc">$</span><span class="st">&#39;LIBD.&#39;</span>, meta_df<span class="sc">$</span><span class="st">&#39;LIBD.&#39;</span>)</span>
+<span id="cb37-19"><a href="example-analysis.html#cb37-19" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb37-20"><a href="example-analysis.html#cb37-20" aria-hidden="true" tabindex="-1"></a><span class="co">#   This averages M frac within each sample, which probably isn&#39;t what we want</span></span>
+<span id="cb37-21"><a href="example-analysis.html#cb37-21" aria-hidden="true" tabindex="-1"></a><span class="co"># meth_df = data.frame(&#39;m_frac&#39; = DelayedArray::colMeans(m_frac, na.rm = TRUE))</span></span>
+<span id="cb37-22"><a href="example-analysis.html#cb37-22" aria-hidden="true" tabindex="-1"></a><span class="co"># meth_df$Cell.Population = meta_df$Cell.Population[</span></span>
+<span id="cb37-23"><a href="example-analysis.html#cb37-23" aria-hidden="true" tabindex="-1"></a><span class="co">#     match(rownames(meth_df), meta_df$&#39;LIBD.&#39;)</span></span>
+<span id="cb37-24"><a href="example-analysis.html#cb37-24" aria-hidden="true" tabindex="-1"></a><span class="co"># ]</span></span>
+<span id="cb37-25"><a href="example-analysis.html#cb37-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-26"><a href="example-analysis.html#cb37-26" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meth_df, <span class="fu">aes</span>(<span class="at">x =</span> Cell.Population, <span class="at">y =</span> m_frac)) <span class="sc">+</span></span>
+<span id="cb37-27"><a href="example-analysis.html#cb37-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_violin</span>() <span class="sc">+</span></span>
+<span id="cb37-28"><a href="example-analysis.html#cb37-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Methylation-Fraction across CpG sites by Cell Population&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Methylation Fraction&quot;</span>)</span>
+<span id="cb37-29"><a href="example-analysis.html#cb37-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-30"><a href="example-analysis.html#cb37-30" aria-hidden="true" tabindex="-1"></a><span class="co">#   Now look at CpH sites</span></span>
+<span id="cb37-31"><a href="example-analysis.html#cb37-31" aria-hidden="true" tabindex="-1"></a>indices <span class="ot">=</span> <span class="fu">sample</span>(<span class="fu">nrow</span>(bs_cph), max_sites)</span>
+<span id="cb37-32"><a href="example-analysis.html#cb37-32" aria-hidden="true" tabindex="-1"></a>m_frac <span class="ot">=</span> <span class="fu">assays</span>(bs_cph)<span class="sc">$</span>M[indices,] <span class="sc">/</span> <span class="fu">assays</span>(bs_cph)<span class="sc">$</span>Cov[indices,]</span>
+<span id="cb37-33"><a href="example-analysis.html#cb37-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-34"><a href="example-analysis.html#cb37-34" aria-hidden="true" tabindex="-1"></a><span class="co">#   Again, we&#39;ll look at the distribution of coverage by site, since in theory</span></span>
+<span id="cb37-35"><a href="example-analysis.html#cb37-35" aria-hidden="true" tabindex="-1"></a><span class="co">#   this could be cause for the bimodality observed in the plots below</span></span>
+<span id="cb37-36"><a href="example-analysis.html#cb37-36" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">assays</span>(bs_cph)<span class="sc">$</span>Cov[indices,])</span>
+<span id="cb37-37"><a href="example-analysis.html#cb37-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-38"><a href="example-analysis.html#cb37-38" aria-hidden="true" tabindex="-1"></a>meth_df <span class="ot">=</span> <span class="fu">data.frame</span>(</span>
+<span id="cb37-39"><a href="example-analysis.html#cb37-39" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;m_frac&#39;</span> <span class="ot">=</span> <span class="fu">as.numeric</span>(m_frac),</span>
+<span id="cb37-40"><a href="example-analysis.html#cb37-40" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;LIBD.&#39;</span> <span class="ot">=</span> <span class="fu">rep</span>(<span class="fu">colnames</span>(m_frac), <span class="at">each =</span> max_sites)</span>
+<span id="cb37-41"><a href="example-analysis.html#cb37-41" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-42"><a href="example-analysis.html#cb37-42" aria-hidden="true" tabindex="-1"></a>meth_df<span class="sc">$</span>Cell.Population <span class="ot">=</span> meta_df<span class="sc">$</span>Cell.Population[</span>
+<span id="cb37-43"><a href="example-analysis.html#cb37-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">match</span>(meth_df<span class="sc">$</span><span class="st">&#39;LIBD.&#39;</span>, meta_df<span class="sc">$</span><span class="st">&#39;LIBD.&#39;</span>)</span>
+<span id="cb37-44"><a href="example-analysis.html#cb37-44" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb37-45"><a href="example-analysis.html#cb37-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-46"><a href="example-analysis.html#cb37-46" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(meth_df, <span class="fu">aes</span>(<span class="at">x =</span> Cell.Population, <span class="at">y =</span> m_frac)) <span class="sc">+</span></span>
+<span id="cb37-47"><a href="example-analysis.html#cb37-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_violin</span>() <span class="sc">+</span></span>
+<span id="cb37-48"><a href="example-analysis.html#cb37-48" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Methylation-Fraction across CpH sites by Cell Population&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Methylation Fraction&quot;</span>)</span></code></pre></div>
 
 </div>
 </div>
