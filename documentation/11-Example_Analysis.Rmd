@@ -92,13 +92,44 @@ ggplot(meta_df, aes(x = Cell.Population, y = frac_covered_c_cph)) +
 ### Distribution of Methylation Fractions across Cytosines by Cell Population
 
 ```{r "methylation_fractions", eval=FALSE}
+#   Randomly subset to a particular number of cytosines, to both control memory
+#   and speed up plotting
 max_sites = 1000
 
+#   Look at CpG sites first
 indices = sample(nrow(bs_cpg), max_sites)
 m_frac = assays(bs_cpg)$M[indices,] / assays(bs_cpg)$Cov[indices,]
 
-#  Form df:
-#
-#  index, rowMean, cell population (4000 x 3)
-#
-#  x = cell population, y = rowMean
+meth_df = data.frame(
+    'm_frac' = as.numeric(m_frac),
+    'LIBD.' = rep(colnames(m_frac), each = max_sites)
+)
+meth_df$Cell.Population = meta_df$Cell.Population[
+    match(meth_df$'LIBD.', meta_df$'LIBD.')
+]
+#   This averages M frac within each sample, which probably isn't what we want
+# meth_df = data.frame('m_frac' = DelayedArray::colMeans(m_frac, na.rm = TRUE))
+# meth_df$Cell.Population = meta_df$Cell.Population[
+#     match(rownames(meth_df), meta_df$'LIBD.')
+# ]
+
+ggplot(meth_df, aes(x = Cell.Population, y = m_frac)) +
+    geom_violin() +
+    labs(title = "Methylation-Fraction across CpG sites by Cell Population", y = "Methylation Fraction")
+
+#   Now look at CpH sites
+indices = sample(nrow(bs_cph), max_sites)
+m_frac = assays(bs_cph)$M[indices,] / assays(bs_cph)$Cov[indices,]
+
+meth_df = data.frame(
+    'm_frac' = as.numeric(m_frac),
+    'LIBD.' = rep(colnames(m_frac), each = max_sites)
+)
+meth_df$Cell.Population = meta_df$Cell.Population[
+    match(meth_df$'LIBD.', meta_df$'LIBD.')
+]
+
+ggplot(meth_df, aes(x = Cell.Population, y = m_frac)) +
+    geom_violin() +
+    labs(title = "Methylation-Fraction across CpH sites by Cell Population", y = "Methylation Fraction")
+```
