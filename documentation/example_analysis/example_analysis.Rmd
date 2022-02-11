@@ -18,22 +18,28 @@ output:
     toc_depth: 2
     code_folding: show
 date: "`r doc_date()`"
-package: "BiocMAP"
 ---
 
 # Add Experiment Metadata to BiocMAP Outputs
 
 The `bsseq` output objects from BiocMAP contain methylation and coverage info for our samples in the dataset. However, we're interested in exploring how this information relates back to sample metadata and phenotype information, present in an external file. Our first step will therefore be to load the BiocMAP output objects into memory, and manually attach the additional sample metadata to each object.
 
-```{r, eval=FALSE}
+```{r, "load_objects", eval=FALSE}
 #  Load required R packages
 library('bsseq')
 library('HDF5Array')
 library('ggplot2')
 
-#  Later these should changed (not hardcoded!)
-meta_file = '/dcl02/lieber/ajaffe/FlowRNA_RNAseq/WGBS/FlowRNA_WGBS_Sample_Information_with_Pheno_Info.csv'
-out_dir = '/dcs04/lieber/lcolladotor/flowRNA_LIBD001/flowRNA_WGBS/processed-data/03_BiocMAP/BiocMAP_output'
+#  Path to the sample metadata and BiocMAP outputs. The outputs are too large
+#  to host in this repository, so we reference local paths here
+meta_file = file.path(
+    '/dcl02/lieber/ajaffe/FlowRNA_RNAseq/WGBS',
+    'FlowRNA_WGBS_Sample_Information_with_Pheno_Info.csv'
+)
+out_dir = file.path(
+    '/dcs04/lieber/lcolladotor/flowRNA_LIBD001/flowRNA_WGBS/processed-data',
+    '03_BiocMAP/BiocMAP_output'
+)
 
 #  Load the 'CpG'-context object
 bs_cpg = loadHDF5SummarizedExperiment(
@@ -66,7 +72,7 @@ meta_df = data.frame(colData(bs_cpg))
 
 This experiment used spike-ins of the lambda bacteriophage genome, which were quantified via BiocMAP to infer bisulfite-conversion rate. Successful bisulfite conversion is a pre-requisite for accurate methylation calls, so we'd like to see both that values are close to 1, and that values are not significantly different by sample (or by sample-related variables like cell population). We'll explore this visually below.
 
-```{r, eval=FALSE}
+```{r, "lambda_plot", eval=FALSE}
 ggplot(meta_df, aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
     geom_boxplot(outlier.shape = NA) +
     geom_point()
@@ -78,7 +84,7 @@ Next, we'll explore if average methylation rate for each cytosine context correl
 
 We observe a few interesting facts; first, there is a visibly obvious correlation between average methylation rates of different cytosine contexts by sample. This is highly pronounced between CpH contexts (CHG vs. CHH). In each case, the relation appears roughly linear, though this is questionable for CpG vs. CHH context comparison. Another observation is that samples tend to cluster fairly well by cell population. Finally, for comparisons of CpG vs. CpH context, the strength of correlation between methylation rates varies significantly by cell type, with `MBPpos` and `TripleNeg` showing only weak correlation at best. 
 
-```{r, eval=FALSE}
+```{r, "meth_frac_comparison_plots", eval=FALSE}
 #  Clean this up: code should be written around the idea we are plotting each
 #  combination of methylation fractions (CpG, CHG, CHH), and plots should be
 #  placed in a single grid
@@ -107,11 +113,13 @@ setAutoBlockSize(1e9)
 meta_df$frac_covered_c_cpg = DelayedArray::colMeans(assays(bs_cpg)$Cov > 3)
 meta_df$frac_covered_c_cph = DelayedArray::colMeans(assays(bs_cph)$Cov > 3)
 
+#   Plot fraction of covered CpG-context cytosines by cell population
 ggplot(meta_df, aes(x = Cell.Population, y = frac_covered_c_cpg)) +
     geom_boxplot(outlier.shape = NA) +
     geom_point(position = "jitter") +
     labs(title = "Fraction of covered cytosines in CpG context")
 
+#   Plot fraction of covered CpH-context cytosines by cell population
 ggplot(meta_df, aes(x = Cell.Population, y = frac_covered_c_cph)) +
     geom_boxplot(outlier.shape = NA) +
     geom_point(position = "jitter") +
@@ -137,22 +145,25 @@ m_frac = assays(bs_cpg)$M[indices,] / assays(bs_cpg)$Cov[indices,]
 #   this could be cause for the bimodality observed in the plot below
 table(assays(bs_cpg)$Cov[indices,])
 
+#   Form a data frame for easy plotting: we'll collapse methylation data for all
+#   samples into a single column, 'm_frac'. Here 'LIBD.' denotes sample ID
 meth_df = data.frame(
     'm_frac' = as.numeric(m_frac),
     'LIBD.' = rep(colnames(m_frac), each = max_sites)
 )
+
+#   Label each observation (methylation fraction for a particular cytosine) with
+#   the cell population of the associated sample
 meth_df$Cell.Population = meta_df$Cell.Population[
     match(meth_df$'LIBD.', meta_df$'LIBD.')
 ]
-#   This averages M frac within each sample, which probably isn't what we want
-# meth_df = data.frame('m_frac' = DelayedArray::colMeans(m_frac, na.rm = TRUE))
-# meth_df$Cell.Population = meta_df$Cell.Population[
-#     match(rownames(meth_df), meta_df$'LIBD.')
-# ]
 
 ggplot(meth_df, aes(x = Cell.Population, y = m_frac)) +
     geom_violin() +
-    labs(title = "Methylation-Fraction across CpG sites by Cell Population", y = "Methylation Fraction")
+    labs(
+        title = "Methylation-Fraction across CpG sites by Cell Population",
+        y = "Methylation Fraction"
+    )
 
 #   Now look at CpH sites
 indices = sample(nrow(bs_cph), max_sites)
@@ -162,15 +173,23 @@ m_frac = assays(bs_cph)$M[indices,] / assays(bs_cph)$Cov[indices,]
 #   this could be cause for the bimodality observed in the plots below
 table(assays(bs_cph)$Cov[indices,])
 
+#   Form a data frame for easy plotting: we'll collapse methylation data for all
+#   samples into a single column, 'm_frac'. Here 'LIBD.' denotes sample ID
 meth_df = data.frame(
     'm_frac' = as.numeric(m_frac),
     'LIBD.' = rep(colnames(m_frac), each = max_sites)
 )
+
+#   Label each observation (methylation fraction for a particular cytosine) with
+#   the cell population of the associated sample
 meth_df$Cell.Population = meta_df$Cell.Population[
     match(meth_df$'LIBD.', meta_df$'LIBD.')
 ]
 
 ggplot(meth_df, aes(x = Cell.Population, y = m_frac)) +
     geom_violin() +
-    labs(title = "Methylation-Fraction across CpH sites by Cell Population", y = "Methylation Fraction")
+    labs(
+        title = "Methylation-Fraction across CpH sites by Cell Population",
+        y = "Methylation Fraction"
+    )
 ```
