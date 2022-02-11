@@ -67,10 +67,3 @@ help
 common-errors
 resuming
 docker-help
-example-analysis
-add-experiment-metadata-to-biocmap-outputs
-exploratory-plots
-bisulfite-conversion-efficiency-by-cell-population
-relationship-between-methylation-fractions-across-cytosine-context-by-cell-population
-fraction-of-covered-cytosines-by-cell-population
-distribution-of-methylation-fractions-across-cytosines-by-cell-population
