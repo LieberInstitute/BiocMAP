@@ -1,8 +1,27 @@
-# Example Analysis
+---
+title: "Example Analysis using BiocMAP Output Objects"
+author: 
+  - name: Nicholas J. Eagles
+    affiliation:
+    - &libd Lieber Institute for Brain Development, Johns Hopkins Medical Campus
+    email: nickeagles77@gmail.com
+  - name: Leonardo Collado-Torres
+    affiliation:
+    - *libd
+    - &ccb Center for Computational Biology, Johns Hopkins University
+    email: lcolladotor@gmail.com
+output:
+  BiocStyle::html_document:
+    self_contained: yes
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    code_folding: show
+date: "`r doc_date()`"
+package: "BiocMAP"
+---
 
-This is a work in progress!
-
-## Add Experiment Metadata to BiocMAP Outputs
+# Add Experiment Metadata to BiocMAP Outputs
 
 The `bsseq` output objects from BiocMAP contain methylation and coverage info for our samples in the dataset. However, we're interested in exploring how this information relates back to sample metadata and phenotype information, present in an external file. Our first step will therefore be to load the BiocMAP output objects into memory, and manually attach the additional sample metadata to each object.
 
@@ -41,9 +60,9 @@ colData(bs_cph) = cbind(colData(bs_cph), meta)
 meta_df = data.frame(colData(bs_cpg))
 ```
 
-## Exploratory Plots
+# Exploratory Plots
 
-### Bisulfite-Conversion Efficiency by Cell Population
+## Bisulfite-Conversion Efficiency by Cell Population
 
 This experiment used spike-ins of the lambda bacteriophage genome, which were quantified via BiocMAP to infer bisulfite-conversion rate. Successful bisulfite conversion is a pre-requisite for accurate methylation calls, so we'd like to see both that values are close to 1, and that values are not significantly different by sample (or by sample-related variables like cell population). We'll explore this visually below.
 
@@ -53,7 +72,7 @@ ggplot(meta_df, aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
     geom_point()
 ```
 
-### Relationship between Methylation Fractions across Cytosine Context, by Cell Population
+## Relationship between Methylation Fractions across Cytosine Context, by Cell Population
 
 Next, we'll explore if average methylation rate for each cytosine context correlates with that of other contexts across sample. For example, is a sample with highly methylated CpGs likely to have highly methylated CHGs (the first plot)?
 
@@ -74,7 +93,7 @@ ggplot(meta_df, aes(x = perc_M_CHG, y = perc_M_CHH, color = Cell.Population)) +
     geom_point()
 ```
 
-### Fraction of Covered Cytosines by Cell Population
+## Fraction of Covered Cytosines by Cell Population
 
 Another useful piece of information is how well-covered the genome is with methylation information. Does coverage of cytosines vary by a sample's cell type?
 
@@ -99,7 +118,7 @@ ggplot(meta_df, aes(x = Cell.Population, y = frac_covered_c_cph)) +
     labs(title = "Fraction of covered cytosines in CpH context")
 ```
 
-### Distribution of Methylation Fractions across Cytosines by Cell Population
+## Distribution of Methylation Fractions across Cytosines by Cell Population
 
 Grouping together all samples of a particular cell type, we'll explore the methylation-fraction distribution across cytosines, separately for both CpG and CpH contexts.
 
