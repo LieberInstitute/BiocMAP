@@ -11,7 +11,7 @@ author:
     - &ccb Center for Computational Biology, Johns Hopkins University
     email: lcolladotor@gmail.com
 output:
-  BiocStyle::html_document:
+  BiocStyle::pdf_document:
     self_contained: yes
     toc: true
     toc_float: true
