@@ -24,7 +24,7 @@ date: "`r doc_date()`"
 
 The `bsseq` output objects from BiocMAP contain methylation and coverage info for our samples in the dataset. However, we're interested in exploring how this information relates back to sample metadata and phenotype information, present in an external file. Our first step will therefore be to load the BiocMAP output objects into memory, and manually attach the additional sample metadata to each object.
 
-```{r, "load_objects", eval=FALSE}
+```{r, "load_packages"}
 #  Load required R packages
 library('bsseq')
 library('HDF5Array')
@@ -40,7 +40,14 @@ out_dir = file.path(
     '/dcs04/lieber/lcolladotor/flowRNA_LIBD001/flowRNA_WGBS/processed-data',
     '03_BiocMAP/BiocMAP_output'
 )
+```
 
+```{r setup, include = FALSE}
+#   Only run the analysis when the BiocMAP files exist locally
+knitr::opts_chunk$set(eval = dir.exists(out_dir))
+```
+
+```{r, "load_objects"}
 #  Load the 'CpG'-context object
 bs_cpg = loadHDF5SummarizedExperiment(
     file.path(out_dir, 'BSobjects', 'objects', 'combined'),
@@ -72,7 +79,7 @@ meta_df = data.frame(colData(bs_cpg))
 
 This experiment used spike-ins of the lambda bacteriophage genome, which were quantified via BiocMAP to infer bisulfite-conversion rate. Successful bisulfite conversion is a pre-requisite for accurate methylation calls, so we'd like to see both that values are close to 1, and that values are not significantly different by sample (or by sample-related variables like cell population). We'll explore this visually below.
 
-```{r, "lambda_plot", eval=FALSE}
+```{r, "lambda_plot"}
 ggplot(meta_df, aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
     geom_boxplot(outlier.shape = NA) +
     geom_point()
@@ -84,7 +91,7 @@ Next, we'll explore if average methylation rate for each cytosine context correl
 
 We observe a few interesting facts; first, there is a visibly obvious correlation between average methylation rates of different cytosine contexts by sample. This is highly pronounced between CpH contexts (CHG vs. CHH). In each case, the relation appears roughly linear, though this is questionable for CpG vs. CHH context comparison. Another observation is that samples tend to cluster fairly well by cell population. Finally, for comparisons of CpG vs. CpH context, the strength of correlation between methylation rates varies significantly by cell type, with `MBPpos` and `TripleNeg` showing only weak correlation at best. 
 
-```{r, "meth_frac_comparison_plots", eval=FALSE}
+```{r, "meth_frac_comparison_plots"}
 #  Clean this up: code should be written around the idea we are plotting each
 #  combination of methylation fractions (CpG, CHG, CHH), and plots should be
 #  placed in a single grid
@@ -103,7 +110,7 @@ ggplot(meta_df, aes(x = perc_M_CHG, y = perc_M_CHH, color = Cell.Population)) +
 
 Another useful piece of information is how well-covered the genome is with methylation information. Does coverage of cytosines vary by a sample's cell type?
 
-```{r "coverage_fraction", eval=FALSE}
+```{r "coverage_fraction"}
 #  The matrices in 'assays(bs_cpg)' and 'assays(bs_cph)' are stored on disk. To
 #  speed up some below computations, we raise the per-block memory size
 setAutoBlockSize(1e9)
@@ -132,7 +139,7 @@ Grouping together all samples of a particular cell type, we'll explore the methy
 
 For both cytosine contexts, we observe a bimodal distribution with peaks at fractions of 0 and 1. This suggests that within a particular sample, a cytosine site is disproportionately likely to have consistent methylation pattern. For example, many sites are such that all observations of the cytosine are methylated for a particular sample. Similarly, we don't see many sites where around half of the observed site are methylated for a given sample. It's also worth noting that the apparent bimodal form is likely not an artifact of low coverage-- i.e., only a small fraction of sites are covered just once or twice, a circumstance that would cause over-representation of the fractions of 0 or 1.
 
-```{r "methylation_fractions", eval=FALSE}
+```{r "methylation_fractions"}
 #   Randomly subset to a particular number of cytosines, to both control memory
 #   and speed up plotting
 max_sites = 1000
