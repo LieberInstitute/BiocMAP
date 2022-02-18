@@ -226,12 +226,12 @@ ggplot(meth_df, aes(x = Cell.Population, y = m_frac)) +
 ```{r compute_dmrs}
 BiocParallel::register(BiocParallel::MulticoreParam(1))
 
-cell_pop = "SNAP25pos"
+cell_pop <- "SNAP25pos"
 
 #   To avoid false positive DMRs, we'll subset to CpGs where at least 5 samples
 #   in each group have at least two observations of the given CpG
-num_cov_samples = 5
-num_cov_count = 2
+num_cov_samples <- 5
+num_cov_count <- 2
 
 #   Subset object based on coverage requirements
 bs_cov <- getCoverage(bs_cpg)
@@ -239,59 +239,61 @@ loci_to_keep <- which(
     rowSums(
         bs_cov[, bs_cpg$Cell.Population == cell_pop] >= num_cov_count
     ) >= num_cov_samples &
-    rowSums(
-        bs_cov[, bs_cpg$Cell.Population != cell_pop] >= num_cov_count
-    ) >= num_cov_samples
+        rowSums(
+            bs_cov[, bs_cpg$Cell.Population != cell_pop] >= num_cov_count
+        ) >= num_cov_samples
 )
 length(loci_to_keep)
 
-bs_cpg_sub = bs_cpg[loci_to_keep,]
+bs_cpg_sub <- bs_cpg[loci_to_keep, ]
 
 #   Define the two cell-population-based groups used to compute t-statistics
-group1 = unique(bs_cpg_sub$'LIBD.'[bs_cpg_sub$Cell.Population == cell_pop])
-group2 = unique(bs_cpg_sub$'LIBD.'[bs_cpg_sub$Cell.Population != cell_pop])
+group1 <- unique(bs_cpg_sub$"LIBD."[bs_cpg_sub$Cell.Population == cell_pop])
+group2 <- unique(bs_cpg_sub$"LIBD."[bs_cpg_sub$Cell.Population != cell_pop])
 
 #   Compute the t-stat and show the marginal distribution
-cpg_t_stat = BSmooth.tstat(
-    bs_cpg_sub, group1 = group1, group2 = group2,
+cpg_t_stat <- BSmooth.tstat(
+    bs_cpg_sub,
+    group1 = group1, group2 = group2,
     estimate.var = "group2", local.correct = TRUE, verbose = TRUE
 )
 plot(cpg_t_stat)
 
 #   Grab the genomic range associated with this particular cell population
 if (cell_pop == "SNAP25pos") {
-    gene_range = GRanges('chr20:10172395-10308258')
+    gene_range <- GRanges("chr20:10172395-10308258")
 } else if (cell_pop == "MBPpos") {
-    gene_range = GRanges('chr18:76978827-77133708')
+    gene_range <- GRanges("chr18:76978827-77133708")
 } else if (cell_pop == "GAD1pos") {
-    gene_range = GRanges('chr2:170813210-170861151')
-} else { 
+    gene_range <- GRanges("chr2:170813210-170861151")
+} else {
     stop(
         paste0("No gene associated with this cell population '", cell_pop, "'.")
     )
 }
 
-t_stat_df = getStats(cpg_t_stat)
+t_stat_df <- getStats(cpg_t_stat)
 
 #   Filters for the upcoming DMRs: minimum magnitude of t-stat and min number of
 #   base pairs, respectively
-thres = sd(t_stat_df[,'tstat.corrected']) * 2.5
-n_bases = 3
-abs_mean_diff = 0.1
+thres <- sd(t_stat_df[, "tstat.corrected"]) * 2.5
+n_bases <- 3
+abs_mean_diff <- 0.1
 
 #   Compute DMRs and apply above filters
-dmrs_orig = dmrFinder(cpg_t_stat, cutoff = c(-1 * thres, thres))
+dmrs_orig <- dmrFinder(cpg_t_stat, cutoff = c(-1 * thres, thres))
 dmrs <- subset(dmrs_orig, n >= n_bases & abs(meanDiff) >= abs_mean_diff)
 
 #   Color plots by cell population group
-p_data = pData(bs_cpg_sub)
-p_data$col = ifelse(bs_cpg_sub$Cell.Population == cell_pop, "red", "blue")
-pData(bs_cpg_sub) = p_data
+p_data <- pData(bs_cpg_sub)
+p_data$col <- ifelse(bs_cpg_sub$Cell.Population == cell_pop, "red", "blue")
+pData(bs_cpg_sub) <- p_data
 
 #   Plot the region around the gene associated with this particular cell
 #   population
 plotRegion(
-    bs_cpg_sub, gene_range, extend = width(gene_range), addRegions = dmrs
+    bs_cpg_sub, gene_range,
+    extend = width(gene_range), addRegions = dmrs
 )
 ```
 
