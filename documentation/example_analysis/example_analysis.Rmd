@@ -46,7 +46,7 @@ bib <- c(
 
 The `bsseq` output objects from BiocMAP contain methylation and coverage info for our samples in the dataset. However, we're interested in exploring how this information relates back to sample metadata and phenotype information, present in an external file. Our first step will therefore be to load the BiocMAP output objects into memory, and manually attach the additional sample metadata to each object.
 
-```{r, "load_packages"}
+```{r, "load_packages", message = FALSE}
 #  Load required R packages
 library("bsseq")
 library("HDF5Array")
