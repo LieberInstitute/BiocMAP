@@ -51,7 +51,9 @@ The `bsseq` output objects from BiocMAP contain methylation and coverage info fo
 library("bsseq")
 library("HDF5Array")
 library("ggplot2")
+```
 
+```{r, "define_inputs"}
 #  Path to the sample metadata and BiocMAP outputs. The outputs are too large
 #  to host in this repository, so we reference local paths here
 meta_file <- file.path(
