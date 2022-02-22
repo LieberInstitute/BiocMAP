@@ -97,6 +97,10 @@ colData(bs_cph) <- cbind(colData(bs_cph), meta)
 
 #  Keep a copy of the metadata as a data frame, for easy plotting
 meta_df <- data.frame(colData(bs_cpg))
+
+#  We'll use random sampling later in the vignette. Set the seed for
+#  reproducibility
+set.seed(444)
 ```
 
 # Exploratory Plots
@@ -187,7 +191,7 @@ m_frac <- assays(bs_cpg)$M[indices, ] / assays(bs_cpg)$Cov[indices, ]
 #   It's worth looking at the distribution of coverage by site, since in theory
 #   this could be cause for the bimodality observed in the CpG portion of the
 #   plot below
-table(assays(bs_cpg)$Cov[indices, ])
+head(table(assays(bs_cpg)$Cov[indices, ]), n = 20)
 
 #   Form a data frame for easy plotting: we'll collapse methylation data for all
 #   samples into a single column, 'm_frac'. Here 'LIBD.' denotes sample ID
@@ -203,7 +207,7 @@ m_frac <- assays(bs_cph)$M[indices, ] / assays(bs_cph)$Cov[indices, ]
 
 #   Again, we'll look at the distribution of coverage by site, to make sure it
 #   isn't leading to noisy methylation results
-table(assays(bs_cph)$Cov[indices, ])
+head(table(assays(bs_cph)$Cov[indices, ]), n = 20)
 
 #   Form a data frame for easy plotting: we'll collapse methylation data for all
 #   samples into a single column, 'm_frac'. Here 'LIBD.' denotes sample ID. The
