@@ -33,6 +33,7 @@ bib <- c(
     bsseq = citation("bsseq"),
     BiocStyle = citation("BiocStyle")[1],
     DelayedArray = citation("DelayedArray"),
+    GGally = citation("GGally"),
     ggplot2 = citation("ggplot2"),
     HDF5Array = citation("HDF5Array"),
     knitr = citation("knitr")[1],
@@ -143,24 +144,36 @@ setAutoBlockSize(1e9)
 meta_df$frac_covered_c_cpg <- DelayedArray::colMeans(assays(bs_cpg)$Cov > 3)
 meta_df$frac_covered_c_cph <- DelayedArray::colMeans(assays(bs_cph)$Cov > 3)
 
-#   Plot fraction of covered CpG-context cytosines by cell population
-ggplot(meta_df, aes(x = Cell.Population, y = frac_covered_c_cpg)) +
-    geom_boxplot(outlier.shape = NA) +
-    geom_point(position = "jitter") +
-    labs(title = "Fraction of covered cytosines in CpG context")
+#   Convert our data frame to "long" format, with a CpG-associated and
+#   CpH-associated value for each coverage proportion
+meta_df_long = meta_df %>%
+    pivot_longer(
+        cols = starts_with('frac_covered_c'),
+        names_to = 'context',
+        names_prefix = 'frac_covered_c_',
+        values_to = 'frac_covered_c'
+    )
 
-#   Plot fraction of covered CpH-context cytosines by cell population
-ggplot(meta_df, aes(x = Cell.Population, y = frac_covered_c_cph)) +
+#   Plot fraction of covered cytosines by cell population
+ggplot(
+    meta_df_long,
+    aes(x = Cell.Population, y = frac_covered_c, color = Cell.Population)
+) +
     geom_boxplot(outlier.shape = NA) +
     geom_point(position = "jitter") +
-    labs(title = "Fraction of covered cytosines in CpH context")
+    facet_wrap(~context) +
+    labs(
+        title = "Proportion of Covered Cytosines by Cytosine Context and Cell Population",
+        x = 'Cell Population',
+        y = 'Proportion of Covered Cytosines'
+    )
 ```
 
 ## Distribution of Methylation Fractions across Cytosines by Cell Population
 
 Grouping together all samples of a particular cell type, we'll explore the methylation-fraction distribution across cytosines, separately for both CpG and CpH contexts.
 
-For both cytosine contexts, we observe a bimodal distribution with peaks at fractions of 0 and 1. This suggests that within a particular sample, a cytosine site is disproportionately likely to have consistent methylation pattern. For example, many sites are such that all observations of the cytosine are methylated for a particular sample. Similarly, we don't see many sites where around half of the observed site are methylated for a given sample. It's also worth noting that the apparent bimodal form is likely not an artifact of low coverage-- i.e., only a small fraction of sites are covered just once or twice, a circumstance that would cause over-representation of the fractions of 0 or 1.
+For the CpG cytosine context, we observe a bimodal distribution with peaks at fractions of 0 and 1. This suggests that within a particular sample, a CpG site is disproportionately likely to have consistent methylation pattern. For example, many CpG sites are such that all observations of the cytosine are methylated for a particular sample. Similarly, we don't see many sites where around half of the observed site are methylated for a given sample. It's also worth noting that the apparent bimodal form is likely not an artifact of low coverage-- i.e., only a small fraction of sites are covered just once or twice, a circumstance that would cause over-representation of the fractions of 0 or 1.
 
 ```{r "methylation_fractions"}
 #   Randomly subset to a particular number of cytosines, to both control memory
@@ -172,42 +185,37 @@ indices <- sample(nrow(bs_cpg), max_sites)
 m_frac <- assays(bs_cpg)$M[indices, ] / assays(bs_cpg)$Cov[indices, ]
 
 #   It's worth looking at the distribution of coverage by site, since in theory
-#   this could be cause for the bimodality observed in the plot below
+#   this could be cause for the bimodality observed in the CpG portion of the
+#   plot below
 table(assays(bs_cpg)$Cov[indices, ])
 
 #   Form a data frame for easy plotting: we'll collapse methylation data for all
 #   samples into a single column, 'm_frac'. Here 'LIBD.' denotes sample ID
 meth_df <- data.frame(
     "m_frac" = as.numeric(m_frac),
-    "LIBD." = rep(colnames(m_frac), each = max_sites)
+    "LIBD." = rep(colnames(m_frac), each = max_sites),
+    "context" = "CpG"
 )
-
-#   Label each observation (methylation fraction for a particular cytosine) with
-#   the cell population of the associated sample
-meth_df$Cell.Population <- meta_df$Cell.Population[
-    match(meth_df$"LIBD.", meta_df$"LIBD.")
-]
-
-ggplot(meth_df, aes(x = Cell.Population, y = m_frac)) +
-    geom_violin() +
-    labs(
-        title = "Methylation-Fraction across CpG sites by Cell Population",
-        y = "Methylation Fraction"
-    )
 
 #   Now look at CpH sites
 indices <- sample(nrow(bs_cph), max_sites)
 m_frac <- assays(bs_cph)$M[indices, ] / assays(bs_cph)$Cov[indices, ]
 
-#   Again, we'll look at the distribution of coverage by site, since in theory
-#   this could be cause for the bimodality observed in the plots below
+#   Again, we'll look at the distribution of coverage by site, to make sure it
+#   isn't leading to noisy methylation results
 table(assays(bs_cph)$Cov[indices, ])
 
 #   Form a data frame for easy plotting: we'll collapse methylation data for all
-#   samples into a single column, 'm_frac'. Here 'LIBD.' denotes sample ID
-meth_df <- data.frame(
-    "m_frac" = as.numeric(m_frac),
-    "LIBD." = rep(colnames(m_frac), each = max_sites)
+#   samples into a single column, 'm_frac'. Here 'LIBD.' denotes sample ID. The
+#   data frame will be appended to the existing CpG-associated one so we have
+#   data for both cytosine contexts together.
+meth_df <- rbind(
+    meth_df,
+    data.frame(
+        "m_frac" = as.numeric(m_frac),
+        "LIBD." = rep(colnames(m_frac), each = max_sites),
+        "context" = "CpH"
+    )
 )
 
 #   Label each observation (methylation fraction for a particular cytosine) with
@@ -216,11 +224,13 @@ meth_df$Cell.Population <- meta_df$Cell.Population[
     match(meth_df$"LIBD.", meta_df$"LIBD.")
 ]
 
-ggplot(meth_df, aes(x = Cell.Population, y = m_frac)) +
+ggplot(meth_df, aes(x = Cell.Population, y = m_frac, color = Cell.Population)) +
     geom_violin() +
+    facet_wrap(~context) +
     labs(
-        title = "Methylation-Fraction across CpH sites by Cell Population",
-        y = "Methylation Fraction"
+        title = "Methylation Proportion across Cytosines Cytosine Context and Cell Population",
+        x = "Cell Population",
+        y = "Methylation Proportion"
     )
 ```
 
