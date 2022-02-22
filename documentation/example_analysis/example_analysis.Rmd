@@ -51,6 +51,7 @@ The `bsseq` output objects from BiocMAP contain methylation and coverage info fo
 library("bsseq")
 library("HDF5Array")
 library("ggplot2")
+library("GGally")
 ```
 
 ```{r, "define_inputs"}
@@ -101,33 +102,31 @@ meta_df <- data.frame(colData(bs_cpg))
 
 ## Bisulfite-Conversion Efficiency by Cell Population
 
-This experiment used spike-ins of the lambda bacteriophage genome, which were quantified via BiocMAP to infer bisulfite-conversion rate. Successful bisulfite conversion is a pre-requisite for accurate methylation calls, so we'd like to see both that values are close to 1, and that values are not significantly different by sample (or by sample-related variables like cell population). We'll explore this visually below.
+This experiment used spike-ins of the lambda bacteriophage genome, which were quantified via BiocMAP to infer bisulfite-conversion rate. Successful bisulfite conversion is a pre-requisite for accurate methylation calls, so we'd like to see both that values (interpreted as percentages) are close to 100, and that values are not significantly different by sample (or by sample-related variables like cell population). We'll explore this visually below.
 
 ```{r, "lambda_plot"}
 ggplot(meta_df, aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
     geom_boxplot(outlier.shape = NA) +
-    geom_point()
+    geom_point() +
+    labs(x = 'Cell Population', y = 'Bisulfite Conversion Rate (%)')
 ```
 
 ## Relationship between Methylation Fractions across Cytosine Context, by Cell Population
 
-Next, we'll explore if average methylation rate for each cytosine context correlates with that of other contexts across sample. For example, is a sample with highly methylated CpGs likely to have highly methylated CHGs (the first plot)?
+Next, we'll explore if average methylation rate for each cytosine context correlates with that of other contexts across sample. For example, is a sample with highly methylated CpGs likely to have highly methylated CHGs (leftmost plot in middle row)?
 
-We observe a few interesting facts; first, there is a visibly obvious correlation between average methylation rates of different cytosine contexts by sample. This is highly pronounced between CpH contexts (CHG vs. CHH). In each case, the relation appears roughly linear, though this is questionable for CpG vs. CHH context comparison. Another observation is that samples tend to cluster fairly well by cell population. Finally, for comparisons of CpG vs. CpH context, the strength of correlation between methylation rates varies significantly by cell type, with `MBPpos` and `TripleNeg` showing only weak correlation at best. 
+We observe a few interesting facts; first, there is a correlation between average methylation rates of different cytosine contexts by sample. This is highly pronounced between CpH contexts (CHG vs. CHH). In each case, the relation appears roughly linear, though this is more questionable for the CpG vs. CHH context comparison. Another observation is that samples tend to cluster fairly well by cell population. Finally, for comparisons of CpG vs. CpH context, the strength of correlation between methylation rates varies significantly by cell type, with `MBPpos` showing only weak correlation at best. 
 
 ```{r, "meth_frac_comparison_plots"}
-#  Clean this up: code should be written around the idea we are plotting each
-#  combination of methylation fractions (CpG, CHG, CHH), and plots should be
-#  placed in a single grid
-
-ggplot(meta_df, aes(x = perc_M_CpG, y = perc_M_CHG, color = Cell.Population)) +
-    geom_point()
-
-ggplot(meta_df, aes(x = perc_M_CpG, y = perc_M_CHH, color = Cell.Population)) +
-    geom_point()
-
-ggplot(meta_df, aes(x = perc_M_CHG, y = perc_M_CHH, color = Cell.Population)) +
-    geom_point()
+#   We'll make use of the 'ggpairs' function from the 'GGally' package, which is
+#   well-suited for comparison of various metrics against eachother, providing
+#   density plots, comparison scatter plots, and correlation information.
+ggpairs(
+    meta_df, columns = c('perc_M_CpG', 'perc_M_CHG', 'perc_M_CHH'),
+    xlab = 'Methylation Rate (%)', ylab = 'Methylation Rate (%)',
+    columnLabels = c('CpG context', 'CHG context', 'CHH context'),
+    mapping = aes(color = Cell.Population)
+)
 ```
 
 ## Fraction of Covered Cytosines by Cell Population
