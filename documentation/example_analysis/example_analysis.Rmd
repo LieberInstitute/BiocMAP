@@ -39,7 +39,8 @@ bib <- c(
     knitr = citation("knitr")[1],
     RefManageR = citation("RefManageR")[1],
     rmarkdown = citation("rmarkdown")[1],
-    sessioninfo = citation("sessioninfo")[1]
+    sessioninfo = citation("sessioninfo")[1],
+    tidyr = citation("tidyr")
 )
 ```
 
@@ -53,6 +54,7 @@ library("bsseq")
 library("HDF5Array")
 library("ggplot2")
 library("GGally")
+library("tidyr")
 ```
 
 ```{r, "define_inputs"}
