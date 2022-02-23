@@ -113,7 +113,7 @@ This experiment used spike-ins of the lambda bacteriophage genome, which were qu
 ggplot(meta_df, aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
     geom_boxplot(outlier.shape = NA) +
     geom_point() +
-    labs(x = 'Cell Population', y = 'Bisulfite Conversion Rate (%)')
+    labs(x = "Cell Population", y = "Bisulfite Conversion Rate (%)")
 ```
 
 ## Relationship between Methylation Fractions across Cytosine Context, by Cell Population
@@ -127,9 +127,10 @@ We observe a few interesting facts; first, there is a correlation between averag
 #   well-suited for comparison of various metrics against eachother, providing
 #   density plots, comparison scatter plots, and correlation information.
 ggpairs(
-    meta_df, columns = c('perc_M_CpG', 'perc_M_CHG', 'perc_M_CHH'),
-    xlab = 'Methylation Rate (%)', ylab = 'Methylation Rate (%)',
-    columnLabels = c('CpG context', 'CHG context', 'CHH context'),
+    meta_df,
+    columns = c("perc_M_CpG", "perc_M_CHG", "perc_M_CHH"),
+    xlab = "Methylation Rate (%)", ylab = "Methylation Rate (%)",
+    columnLabels = c("CpG context", "CHG context", "CHH context"),
     mapping = aes(color = Cell.Population)
 )
 ```
@@ -150,12 +151,12 @@ meta_df$frac_covered_c_cph <- DelayedArray::colMeans(assays(bs_cph)$Cov > 3)
 
 #   Convert our data frame to "long" format, with a CpG-associated and
 #   CpH-associated value for each coverage proportion
-meta_df_long = meta_df %>%
+meta_df_long <- meta_df %>%
     pivot_longer(
-        cols = starts_with('frac_covered_c'),
-        names_to = 'context',
-        names_prefix = 'frac_covered_c_',
-        values_to = 'frac_covered_c'
+        cols = starts_with("frac_covered_c"),
+        names_to = "context",
+        names_prefix = "frac_covered_c_",
+        values_to = "frac_covered_c"
     )
 
 #   Plot fraction of covered cytosines by cell population
@@ -168,8 +169,8 @@ ggplot(
     facet_wrap(~context) +
     labs(
         title = "Proportion of Covered Cytosines by Cytosine Context and Cell Population",
-        x = 'Cell Population',
-        y = 'Proportion of Covered Cytosines'
+        x = "Cell Population",
+        y = "Proportion of Covered Cytosines"
     )
 ```
 
