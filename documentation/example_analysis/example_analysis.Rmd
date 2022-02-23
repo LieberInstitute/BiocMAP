@@ -241,10 +241,12 @@ ggplot(meth_df, aes(x = Cell.Population, y = m_frac, color = Cell.Population)) +
     )
 ```
 
+Next, we'll compute differentially methylated regions (DMRs) between cell populations. In particular, we'll compare MBP-positive samples to all other cell types, and plot methylation curves for CpG loci around the MBP genomic range. To the eye, it appears that a fairly large region at the start of the MBP gene has differential methylation between groups; however, the only significant DMRs (highlighted in light red) are much narrrower bands dispersed throughout the gene (and somewhat less so outside of the gene).
+
 ```{r compute_dmrs}
 BiocParallel::register(BiocParallel::MulticoreParam(1))
 
-cell_pop <- "SNAP25pos"
+cell_pop <- "MBPpos"
 
 #   To avoid false positive DMRs, we'll subset to CpGs where at least 5 samples
 #   in each group have at least two observations of the given CpG
@@ -310,8 +312,7 @@ pData(bs_cpg_sub) <- p_data
 #   Plot the region around the gene associated with this particular cell
 #   population
 plotRegion(
-    bs_cpg_sub, gene_range,
-    extend = width(gene_range), addRegions = dmrs
+    bs_cpg_sub, gene_range, extend = width(gene_range) %/% 2, addRegions = dmrs
 )
 ```
 
