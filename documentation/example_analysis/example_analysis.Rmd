@@ -312,7 +312,8 @@ pData(bs_cpg_sub) <- p_data
 #   Plot the region around the gene associated with this particular cell
 #   population
 plotRegion(
-    bs_cpg_sub, gene_range, extend = width(gene_range) %/% 2, addRegions = dmrs
+    bs_cpg_sub, gene_range,
+    extend = width(gene_range) %/% 2, addRegions = dmrs
 )
 ```
 
