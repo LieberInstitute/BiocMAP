@@ -84,6 +84,4 @@ Below, we document how the names of settings accepted by BiocMAP correspond to v
 
 ### Miscellaneous settings
 
-[TODO: BRIEF DESCRIPTION]
-
 * *kallisto_single_args*: literal arguments to pass to 'kallisto quant' for single-end samples, as part of the process for estimating bisulfite conversion efficiency when using the '--with_lambda' [option](#command-opts).
