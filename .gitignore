@@ -15,3 +15,7 @@ Software/*
 test/*/*/samples.manifest
 test/*/*/rules.txt
 conda/pipeline_env
+
+#	Logs when rendering RMD vignette
+documentation/example_analysis/render.log
+documentation/example_analysis/example_analysis.log
