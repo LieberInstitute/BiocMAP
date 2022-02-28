@@ -109,7 +109,7 @@ meta_df <- data.frame(colData(bs_cpg))
 
 This experiment used spike-ins of the lambda bacteriophage genome, which were quantified via BiocMAP to infer bisulfite-conversion rate. Successful bisulfite conversion is a pre-requisite for accurate methylation calls, so we'd like to see both that values (interpreted as percentages) are close to 100, and that values are not significantly different by sample (or by sample-related variables like cell population). We'll explore this visually below.
 
-```{r, "lambda_plot", warning = FALSE}
+```{r Figure1, warning = FALSE, out.width="100%", fig.align="center", fig.cap = "Bisulfite conversion rate by cell population across samples. Values center at 95% for all cell populations, ranging just over 2% total. The 'TripleNeg' population might appear to have lower conversion rates, but it's unclear if the difference is significant."}
 ggplot(meta_df, aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
     geom_boxplot(outlier.shape = NA) +
     geom_point() +
@@ -119,11 +119,9 @@ ggplot(meta_df, aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
 
 ## Relationship between Methylation Fractions across Cytosine Context, by Cell Population
 
-Next, we'll explore if average methylation rate for each cytosine context correlates with that of other contexts across sample. For example, is a sample with highly methylated CpGs likely to have highly methylated CHGs (leftmost plot in middle row)?
+Next, we'll explore if average methylation rate for each cytosine context correlates with that of other contexts across sample. For example, is a sample with highly methylated CpGs likely to have highly methylated CHGs? This is represented by the leftmost plot in middle row below.
 
-We observe a few interesting facts; first, there is a correlation between average methylation rates of different cytosine contexts by sample. This is highly pronounced between CpH contexts (CHG vs. CHH). In each case, the relation appears roughly linear, though this is more questionable for the CpG vs. CHH context comparison. Another observation is that samples tend to cluster fairly well by cell population. Finally, for comparisons of CpG vs. CpH context, the strength of correlation between methylation rates varies significantly by cell type, with `MBPpos` showing only weak correlation at best. 
-
-```{r, "meth_frac_comparison_plots"}
+```{r Figure2, out.width="100%", fig.align="center", fig.cap = "Comparison of average methylation rate by cytosine context and cell population. There is a correlation between average methylation rates of different cytosine contexts by sample. This is highly pronounced between CpH contexts (CHG vs. CHH). In each case, the relation appears roughly linear, though this is more questionable for the CpG vs. CHH context comparison. Generally, samples tend to cluster fairly well by cell population. Finally, for comparisons of CpG vs. CpH context, the strength of correlation between methylation rates varies significantly by cell type, with `MBPpos` showing only weak correlation at best."}
 #   We'll make use of the 'ggpairs' function from the 'GGally' package, which is
 #   well-suited for comparison of various metrics against eachother, providing
 #   density plots, comparison scatter plots, and correlation information.
@@ -160,7 +158,9 @@ meta_df_long <- meta_df %>%
         names_prefix = "frac_covered_c_",
         values_to = "frac_covered_c"
     )
+```
 
+```{r Figure3, out.width="100%", fig.align="center", fig.cap = "Proportion of covered cytosines by context and cell population. While around 80% of cytosines for a given sample have at least 3 observations in the experiment, there is wide variation between samples. At least 5 samples in each cytosine context have less than 50% sites 'well-covered', and CpH-context cytosines may have slightly less coverage generally than CpG-context cytosines."}
 #   Plot fraction of covered cytosines by cell population
 ggplot(
     meta_df_long,
@@ -183,7 +183,7 @@ Grouping together all samples of a particular cell type, we'll explore the methy
 
 For the CpG cytosine context, we observe a bimodal distribution with peaks at fractions of 0 and 1. This suggests that within a particular sample, a CpG site is disproportionately likely to have consistent methylation pattern. For example, many CpG sites are such that all observations of the cytosine are methylated for a particular sample. Similarly, we don't see many sites where around half of the observed site are methylated for a given sample. It's also worth noting that the apparent bimodal form is likely not an artifact of low coverage-- i.e., only a small fraction of sites are covered just once or twice, a circumstance that would cause over-representation of the fractions of 0 or 1.
 
-```{r "methylation_fractions", warning = FALSE}
+```{r "methylation_fractions"}
 #  We'll use random sampling for computational efficiency. Set the seed for
 #  reproducibility
 set.seed(444)
@@ -235,7 +235,9 @@ meth_df <- rbind(
 meth_df$Cell.Population <- meta_df$Cell.Population[
     match(meth_df$"LIBD.", meta_df$"LIBD.")
 ]
+```
 
+```{r Figure4, warning = FALSE, out.width="100%", fig.align="center", fig.cap = "Methylation proportion across cytosines by context and cell population. For the CpG cytosine context, we observe a bimodal distribution with peaks at fractions of 0 and 1. This suggests that within a particular sample, a CpG site is disproportionately likely to have consistent methylation pattern. CpH sites are far less methylated than CpG sites. This reflects the well-known fact about DNA methylation that most methylation occurs at CpGs, though in some cells (such as neurons), CpH methylation plays an important role as well." }
 ggplot(meth_df, aes(x = Cell.Population, y = m_frac, color = Cell.Population)) +
     geom_violin() +
     facet_wrap(~context) +
@@ -247,9 +249,9 @@ ggplot(meth_df, aes(x = Cell.Population, y = m_frac, color = Cell.Population)) +
     theme_bw(base_size = 20)
 ```
 
-Next, we'll compute differentially methylated regions (DMRs) between cell populations. In particular, we'll compare MBP-positive samples to all other cell types, and plot methylation curves for CpG loci around the MBP genomic range. To the eye, it appears that a fairly large region at the start of the MBP gene has differential methylation between groups; however, the only significant DMRs (highlighted in light red) are much narrrower bands dispersed throughout the gene (and somewhat less so outside of the gene).
+Next, we'll compute differentially methylated regions (DMRs) between cell populations. In particular, we'll compare MBP-positive samples to all other cell types, and plot methylation curves for CpG loci around the MBP genomic range.
 
-```{r compute_dmrs}
+```{r prepare_dmr_computation}
 BiocParallel::register(BiocParallel::MulticoreParam(1))
 
 cell_pop <- "MBPpos"
@@ -283,8 +285,13 @@ cpg_t_stat <- BSmooth.tstat(
     group1 = group1, group2 = group2,
     estimate.var = "group2", local.correct = TRUE, verbose = TRUE
 )
-plot(cpg_t_stat)
+```
 
+```{r Figure5, warning = FALSE, out.width="100%", fig.align="center", fig.cap = "Marginal distribution of t-statistics, before and after correction. [The bsseq vignette](http://bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq_analysis.html#3_Computing_t-statistics) recommends local correction to improve the symmetry of the marginal distribution, an effect that can be seen here."}
+plot(cpg_t_stat)
+```
+
+```{r, "determine_dmrs"}
 #   Grab the genomic range associated with this particular cell population
 if (cell_pop == "SNAP25pos") {
     gene_range <- GRanges("chr20:10172395-10308258")
@@ -314,7 +321,9 @@ dmrs <- subset(dmrs_orig, n >= n_bases & abs(meanDiff) >= abs_mean_diff)
 p_data <- pData(bs_cpg_sub)
 p_data$col <- ifelse(bs_cpg_sub$Cell.Population == cell_pop, "red", "blue")
 pData(bs_cpg_sub) <- p_data
+```
 
+```{r Figure6, out.width="100%", fig.align="center", fig.cap = "Methylation curves for MBP-positive samples (red) against other cell types (blue) around the MBP gene. To the eye, it appears that a fairly large region at the start of the MBP gene has differential methylation between groups; however, the only significant DMRs (highlighted in light red) are much narrrower bands dispersed throughout the gene (and somewhat less so outside of the gene)."}
 #   Plot the region around the gene associated with this particular cell
 #   population
 plotRegion(
