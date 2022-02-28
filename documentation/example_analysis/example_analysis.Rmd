@@ -101,10 +101,6 @@ colData(bs_cph) <- cbind(colData(bs_cph), meta)
 
 #  Keep a copy of the metadata as a data frame, for easy plotting
 meta_df <- data.frame(colData(bs_cpg))
-
-#  We'll use random sampling later in the vignette. Set the seed for
-#  reproducibility
-set.seed(444)
 ```
 
 # Exploratory Plots
@@ -185,6 +181,10 @@ Grouping together all samples of a particular cell type, we'll explore the methy
 For the CpG cytosine context, we observe a bimodal distribution with peaks at fractions of 0 and 1. This suggests that within a particular sample, a CpG site is disproportionately likely to have consistent methylation pattern. For example, many CpG sites are such that all observations of the cytosine are methylated for a particular sample. Similarly, we don't see many sites where around half of the observed site are methylated for a given sample. It's also worth noting that the apparent bimodal form is likely not an artifact of low coverage-- i.e., only a small fraction of sites are covered just once or twice, a circumstance that would cause over-representation of the fractions of 0 or 1.
 
 ```{r "methylation_fractions"}
+#  We'll use random sampling for computational efficiency. Set the seed for
+#  reproducibility
+set.seed(444)
+
 #   Randomly subset to a particular number of cytosines, to both control memory
 #   and speed up plotting
 max_sites <- 1000
