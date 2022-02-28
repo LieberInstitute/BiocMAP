@@ -365,10 +365,20 @@ session_info()
 
 # Bibliography
 
-This vignette was generated using `r Biocpkg("BiocStyle")` `r Citep(bib[["BiocStyle"]])`
-with `r CRANpkg("knitr")` `r Citep(bib[["knitr"]])` and `r CRANpkg("rmarkdown")` `r Citep(bib[["rmarkdown"]])` running behind the scenes.
+This vignette was made possible by the following packages and software:
 
-Citations made with `r CRANpkg("RefManageR")` `r Citep(bib[["RefManageR"]])`.
+* R `r Citep(bib[["R"]])`
+* `r Biocpkg("bsseq")` = `r Citep(bib[["bsseq"]])`
+* `r Biocpkg("BiocStyle")` = `r Citep(bib[["BiocStyle"]])`
+* `r Biocpkg("DelayedArray")` = `r Citep(bib[["DelayedArray"]])`
+* `r Biocpkg("GGally")` = `r Citep(bib[["GGally"]])`
+* `r Biocpkg("ggplot2")` = `r Citep(bib[["ggplot2"]])`
+* `r Biocpkg("HDF5Array")` = `r Citep(bib[["HDF5Array"]])`
+* `r CRANpkg("knitr")` = `r Citep(bib[["knitr"]])`
+* `r CRANpkg("RefManageR")` = `r Citep(bib[["RefManageR"]])`
+* `r CRANpkg("rmarkdown")` = `r Citep(bib[["rmarkdown"]])`
+* `r CRANpkg("sessioninfo")` = `r Citep(bib[["sessioninfo"]])`
+* `r Biocpkg("tidyr")` = `r Citep(bib[["tidyr"]])`
 
 ```{r vignette_biblio, results = "asis", echo = FALSE, warning = FALSE, message = FALSE}
 ## Print bibliography
