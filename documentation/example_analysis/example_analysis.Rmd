@@ -113,7 +113,8 @@ This experiment used spike-ins of the lambda bacteriophage genome, which were qu
 ggplot(meta_df, aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
     geom_boxplot(outlier.shape = NA) +
     geom_point() +
-    labs(x = "Cell Population", y = "Bisulfite Conversion Rate (%)")
+    labs(x = "Cell Population", y = "Bisulfite Conversion Rate (%)") +
+    theme_bw(base_size = 20)
 ```
 
 ## Relationship between Methylation Fractions across Cytosine Context, by Cell Population
@@ -132,7 +133,8 @@ ggpairs(
     xlab = "Methylation Rate (%)", ylab = "Methylation Rate (%)",
     columnLabels = c("CpG context", "CHG context", "CHH context"),
     mapping = aes(color = Cell.Population)
-)
+) +
+    theme_bw(base_size = 20)
 ```
 
 ## Fraction of Covered Cytosines by Cell Population
@@ -171,7 +173,8 @@ ggplot(
         title = "Proportion of Covered Cytosines by Cytosine Context and Cell Population",
         x = "Cell Population",
         y = "Proportion of Covered Cytosines"
-    )
+    )  +
+    theme_bw(base_size = 20)
 ```
 
 ## Distribution of Methylation Fractions across Cytosines by Cell Population
@@ -240,7 +243,8 @@ ggplot(meth_df, aes(x = Cell.Population, y = m_frac, color = Cell.Population)) +
         title = "Methylation Proportion across Cytosines Cytosine Context and Cell Population",
         x = "Cell Population",
         y = "Methylation Proportion"
-    )
+    )  +
+    theme_bw(base_size = 20)
 ```
 
 Next, we'll compute differentially methylated regions (DMRs) between cell populations. In particular, we'll compare MBP-positive samples to all other cell types, and plot methylation curves for CpG loci around the MBP genomic range. To the eye, it appears that a fairly large region at the start of the MBP gene has differential methylation between groups; however, the only significant DMRs (highlighted in light red) are much narrrower bands dispersed throughout the gene (and somewhat less so outside of the gene).
