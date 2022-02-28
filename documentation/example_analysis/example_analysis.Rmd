@@ -341,7 +341,7 @@ Date the vignette was generated:
 Sys.time()
 ```
 
-Wallclock time spent generating the vignette:
+Wall-clock time spent generating the vignette:
 
 ```{r reproduce2, echo=FALSE}
 ## Processing time in seconds
@@ -354,7 +354,6 @@ round(totalTime, digits = 3)
 ```{r reproduce3, echo=FALSE}
 ## Session info
 library("sessioninfo")
-options(width = 120)
 session_info()
 ```
 
