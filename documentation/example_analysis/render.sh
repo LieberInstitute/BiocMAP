@@ -13,4 +13,4 @@ module load tex/2017
 Rscript -e "styler::style_file('$RMD_FILE', transformers = biocthis::bioc_style())"
 
 #  Render into PDF (as defined in the YAML header)
-Rscript -e "rmarkdown::render('$RMD_FILE')"
+Rscript -e "rmarkdown::render('$RMD_FILE', clean = FALSE)"
