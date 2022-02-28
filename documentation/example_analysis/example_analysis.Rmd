@@ -349,6 +349,12 @@ totalTime <- diff(c(startTime, Sys.time()))
 round(totalTime, digits = 3)
 ```
 
+Memory-related information while generating the vignette:
+
+```{r "memory"}
+gc()
+```
+
 `R` session information:
 
 ```{r reproduce3, echo=FALSE}
