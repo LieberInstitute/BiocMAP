@@ -42,6 +42,8 @@ bib <- c(
     sessioninfo = citation("sessioninfo")[1],
     tidyr = citation("tidyr")
 )
+
+options(width = 70)
 ```
 
 BiocMAP is a computational pipeline for bisulfite-sequencing data. Starting from the raw FASTQ-based sequencer outputs, BiocMAP ultimately produces two `bsseq` R objects, containing methylation proportions and coverage information for all genomic cytosines in CpG and CpH methylation context. Various metrics, such as bisulfite-conversion rate, number of reads trimmed, or concordant alignment rate, are collected and become columns in the `colData` of the `bsseq` objects. The below analysis will demonstrate how to explore both methylation information and quality metrics in the BiocMAP output objects. Background understanding of the [bsseq](https://bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq.html) package, and its parent [SummarizedExperiment](https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html) are helpful but not required here.
@@ -123,7 +125,7 @@ Next, we'll explore if average methylation rate for each cytosine context correl
 
 ```{r Figure2, out.width="100%", fig.align="center", fig.cap = "Comparison of average methylation rate by cytosine context and cell population. There is a correlation between average methylation rates of different cytosine contexts by sample. This is highly pronounced between CpH contexts (CHG vs. CHH). In each case, the relation appears roughly linear, though this is more questionable for the CpG vs. CHH context comparison. Generally, samples tend to cluster fairly well by cell population. Finally, for comparisons of CpG vs. CpH context, the strength of correlation between methylation rates varies significantly by cell type, with `MBPpos` showing only weak correlation at best."}
 #   We'll make use of the 'ggpairs' function from the 'GGally' package, which is
-#   well-suited for comparison of various metrics against eachother, providing
+#   well-suited for comparison of various metrics against each other, providing
 #   density plots, comparison scatter plots, and correlation information.
 ggpairs(
     meta_df,
