@@ -109,7 +109,7 @@ meta_df <- data.frame(colData(bs_cpg))
 
 This experiment used spike-ins of the lambda bacteriophage genome, which were quantified via BiocMAP to infer bisulfite-conversion rate. Successful bisulfite conversion is a pre-requisite for accurate methylation calls, so we'd like to see both that values (interpreted as percentages) are close to 100, and that values are not significantly different by sample (or by sample-related variables like cell population). We'll explore this visually below.
 
-```{r, "lambda_plot"}
+```{r, "lambda_plot", warning = FALSE}
 ggplot(meta_df, aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
     geom_boxplot(outlier.shape = NA) +
     geom_point() +
@@ -180,7 +180,7 @@ Grouping together all samples of a particular cell type, we'll explore the methy
 
 For the CpG cytosine context, we observe a bimodal distribution with peaks at fractions of 0 and 1. This suggests that within a particular sample, a CpG site is disproportionately likely to have consistent methylation pattern. For example, many CpG sites are such that all observations of the cytosine are methylated for a particular sample. Similarly, we don't see many sites where around half of the observed site are methylated for a given sample. It's also worth noting that the apparent bimodal form is likely not an artifact of low coverage-- i.e., only a small fraction of sites are covered just once or twice, a circumstance that would cause over-representation of the fractions of 0 or 1.
 
-```{r "methylation_fractions"}
+```{r "methylation_fractions", warning = FALSE}
 #  We'll use random sampling for computational efficiency. Set the seed for
 #  reproducibility
 set.seed(444)
