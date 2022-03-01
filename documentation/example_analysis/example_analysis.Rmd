@@ -175,7 +175,7 @@ ggplot(
         title = "Proportion of Covered Cytosines by Cytosine Context and Cell Population",
         x = "Cell Population",
         y = "Proportion of Covered Cytosines"
-    )  +
+    ) +
     theme_bw(base_size = 20)
 ```
 
@@ -247,7 +247,7 @@ ggplot(meth_df, aes(x = Cell.Population, y = m_frac, color = Cell.Population)) +
         title = "Methylation Proportion across Cytosines Cytosine Context and Cell Population",
         x = "Cell Population",
         y = "Methylation Proportion"
-    )  +
+    ) +
     theme_bw(base_size = 20)
 ```
 
