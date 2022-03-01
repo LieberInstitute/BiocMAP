@@ -111,7 +111,7 @@ meta_df <- data.frame(colData(bs_cpg))
 
 This experiment used spike-ins of the lambda bacteriophage genome, which were quantified via BiocMAP to infer bisulfite-conversion rate. Successful bisulfite conversion is a pre-requisite for accurate methylation calls, so we'd like to see both that values (interpreted as percentages) are close to 100, and that values are not significantly different by sample (or by sample-related variables like cell population). We'll explore this visually below.
 
-```{r Figure1, warning = FALSE, out.width="100%", fig.align="center", fig.cap = "Bisulfite conversion rate by cell population across samples. Values center at 95% for all cell populations, ranging just over 2% total. The 'TripleNeg' population might appear to have lower conversion rates, but it's unclear if the difference is significant."}
+```{r Figure1, warning = FALSE, out.width="100%", fig.align="center", fig.cap = "Bisulfite conversion rate by cell population across samples. Values center at 95\\% for all cell populations, ranging just over 2\\% total. The 'TripleNeg' population might appear to have lower conversion rates, but it's unclear if the difference is significant."}
 ggplot(meta_df, aes(x = Cell.Population, y = lambda_bs_conv_eff)) +
     geom_boxplot(outlier.shape = NA) +
     geom_point() +
@@ -162,7 +162,7 @@ meta_df_long <- meta_df %>%
     )
 ```
 
-```{r Figure3, out.width="100%", fig.align="center", fig.cap = "Proportion of covered cytosines by context and cell population. While around 80% of cytosines for a given sample have at least 3 observations in the experiment, there is wide variation between samples. At least 5 samples in each cytosine context have less than 50% sites 'well-covered', and CpH-context cytosines may have slightly less coverage generally than CpG-context cytosines."}
+```{r Figure3, out.width="100%", fig.align="center", fig.cap = "Proportion of covered cytosines by context and cell population. While around 80\\% of cytosines for a given sample have at least 3 observations in the experiment, there is wide variation between samples. At least 5 samples in each cytosine context have less than 50\\% sites 'well-covered', and CpH-context cytosines may have slightly less coverage generally than CpG-context cytosines."}
 #   Plot fraction of covered cytosines by cell population
 ggplot(
     meta_df_long,
@@ -289,7 +289,7 @@ cpg_t_stat <- BSmooth.tstat(
 )
 ```
 
-```{r Figure5, warning = FALSE, out.width="100%", fig.align="center", fig.cap = "Marginal distribution of t-statistics, before and after correction. [The bsseq vignette](http://bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq_analysis.html#3_Computing_t-statistics) recommends local correction to improve the symmetry of the marginal distribution, an effect that can be seen here."}
+```{r Figure5, warning = FALSE, out.width="100%", fig.align="center", fig.cap = "Marginal distribution of t-statistics, before and after correction. [The bsseq vignette](http://bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq\\_analysis.html\\#3\\_Computing\\_t-statistics) recommends local correction to improve the symmetry of the marginal distribution, an effect that can be seen here."}
 plot(cpg_t_stat)
 ```
 
