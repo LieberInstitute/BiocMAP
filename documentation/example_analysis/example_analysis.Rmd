@@ -134,7 +134,7 @@ ggpairs(
     columnLabels = c("CpG context", "CHG context", "CHH context"),
     mapping = aes(color = Cell.Population)
 ) +
-    theme_bw(base_size = 20)
+    theme_bw(base_size = 15)
 ```
 
 ## Fraction of Covered Cytosines by Cell Population
@@ -176,7 +176,7 @@ ggplot(
         x = "Cell Population",
         y = "Proportion of Covered Cytosines"
     ) +
-    theme_bw(base_size = 20)
+    theme_bw(base_size = 10)
 ```
 
 ## Distribution of Methylation Fractions across Cytosines by Cell Population
@@ -248,7 +248,7 @@ ggplot(meth_df, aes(x = Cell.Population, y = m_frac, color = Cell.Population)) +
         x = "Cell Population",
         y = "Methylation Proportion"
     ) +
-    theme_bw(base_size = 20)
+    theme_bw(base_size = 10)
 ```
 
 Next, we'll compute differentially methylated regions (DMRs) between cell populations. In particular, we'll compare MBP-positive samples to all other cell types, and plot methylation curves for CpG loci around the MBP genomic range.
