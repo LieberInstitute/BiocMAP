@@ -244,7 +244,7 @@ ggplot(meth_df, aes(x = Cell.Population, y = m_frac, color = Cell.Population)) +
     geom_violin() +
     facet_wrap(~context) +
     labs(
-        title = "Methylation Proportion across Cytosines Cytosine Context and Cell Population",
+        title = "Methylation Proportion across Cytosines by Cytosine Context and Cell Population",
         x = "Cell Population",
         y = "Methylation Proportion"
     ) +
