@@ -251,7 +251,11 @@ ggplot(meth_df, aes(x = Cell.Population, y = m_frac, color = Cell.Population)) +
     theme_bw(base_size = 12)
 ```
 
+# Differential Methylation Analysis
+
 Next, we'll compute differentially methylated regions (DMRs) between cell populations. In particular, we'll compare MBP-positive samples to all other cell types, and plot methylation curves for CpG loci around the MBP genomic range.
+
+## Compute t-statistics
 
 ```{r prepare_dmr_computation}
 BiocParallel::register(BiocParallel::MulticoreParam(1))
@@ -293,6 +297,8 @@ cpg_t_stat <- BSmooth.tstat(
 plot(cpg_t_stat)
 ```
 
+## Determine and Plot DMRs
+
 ```{r, "determine_dmrs"}
 #   Grab the genomic range associated with this particular cell population
 if (cell_pop == "SNAP25pos") {
@@ -333,6 +339,8 @@ plotRegion(
     extend = width(gene_range) %/% 2, addRegions = dmrs
 )
 ```
+
+# Reproducibility Info
 
 Date the vignette was generated:
 
