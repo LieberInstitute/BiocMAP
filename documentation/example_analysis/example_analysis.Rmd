@@ -289,7 +289,7 @@ cpg_t_stat <- BSmooth.tstat(
 )
 ```
 
-```{r Figure5, warning = FALSE, out.width="100%", fig.align="center", fig.cap = "Marginal distribution of t-statistics, before and after correction. [The bsseq vignette](http://bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq\\_analysis.html\\#3\\_Computing\\_t-statistics) recommends local correction to improve the symmetry of the marginal distribution, an effect that can be seen here."}
+```{r Figure5, warning = FALSE, out.width="100%", fig.align="center", fig.cap = "Marginal distribution of t-statistics, before and after correction. The bsseq vignette recommends local correction to improve the symmetry of the marginal distribution, an effect that can be seen here."}
 plot(cpg_t_stat)
 ```
 
