@@ -340,6 +340,10 @@ plotRegion(
 )
 ```
 
+# Conclusion
+
+The above analysis was intended to show the nature of the BiocMAP output objects and touch on the many possibilities for exploratory data analysis and downstream statistical processing. We recommend the [bsseq vignette](https://bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq_analysis.html) for additional guidance to complement the analysis shown here. More generally, we hope BiocMAP is useful in connecting researchers to the vast analysis possibilities made possible by the Bioconductor world.
+
 # Reproducibility Info
 
 Date the vignette was generated:
