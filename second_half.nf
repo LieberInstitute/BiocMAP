@@ -276,7 +276,7 @@ process PrepareReference {
         
 if (params.with_lambda) {
     process PrepareLambda {
-        storeDir "${workflow.projectDir}/ref/lambda"
+        storeDir "${params.annotation}/lambda"
         
         input:
             file convert_script from file("${workflow.projectDir}/scripts/bisulfite_convert.R")
