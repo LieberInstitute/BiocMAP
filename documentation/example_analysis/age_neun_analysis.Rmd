@@ -1,0 +1,104 @@
+---
+title: "Example Analysis using BiocMAP Output Objects"
+author: 
+  - name: Nicholas J. Eagles
+    affiliation:
+    - &libd Lieber Institute for Brain Development, Johns Hopkins Medical Campus
+    email: nickeagles77@gmail.com
+  - name: Leonardo Collado-Torres
+    affiliation:
+    - *libd
+    - &ccb Center for Computational Biology, Johns Hopkins University
+    email: lcolladotor@gmail.com
+output:
+  BiocStyle::pdf_document:
+    self_contained: yes
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    code_folding: show
+date: "`r doc_date()`"
+---
+
+```{r vignette_setup, echo=FALSE, message=FALSE, warning = FALSE}
+## Track time spent on making the vignette
+startTime <- Sys.time()
+
+## Bib setup
+library("RefManageR")
+
+## Write bibliography information
+bib <- c(
+    R = citation(),
+    bsseq = citation("bsseq"),
+    BiocStyle = citation("BiocStyle")[1],
+    DelayedArray = citation("DelayedArray"),
+    GGally = citation("GGally"),
+    ggplot2 = citation("ggplot2"),
+    HDF5Array = citation("HDF5Array"),
+    here = citation("here"),
+    knitr = citation("knitr")[1],
+    RefManageR = citation("RefManageR")[1],
+    rmarkdown = citation("rmarkdown")[1],
+    sessioninfo = citation("sessioninfo")[1],
+    tidyr = citation("tidyr")
+)
+
+options(width = 70)
+```
+
+BiocMAP is a computational pipeline for bisulfite-sequencing data. Starting from the raw FASTQ-based sequencer outputs, BiocMAP ultimately produces two `bsseq` R objects, containing methylation proportions and coverage information for all genomic cytosines in CpG and CpH methylation context. Various metrics, such as bisulfite-conversion rate, number of reads trimmed, or concordant alignment rate, are collected and become columns in the `colData` of the `bsseq` objects. The below analysis will demonstrate how to explore both methylation information and quality metrics in the BiocMAP output objects. Background understanding of the [bsseq](https://bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq.html) package, and its parent [SummarizedExperiment](https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html) are helpful but not required here.
+
+The dataset used here includes 32 human postnatal dorsolateral prefrontal cortex samples up to 23 years of age. Samples were derived using NeuN-based fluorescence-activated nuclear sorting. The associated manuscript is [here](https://doi.org/10.1186/s13059-019-1805-1).
+
+# Add Experiment Metadata to BiocMAP Outputs
+
+The `bsseq` output objects from BiocMAP contain methylation and coverage info for our samples in the dataset. However, we're interested in exploring how this information relates back to sample metadata and phenotype information, present in an external file. Our first step will therefore be to load the BiocMAP output objects into memory, and manually attach the additional sample metadata to each object.
+
+```{r, "load_packages", message = FALSE}
+#  Load required R packages
+library("bsseq")
+library("HDF5Array")
+library("ggplot2")
+library("GGally")
+library("tidyr")
+library("here")
+```
+
+```{r, "define_inputs"}
+#  Path to the sample metadata and BiocMAP outputs
+meta_file <- here(
+    "documentation", "example_analysis", "age_neun_pheno_data.csv"
+)
+
+#   Output bsseq objects from BiocMAP. A local directory is referenced because
+#   the data is too large to host publicly
+out_dir <- file.path(
+    "/dcs04/lieber/lcolladotor/ageNeunSortedWGBS_LIBD001/ageNeunSortedWGBS",
+    "processed-data/01-run_BiocMAP/pipeline_output/BSobjects/objects/combined"
+)
+```
+
+```{r setup, include = FALSE}
+#   Only run the analysis when the BiocMAP files exist locally
+knitr::opts_chunk$set(eval = dir.exists(out_dir))
+```
+
+```{r, "load_objects"}
+#  Load the 'CpG'-context object
+bs_cpg <- loadHDF5SummarizedExperiment(out_dir, prefix = "CpG")
+
+#  Load the 'CpH'-context object.
+bs_cph <- loadHDF5SummarizedExperiment(out_dir, prefix = "CpH")
+
+#  Read in experiment-specific metadata and ensure sample ID orders match
+meta <- read.csv(meta_file)
+meta <- meta[match(colnames(bs_cpg), meta$LIBD.), ]
+
+#  Add this metadata to the Bioconductor objects
+colData(bs_cpg) <- cbind(colData(bs_cpg), meta)
+colData(bs_cph) <- cbind(colData(bs_cph), meta)
+
+#  Keep a copy of the metadata as a data frame, for easy plotting
+meta_df <- data.frame(colData(bs_cpg))
+```
