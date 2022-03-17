@@ -88,12 +88,13 @@ knitr::opts_chunk$set(eval = dir.exists(out_dir))
 #  Load the 'CpG'-context object
 bs_cpg <- loadHDF5SummarizedExperiment(out_dir, prefix = "CpG")
 
-#  Load the 'CpH'-context object.
+#  Load the 'CpH'-context object. Note: this requires quite a bit of memory
+#  (~23GB) even though the assays are disk-backed!
 bs_cph <- loadHDF5SummarizedExperiment(out_dir, prefix = "CpH")
 
 #  Read in experiment-specific metadata and ensure sample ID orders match
 meta <- read.csv(meta_file)
-meta <- meta[match(colnames(bs_cpg), meta$LIBD.), ]
+meta <- meta[match(colnames(bs_cpg), meta$Data.ID), ]
 
 #  Add this metadata to the Bioconductor objects
 colData(bs_cpg) <- cbind(colData(bs_cpg), meta)
@@ -101,4 +102,36 @@ colData(bs_cph) <- cbind(colData(bs_cph), meta)
 
 #  Keep a copy of the metadata as a data frame, for easy plotting
 meta_df <- data.frame(colData(bs_cpg))
+```
+
+# Exploratory Plots
+
+## Bisulfite-Conversion Efficiency by Cell Type
+
+This experiment used spike-ins of the lambda bacteriophage genome, which were quantified via BiocMAP to infer bisulfite-conversion rate. Successful bisulfite conversion is a pre-requisite for accurate methylation calls, so we'd like to see both that values (interpreted as percentages) are close to 100, and that values are not significantly different by sample (or by sample-related variables like cell type). We'll explore this visually below.
+
+```{r Figure1, warning = FALSE, out.width="100%", fig.align="center", fig.cap = "Bisulfite conversion rate by cell type across samples. Nearly all values are above 99\\% for both cell types, with one neuronal sample as low as just below 98.25\\%. Cell type does not appear to relate to bisulfite conversion rate, which is expected but reassuring."}
+ggplot(meta_df, aes(x = Cell.Type, y = lambda_bs_conv_eff)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_point() +
+    labs(x = "Cell Type", y = "Bisulfite Conversion Rate (%)") +
+    theme_bw(base_size = 20)
+```
+
+## Relationship between Methylation Fractions across Cytosine Context, by Cell Population
+
+Next, we'll explore if average methylation rate for each cytosine context correlates with that of other contexts across sample. For example, is a sample with highly methylated CpGs likely to have highly methylated CHGs? This is represented by the leftmost plot in middle row below.
+
+```{r Figure2, out.width="100%", fig.align="center", fig.cap = "Comparison of average methylation rate by cytosine context and cell type. CpG and CpH methylation of both types strongly correlate with each other, with an apparent linear relationship in all cases. Density plots reveal that methylation distributions have approximately the same shape but different means within each cytosine context between cell types, though variances can differ within each CpH context. Finally a dramatic difference in CpH methylation can be seen between neuronal and glial samples, which is consistent with the literature; CpH methylation is known to be more prominent in neurons than many other cell types."}
+#   We'll make use of the 'ggpairs' function from the 'GGally' package, which is
+#   well-suited for comparison of various metrics against each other, providing
+#   density plots, comparison scatter plots, and correlation information.
+ggpairs(
+    meta_df,
+    columns = c("perc_M_CpG", "perc_M_CHG", "perc_M_CHH"),
+    xlab = "Methylation Rate (%)", ylab = "Methylation Rate (%)",
+    columnLabels = c("CpG context", "CHG context", "CHH context"),
+    mapping = aes(color = Cell.Type)
+) +
+    theme_bw(base_size = 15)
 ```
