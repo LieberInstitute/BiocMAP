@@ -18,5 +18,5 @@ conda/pipeline_env
 
 #	Files when rendering RMD vignette
 documentation/example_analysis/render.log
-documentation/example_analysis/example_analysis.log
-documentation/example_analysis/example_analysis.knit.md
+documentation/example_analysis/*_analysis.log
+documentation/example_analysis/*_analysis.knit.md

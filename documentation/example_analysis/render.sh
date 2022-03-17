@@ -4,7 +4,7 @@
 #$ -e render.log
 #$ -l mf=50G,h_vmem=50G
 
-RMD_FILE=example_analysis.Rmd
+RMD_FILE=$1
 
 module load conda_R/4.1.x
 module load tex/2017
