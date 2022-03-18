@@ -174,3 +174,29 @@ ggplot(
     guides(linetype = "none") + 
     theme_bw(base_size = 20)
 ```
+
+## Explore a DMR
+
+```{r prepare_dmr_plot}
+dmr_list_path = here(
+    'documentation', 'example_analysis', 'age_neun_dmr_list.csv'
+)
+
+dmr_list = read.csv(dmr_list_path)
+dmr_gr = GRanges(dmr_list$Chromosome, IRanges(dmr_list$Start, dmr_list$End))
+
+#   Color plots by cell type
+p_data <- pData(bs_cpg)
+p_data$col <- ifelse(bs_cpg$Cell.Type == "Neuron", "red", "blue")
+pData(bs_cpg) <- p_data
+
+#rand_index = sample(nrow(dmr_list), 1)
+rand_index = 635
+```
+
+```{r Figure4, out.width="100%", fig.align="center", fig.cap = ""}
+plotRegion(
+    bs_cpg, dmr_gr[rand_index],
+    extend = width(dmr_gr[rand_index]) %/% 2
+)
+```
