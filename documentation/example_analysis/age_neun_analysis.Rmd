@@ -151,7 +151,7 @@ meta_df$high_meth_cpg <- DelayedArray::colMeans(assays(bs_cpg)$M > 0.1)
 meta_df$high_meth_cph <- DelayedArray::colMeans(assays(bs_cph)$M > 0.1)
 
 #  Convert the data frame to "long" format for use with ggplot
-meta_df_long = meta_df %>%
+meta_df_long <- meta_df %>%
     pivot_longer(
         cols = starts_with("high_meth_"),
         names_to = "context",
@@ -162,38 +162,38 @@ meta_df_long = meta_df %>%
 
 ```{r Figure3, out.width="100%", fig.align="center", fig.cap = "Proportion of highly methylated cytosines across age by cell type and context. While there isn't an apparent trend for CpG-context cytosines, CpH methylation show a clear increase with age, particularly for neurons."}
 ggplot(
-    meta_df_long, 
+    meta_df_long,
     aes(x = Age, y = high_meth_c, color = Cell.Type, shape = context)
 ) +
     geom_point() +
-    geom_smooth(method = 'loess', aes(linetype = context), se = FALSE) +
+    geom_smooth(method = "loess", aes(linetype = context), se = FALSE) +
     scale_shape_manual(values = c(19, 1), labels = c("CpG", "CpH")) +
     scale_color_brewer(palette = "Dark2") +
     labs(
-        x = "Age", y = "Prop. Cytosines > 10% M", color = "Cell Type", 
+        x = "Age", y = "Prop. Cytosines > 10% M", color = "Cell Type",
         shape = "Context"
     ) +
-    guides(linetype = "none") + 
+    guides(linetype = "none") +
     theme_bw(base_size = 20)
 ```
 
 ## Explore a DMR
 
 ```{r prepare_dmr_plot}
-dmr_list_path = here(
-    'documentation', 'example_analysis', 'age_neun_dmr_list.csv'
+dmr_list_path <- here(
+    "documentation", "example_analysis", "age_neun_dmr_list.csv"
 )
 
-dmr_list = read.csv(dmr_list_path)
-dmr_gr = GRanges(dmr_list$Chromosome, IRanges(dmr_list$Start, dmr_list$End))
+dmr_list <- read.csv(dmr_list_path)
+dmr_gr <- GRanges(dmr_list$Chromosome, IRanges(dmr_list$Start, dmr_list$End))
 
 #   Color plots by cell type
 p_data <- pData(bs_cpg)
 p_data$col <- ifelse(bs_cpg$Cell.Type == "Neuron", "red", "blue")
 pData(bs_cpg) <- p_data
 
-#rand_index = sample(nrow(dmr_list), 1)
-rand_index = 635
+# rand_index = sample(nrow(dmr_list), 1)
+rand_index <- 635
 ```
 
 ```{r Figure4, out.width="100%", fig.align="center", fig.cap = ""}
