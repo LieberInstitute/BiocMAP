@@ -118,7 +118,7 @@ ggplot(meta_df, aes(x = Cell.Type, y = lambda_bs_conv_eff)) +
     theme_bw(base_size = 20)
 ```
 
-## Relationship between Methylation Fractions across Cytosine Context, by Cell Population
+## Relationship between Methylation Fractions across Cytosine Context, by Cell Type
 
 Next, we'll explore if average methylation rate for each cytosine context correlates with that of other contexts across sample. For example, is a sample with highly methylated CpGs likely to have highly methylated CHGs? This is represented by the leftmost plot in middle row below.
 
@@ -134,4 +134,43 @@ ggpairs(
     mapping = aes(color = Cell.Type)
 ) +
     theme_bw(base_size = 15)
+```
+
+## Proportion of Highly Methylated Cytosines Across Age by Cell Type and Context
+
+```{r "prepare_age_plot"}
+#  The matrices in 'assays(bs_cpg)' and 'assays(bs_cph)' are stored on disk. To
+#  speed up some below computations, we raise the per-block memory size
+setAutoBlockSize(1e9)
+
+#  Get the proportion of cytosines in each object (context) that have > 10%
+#  methylation
+meta_df$high_meth_cpg <- DelayedArray::colMeans(assays(bs_cpg)$M[1:100000,] > 0.1)
+meta_df$high_meth_cph <- DelayedArray::colMeans(assays(bs_cph)$M[1:100000,] > 0.1)
+
+#  Convert the data frame to "long" format for use with ggplot
+meta_df_long = meta_df %>%
+    pivot_longer(
+        cols = starts_with("high_meth_"),
+        names_to = "context",
+        names_prefix = "high_meth_",
+        values_to = "high_meth_c"
+    )
+```
+
+```{r Figure3, out.width="100%", fig.align="center", fig.cap = ""}
+ggplot(
+    meta_df_long, 
+    aes(x = Age, y = high_meth_c, color = Cell.Type, shape = context)
+) +
+    geom_point() +
+    geom_smooth(method = 'loess', aes(linetype = context), se = FALSE) +
+    scale_shape_manual(values = c(19, 1), labels = c("CpG", "CpH")) +
+    scale_color_brewer(palette = "Dark2") +
+    labs(
+        x = "Age", y = "Prop. Cytosines > 10% M", color = "Cell Type", 
+        shape = "Context"
+    ) +
+    guides(linetype = "none") + 
+    theme_bw(base_size = 20)
 ```
