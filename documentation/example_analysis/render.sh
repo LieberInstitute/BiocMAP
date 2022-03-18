@@ -2,7 +2,7 @@
 #$ -cwd
 #$ -o render.log
 #$ -e render.log
-#$ -l mf=50G,h_vmem=50G
+#$ -l bluejay,mf=30G,h_vmem=30G
 
 RMD_FILE=$1
 
