@@ -147,8 +147,8 @@ setAutoBlockSize(1e9)
 
 #  Get the proportion of cytosines in each object (context) that have > 10%
 #  methylation
-meta_df$high_meth_cpg <- DelayedArray::colMeans(assays(bs_cpg)$M[1:100000,] > 0.1)
-meta_df$high_meth_cph <- DelayedArray::colMeans(assays(bs_cph)$M[1:100000,] > 0.1)
+meta_df$high_meth_cpg <- DelayedArray::colMeans(assays(bs_cpg)$M > 0.1)
+meta_df$high_meth_cph <- DelayedArray::colMeans(assays(bs_cph)$M > 0.1)
 
 #  Convert the data frame to "long" format for use with ggplot
 meta_df_long = meta_df %>%
