@@ -126,7 +126,7 @@ knitr::kable(
 
 ## Bisulfite-Conversion Efficiency by Cell Type
 
-This experiment used spike-ins of the lambda bacteriophage genome, which were quantified via BiocMAP to infer bisulfite-conversion rate. Successful bisulfite conversion is a pre-requisite for accurate methylation calls, so we'd like to see both that values (interpreted as percentages) are close to 100, and that values are not significantly different by sample (or by sample-related variables like cell type). We'll explore this visually below.
+This experiment used spike-ins of the lambda bacteriophage genome, which were quantified via BiocMAP to infer bisulfite-conversion rate. Successful bisulfite conversion is a pre-requisite for accurate methylation calls, so we'd like to see both that values (interpreted as percentages) are close to 100, and that values are not significantly different by sample (or by sample-related variables like cell type). We'll explore this visually in Figure \@ref(fig:Figure1).
 
 ```{r Figure1, warning = FALSE, out.width="100%", fig.align="center", fig.cap = "Bisulfite conversion rate by cell type across samples. Nearly all values are above 99\\% for both cell types, with one neuronal sample as low as just below 98.25\\%. Cell type does not appear to relate to bisulfite conversion rate, which is expected but reassuring."}
 ggplot(meta_df, aes(x = Cell.Type, y = lambda_bs_conv_eff)) +
@@ -138,7 +138,7 @@ ggplot(meta_df, aes(x = Cell.Type, y = lambda_bs_conv_eff)) +
 
 ## Relationship between Methylation Fractions across Cytosine Context, by Cell Type
 
-Next, we'll explore if average methylation rate for each cytosine context correlates with that of other contexts across sample. For example, is a sample with highly methylated CpGs likely to have highly methylated CHGs? This is represented by the leftmost plot in middle row below.
+Next, we'll explore if average methylation rate for each cytosine context correlates with that of other contexts across sample. For example, is a sample with highly methylated CpGs likely to have highly methylated CHGs? This is represented by the leftmost plot in Figure \@ref(fig:Figure2).
 
 ```{r Figure2, out.width="100%", fig.align="center", fig.cap = "Comparison of average methylation rate by cytosine context and cell type. CpG and CpH methylation of both types strongly correlate with each other, with an apparent linear relationship in all cases. Density plots reveal that methylation distributions have approximately the same shape but different means within each cytosine context between cell types, though variances can differ within each CpH context. Finally a dramatic difference in CpH methylation can be seen between neuronal and glial samples, which is consistent with the literature; CpH methylation is known to be more prominent in neurons than many other cell types."}
 #   We'll make use of the 'ggpairs' function from the 'GGally' package, which is
