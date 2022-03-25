@@ -86,11 +86,11 @@ knitr::opts_chunk$set(eval = dir.exists(out_dir))
 
 ```{r, "load_objects"}
 #  Load the 'CpG'-context object
-bs_cpg <- loadHDF5SummarizedExperiment(out_dir, prefix = "CpG")
+bs_cpg <- loadHDF5SummarizedExperiment(dir = out_dir, prefix = "CpG")
 
 #  Load the 'CpH'-context object. Note: this requires quite a bit of memory
 #  (~23GB) even though the assays are disk-backed!
-bs_cph <- loadHDF5SummarizedExperiment(out_dir, prefix = "CpH")
+bs_cph <- loadHDF5SummarizedExperiment(dir = out_dir, prefix = "CpH")
 
 #  Read in experiment-specific metadata and ensure sample ID orders match
 meta <- read.csv(meta_file)
@@ -129,7 +129,7 @@ knitr::kable(
 This experiment used spike-ins of the lambda bacteriophage genome, which were quantified via BiocMAP to infer bisulfite-conversion rate. Successful bisulfite conversion is a pre-requisite for accurate methylation calls, so we'd like to see both that values (interpreted as percentages) are close to 100, and that values are not significantly different by sample (or by sample-related variables like cell type). We'll explore this visually in Figure \@ref(fig:Figure1).
 
 ```{r Figure1, warning = FALSE, out.width="100%", fig.align="center", fig.cap = "Bisulfite conversion rate by cell type across samples. Nearly all values are above 99\\% for both cell types, with one neuronal sample as low as just below 98.25\\%. Cell type does not appear to relate to bisulfite conversion rate, which is expected but reassuring."}
-ggplot(meta_df, aes(x = Cell.Type, y = lambda_bs_conv_eff)) +
+ggplot(data = meta_df, aes(x = Cell.Type, y = lambda_bs_conv_eff)) +
     geom_boxplot(outlier.shape = NA) +
     geom_point() +
     labs(x = "Cell Type", y = "Bisulfite Conversion Rate (%)") +
@@ -145,7 +145,7 @@ Next, we'll explore if average methylation rate for each cytosine context correl
 #   well-suited for comparison of various metrics against each other, providing
 #   density plots, comparison scatter plots, and correlation information.
 ggpairs(
-    meta_df,
+    data = meta_df,
     columns = c("perc_M_CpG", "perc_M_CHG", "perc_M_CHH"),
     xlab = "Methylation Rate (%)", ylab = "Methylation Rate (%)",
     columnLabels = c("CpG context", "CHG context", "CHH context"),
@@ -161,7 +161,7 @@ Another interesting area of exploration would be to examine how methylation patt
 ```{r "prepare_age_plot"}
 #  The matrices in 'assays(bs_cpg)' and 'assays(bs_cph)' are stored on disk. To
 #  speed up some below computations, we raise the per-block memory size
-setAutoBlockSize(1e9)
+setAutoBlockSize(size = 1e9)
 
 #  Get the proportion of cytosines in each object (context) that have > 10%
 #  methylation
@@ -180,7 +180,7 @@ meta_df_long <- meta_df %>%
 
 ```{r Figure3, out.width="100%", fig.align="center", fig.cap = "Proportion of highly methylated cytosines across age by cell type and context. While there isn't an apparent trend for CpG-context cytosines, CpH methylation show a clear increase with age, particularly for neurons."}
 ggplot(
-    meta_df_long,
+    data = meta_df_long,
     aes(x = Age, y = high_meth_c, color = Cell.Type, shape = context)
 ) +
     geom_point() +
@@ -203,7 +203,10 @@ dmr_list_path <- here(
 )
 
 dmr_list <- read.csv(dmr_list_path)
-dmr_gr <- GRanges(dmr_list$Chromosome, IRanges(dmr_list$Start, dmr_list$End))
+dmr_gr <- GRanges(
+    seqnames = dmr_list$Chromosome,
+    ranges = IRanges(dmr_list$Start, dmr_list$End)
+)
 
 #   Color plots by cell type
 p_data <- pData(bs_cpg)
@@ -216,7 +219,7 @@ rand_index <- 635
 
 ```{r Figure4, out.width="100%", fig.align="center", fig.cap = ""}
 plotRegion(
-    bs_cpg, dmr_gr[rand_index],
+    BSSeq = bs_cpg, region = dmr_gr[rand_index],
     extend = width(dmr_gr[rand_index]) %/% 2
 )
 ```
