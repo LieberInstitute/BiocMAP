@@ -202,6 +202,10 @@ ggplot(
 
 ## Explore a DMR
 
+The next natural area of analysis is computing differentially methylated regions (DMRs) between groups of interest. In this dataset, we might explore methylation differences between neurons and glia. Since the [corresponding manuscript](https://doi.org/10.1186/s13059-019-1805-1) already has done this, we'll read in the known DMRs from the supplementary table (additional file 2 [here](https://doi.org/10.1186/s13059-019-1805-1#additional-information)). Note that the `bsseq` package has [an excellent guide for computing DMRs](http://bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq_analysis.html#4_Finding_DMRs), a step that can be skipped in our case.
+
+In this section, we'll read in the DMR list, "zoom out" around each DMR to form regions 100k bp wider (see `exploration_radius` below), and determine the region containing the most DMRs. We can then use `plotRegion` to visually check methylation levels at that region.
+
 ```{r prepare_dmr_plot}
 exploration_radius = 5e4
 
@@ -228,7 +232,7 @@ p_data$col <- ifelse(bs_cpg$Cell.Type == "Neuron", "red", "blue")
 pData(bs_cpg) <- p_data
 ```
 
-```{r Figure4, out.width="100%", fig.align="center", fig.cap = ""}
+```{r Figure4, out.width="100%", fig.align="center", fig.cap = "Genomic region containing differential methylation between neurons and glia. Red methylation curves represent neuronal samples, whereas blue curves represent glial samples. Windows highlighted in light red show DMRs determined in the manuscript between groups."}
 plotRegion(
     BSseq = bs_cpg, region = dmr_gr_overlap,
     addRegions = dmr_gr, extend = exploration_radius
