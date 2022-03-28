@@ -77,6 +77,11 @@ out_dir <- file.path(
     "/dcs04/lieber/lcolladotor/ageNeunSortedWGBS_LIBD001/ageNeunSortedWGBS",
     "processed-data/01-run_BiocMAP/pipeline_output/BSobjects/objects/combined"
 )
+
+#   CSV of DMRs already found for this dataset
+dmr_list_path <- here(
+    "documentation", "example_analysis", "age_neun_dmr_list.csv"
+)
 ```
 
 ```{r setup, include = FALSE}
@@ -114,7 +119,7 @@ knitr::kable(
     label = "cell_types"
 )
 
-age_bin_df = data.frame(table(meta$Cell.Type))
+age_bin_df = data.frame(table(meta$Age.Bin))
 colnames(age_bin_df) = c("Age Bin", "Num Samples")
 knitr::kable(
     age_bin_df, caption = "Distribution of age across samples",
@@ -198,29 +203,35 @@ ggplot(
 ## Explore a DMR
 
 ```{r prepare_dmr_plot}
-dmr_list_path <- here(
-    "documentation", "example_analysis", "age_neun_dmr_list.csv"
-)
+exploration_radius = 5e4
 
+#   Read in CSV of DMRs and form a GenomicRanges object of unique regions
 dmr_list <- read.csv(dmr_list_path)
 dmr_gr <- GRanges(
     seqnames = dmr_list$Chromosome,
     ranges = IRanges(dmr_list$Start, dmr_list$End)
 )
+dmr_gr <- unique(dmr_gr)
+
+#   Look around each DMR with a fixed radius
+dmr_gr_wide = resize(
+    dmr_gr, width = width(dmr_gr) + 2 * exploration_radius, fix = "center"
+)
+
+#   Find the DMR with the most nearby DMRs
+num_overlaps = countOverlaps(dmr_gr, dmr_gr_wide)
+dmr_gr_overlap = dmr_gr[match(max(num_overlaps), num_overlaps)]
 
 #   Color plots by cell type
 p_data <- pData(bs_cpg)
 p_data$col <- ifelse(bs_cpg$Cell.Type == "Neuron", "red", "blue")
 pData(bs_cpg) <- p_data
-
-# rand_index = sample(nrow(dmr_list), 1)
-rand_index <- 635
 ```
 
 ```{r Figure4, out.width="100%", fig.align="center", fig.cap = ""}
 plotRegion(
-    BSSeq = bs_cpg, region = dmr_gr[rand_index],
-    extend = width(dmr_gr[rand_index]) %/% 2
+    BSseq = bs_cpg, region = dmr_gr_overlap,
+    addRegions = dmr_gr, extend = exploration_radius
 )
 ```
 
