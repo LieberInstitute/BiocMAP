@@ -109,7 +109,7 @@ colData(bs_cph) <- cbind(colData(bs_cph), meta)
 meta_df <- data.frame(colData(bs_cpg))
 ```
 
-We'll briefly look at how the data is distributed by age and cell type shown in Table \@ref(tab:cell_types) and Table \@ref(tab:age_bins), respectively.
+We'll briefly look at how the data is distributed by age and cell type shown in Table \@ref(tab:cellTypes) and Table \@ref(tab:ageBins), respectively.
 
 ```{r metaTables}
 cell_type_df <- data.frame(table(meta$Cell.Type))
@@ -117,7 +117,7 @@ colnames(cell_type_df) <- c("Cell Type", "Num Samples")
 knitr::kable(
     cell_type_df,
     caption = "Distribution of cell type across samples",
-    label = "cell_types"
+    label = "cellTypes"
 )
 
 age_bin_df <- data.frame(table(meta$Age.Bin))
@@ -125,7 +125,7 @@ colnames(age_bin_df) <- c("Age Bin", "Num Samples")
 knitr::kable(
     age_bin_df,
     caption = "Distribution of age across samples",
-    label = "age_bins"
+    label = "ageBins"
 )
 ```
 
