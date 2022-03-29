@@ -199,7 +199,8 @@ ggplot(
         shape = "Context"
     ) +
     guides(linetype = "none") +
-    theme_bw(base_size = 20)
+    theme_bw(base_size = 20) +
+    ylim(0, 1)
 ```
 
 ## Explore a DMR
