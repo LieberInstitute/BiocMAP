@@ -20,4 +20,4 @@ nextflow $ORIG_DIR/first_half.nf \
 
 #   Log successful runs on non-test data in a central location. Please adjust
 #   the log path here if it is changed at the top!
-bash scripts/track_runs.sh $PWD/run_first_half_jhpce.log first
+bash $ORIG_DIR/scripts/track_runs.sh $PWD/run_first_half_jhpce.log first
