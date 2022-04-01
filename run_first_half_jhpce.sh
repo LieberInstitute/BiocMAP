@@ -5,7 +5,7 @@
 #$ -cwd
 
 #  After running 'install_software.sh', this should point to the directory
-#  where SPEAQeasy was installed, and not say "$PWD"
+#  where BiocMAP was installed, and not say "$PWD"
 ORIG_DIR=$PWD
 
 module load nextflow
