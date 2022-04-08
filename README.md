@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/223444482.svg)](https://zenodo.org/badge/latestdoi/223444482)
+
 # BiocMAP
 
 BiocMAP is a **Bioc**onductor-friendly **M**ethylation **A**nalysis **P**ipeline. It consists of two [nextflow](https://www.nextflow.io/)-based "modules", which together take a set of FASTQ files, described in [a `samples.manifest` file](http://research.libd.org/WGBS-Pipeline/inputs.html#the-samples.manifest-file), and ultimately produce [bsseq](https://www.bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq.html) R objects containing methylation data and an R data frame of alignment and quality metrics.
