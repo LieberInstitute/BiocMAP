@@ -158,7 +158,9 @@ ggpairs(
     columnLabels = c("CpG context", "CHG context", "CHH context"),
     mapping = aes(color = Cell.Type)
 ) +
-    theme_bw(base_size = 15)
+    theme_bw(base_size = 15) +
+    scale_color_brewer(palette = "Dark2") +
+    scale_fill_brewer(palette = "Dark2")
 ```
 
 ## Proportion of Highly Methylated Cytosines Across Age by Cell Type and Context
