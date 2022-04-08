@@ -38,6 +38,7 @@ bib <- c(
     HDF5Array = citation("HDF5Array"),
     here = citation("here"),
     knitr = citation("knitr")[1],
+    RColorBrewer = citation("RColorBrewer"),
     RefManageR = citation("RefManageR")[1],
     rmarkdown = citation("rmarkdown")[1],
     sessioninfo = citation("sessioninfo")[1],
@@ -63,6 +64,7 @@ library("ggplot2")
 library("GGally")
 library("tidyr")
 library("here")
+library("RColorBrewer")
 ```
 
 ```{r, "define_inputs"}
@@ -233,7 +235,7 @@ num_overlaps <- countOverlaps(dmr_gr, dmr_gr_wide)
 dmr_gr_overlap <- dmr_gr[match(max(num_overlaps), num_overlaps)]
 
 #   Color plots by cell type
-pal <- brewer.pal(3, "Dark2")[1:2]
+pal = brewer.pal(3, "Dark2")[1:2]
 p_data <- pData(bs_cpg)
 p_data$col <- ifelse(bs_cpg$Cell.Type == "Glia", pal[1], pal[2])
 pData(bs_cpg) <- p_data
@@ -294,6 +296,7 @@ This vignette was made possible by the following packages and software:
 * `r Biocpkg("HDF5Array")` = `r Citep(bib[["HDF5Array"]])`
 * `r CRANpkg("here")` = `r Citep(bib[["here"]])`
 * `r CRANpkg("knitr")` = `r Citep(bib[["knitr"]])`
+* `r CRANpkg("RColorBrewer")` = `r Citep(bib[["RColorBrewer"]])`
 * `r CRANpkg("RefManageR")` = `r Citep(bib[["RefManageR"]])`
 * `r CRANpkg("rmarkdown")` = `r Citep(bib[["rmarkdown"]])`
 * `r CRANpkg("sessioninfo")` = `r Citep(bib[["sessioninfo"]])`
