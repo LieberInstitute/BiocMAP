@@ -276,7 +276,7 @@ Lieber Institute for Brain Development, Johns Hopkins Medical CampusCenter for C
 <div id="overview" class="section level1 unnumbered hasAnchor">
 <h1>Overview<a href="index.html#overview" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>BiocMAP is a pair of <a href="https://www.nextflow.io/">Nextflow</a>-based pipelines for processing raw whole genome bisulfite sequencing data into <a href="https://bioconductor.org/">Bioconductor</a>-friendly <a href="https://www.bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq.html">bsseq</a> objects in R.</p>
-<p>We provide tips for achieving significant increases in throughput and customization [LINK TO MANUSCRIPT WHEN IT’S OUT], by implementing the earlier processing steps manually in place of the “first module” we provide in this repository. We recommend this manual approach to advanced users who handle large WGBS datasets or are particularly interested in performance. Otherwise, one can run the first module and second module in series for a complete WGBS processing workflow.</p>
+<p>The first BiocMAP module performs speedy alignment to a reference genome by <a href="https://github.com/RWilton/Arioc">Arioc</a>, and requires GPU resources. Methylation extraction and remaining steps are performed in the second module, optionally on a different computing system where GPUs need not be available.</p>
 <p><img src="images/workflow.png" />
 <em>Diagram representing the “conceptual” workflow traversed by BiocMAP. Here some nextflow <a href="https://www.nextflow.io/docs/latest/process.html"><code>processes</code></a> are grouped together for simplicity; the exact processes traversed are enumerated <a href="pipeline-overview.html#pipeline-overview">here</a>. The red box indicates the FASTQ files are inputs to the pipeline; green coloring denotes major output files from the pipeline; the remaining boxes represent computational steps. Yellow-colored steps are optional or not always performed; for example, lambda pseudoalignment is an optional step intended for experiments with spike-ins of the lambda bacteriophage. Finally, blue-colored steps are ordinary processes which occur on every pipeline execution.</em></p>
 <div id="cite-biocmap" class="section level2 unnumbered hasAnchor">
@@ -310,9 +310,9 @@ Lieber Institute for Brain Development, Johns Hopkins Medical CampusCenter for C
 <span id="cb1-8"><a href="index.html#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">width =</span> <span class="dv">120</span>)</span>
 <span id="cb1-9"><a href="index.html#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">session_info</span>()</span></code></pre></div>
 <pre><code>## [1] &quot;Reproducibility information:&quot;</code></pre>
-<pre><code>## [1] &quot;2022-04-08 20:00:17 UTC&quot;</code></pre>
+<pre><code>## [1] &quot;2022-04-14 19:18:18 UTC&quot;</code></pre>
 <pre><code>##    user  system elapsed 
-##   0.717   0.140   0.733</code></pre>
+##   0.558   0.120   0.568</code></pre>
 <pre><code>## ─ Session info ───────────────────────────────────────────────────────────────────────────────────────────────────────
 ##  setting  value
 ##  version  R Under development (unstable) (2022-03-14 r81896)
@@ -323,7 +323,7 @@ Lieber Institute for Brain Development, Johns Hopkins Medical CampusCenter for C
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       UTC
-##  date     2022-04-08
+##  date     2022-04-14
 ##  pandoc   2.17.1.1 @ /usr/local/bin/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -355,7 +355,7 @@ Lieber Institute for Brain Development, Johns Hopkins Medical CampusCenter for C
 ##  [3] /usr/local/lib/R/library
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</code></pre>
-<p>This book was last updated on 2022-04-08 20:00:18.</p>
+<p>This book was last updated on 2022-04-14 19:18:18.</p>
 
 </div>
 </div>
