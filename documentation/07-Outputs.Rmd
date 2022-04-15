@@ -45,22 +45,30 @@ The `colData` slot of each `bsseq` object includes metrics collected from variou
 | Total_written_filtered | Trim Galore! | Value for "Total written (filtered)" entry in STDOUT from trimming |
 | Sequence | Trim Galore! | Detected adapter sequence when trimming |
 | was_trimmed | Trim Galore! | Logical value ("TRUE" or "FALSE") indicating whether this sample was trimmed |
-| pairs | Arioc | Total number of pairs present in input data |
-| conc_pairs_total | Arioc | Total number of concordantly aligned pairs |
-| conc_pairs_1_mapping | Arioc | Number of uniquely mapped concordant alignments |
-| conc_pairs_many_mappings | Arioc | Number of non-uniquely mapped concordant pairs |
-| disc_pairs | Arioc | Number of pairs that aligned discordantly |
-| rejected_pairs | Arioc | Number of pairs that were "rejected" during alignment |
-| unmapped_pairs | Arioc | Number of pairs that didn't both successfully map |
-| mates_not_in_paired_maps_total | Arioc | Value for "mates not in paired mappings" field in "SAM output" section of verbose output from alignment |
-| mates_NIPM_with_no_maps | Arioc | Number of mates not in paired mappings having no mappings |
-| mates_NIPM_with_1_map | Arioc | Number of mates not in paired mappings having 1 mapping |
-| mates_NIPM_with_many_maps | Arioc | Number of mates not in paired mappings having 2 or more mappings |      
-| total_mapped_mates | Arioc | Total number of mates mapped |      
-| duplicate_maps | Arioc | Value for "duplicate mappings (unreported)" field in "SAM output" section of verbose output from alignment |      
+| pairs | Arioc | (Paired-end only) Total number of pairs present in input data |
+| conc_pairs_total | Arioc | (Paired-end only) Total number of concordantly aligned pairs |
+| conc_pairs_1_mapping | Arioc | (Paired-end only) Number of uniquely mapped concordant alignments |
+| conc_pairs_many_mappings | Arioc | (Paired-end only) Number of non-uniquely mapped concordant pairs |
+| disc_pairs | Arioc | (Paired-end only) Number of pairs that aligned discordantly |
+| rejected_pairs | Arioc | (Paired-end only) Number of pairs that were "rejected" during alignment |
+| unmapped_pairs | Arioc | (Paired-end only) Number of pairs that didn't both successfully map |
+| mates_not_in_paired_maps_total | Arioc | (Paired-end only) Value for "mates not in paired mappings" field in "SAM output" section of verbose output from alignment |
+| mates_NIPM_with_no_maps | Arioc | (Paired-end only) Number of mates not in paired mappings having no mappings |
+| mates_NIPM_with_1_map | Arioc | (Paired-end only) Number of mates not in paired mappings having 1 mapping |
+| mates_NIPM_with_many_maps | Arioc | (Paired-end only) Number of mates not in paired mappings having 2 or more mappings |      
+| total_mapped_mates | Arioc | (Paired-end only) Total number of mates mapped |
 | maxQlen | Arioc | Value for "maximum Q length" field in "SAM output" section of verbose output from alignment |      
-| max_diag_band_width | Arioc | Value for "maximum diagonal band width" field in "SAM output" section of verbose output from alignment |      
-| TLEN mean | Arioc | Value for "TLEN mean (stdev, skewness)" field in "SAM output" section of verbose output from alignment |        
+| max_diag_band_width | Arioc | (Paired-end only) Value for "maximum diagonal band width" field in "SAM output" section of verbose output from alignment |      
+| TLEN_mean | Arioc | (Paired-end only) Mean fragment length |
+| TLEN_sd | Arioc | (Paired-end only) Standard deviation of fragment length |
+| TLEN_skewness | Arioc | (Paired-end only) Skewness of fragment length |
+| reads | Arioc | (Single-end only) Total number of reads present in input data |
+| mapped_reads_total | Arioc | (Single-end only) Number of reads successfully mapped to the reference genome |
+| mapped_reads_1_map | Arioc | (Single-end only) Number of reads mapped to a unique location on the reference genome |
+| mapped_reads_many_maps | Arioc | (Single-end only) Number of reads mapped to more than 1 location on the reference genome |
+| unmapped_reads | Arioc | (Single-end only) Number of reads that didn't successfully map to the reference genome |
+| duplicate_maps | Arioc | Value for "duplicate mappings (unreported)" field in "SAM output" section of verbose output from alignment |
+| err_rate_primary_maps | Arioc | Observed error rate for reads (single-end) or pairs (paired-end) in primary mappings |
 | perc_M_CpG | Methylation extraction | Among all cytosines observed in CpG context, the percent that are methylated |      
 | perc_M_CHG | Methylation extraction | Among all cytosines observed in CHG context, the percent that are methylated |
 | perc_M_CHH | Methylation extraction | Among all cytosines observed in CHH context, the percent that are methylated |
