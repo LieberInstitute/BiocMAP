@@ -402,62 +402,112 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <tr class="odd">
 <td>pairs</td>
 <td>Arioc</td>
-<td>Total number of pairs present in input data</td>
+<td>(Paired-end only) Total number of pairs present in input data</td>
 </tr>
 <tr class="even">
 <td>conc_pairs_total</td>
 <td>Arioc</td>
-<td>Total number of concordantly aligned pairs</td>
+<td>(Paired-end only) Total number of concordantly aligned pairs</td>
 </tr>
 <tr class="odd">
 <td>conc_pairs_1_mapping</td>
 <td>Arioc</td>
-<td>Number of uniquely mapped concordant alignments</td>
+<td>(Paired-end only) Number of uniquely mapped concordant alignments</td>
 </tr>
 <tr class="even">
 <td>conc_pairs_many_mappings</td>
 <td>Arioc</td>
-<td>Number of non-uniquely mapped concordant pairs</td>
+<td>(Paired-end only) Number of non-uniquely mapped concordant pairs</td>
 </tr>
 <tr class="odd">
 <td>disc_pairs</td>
 <td>Arioc</td>
-<td>Number of pairs that aligned discordantly</td>
+<td>(Paired-end only) Number of pairs that aligned discordantly</td>
 </tr>
 <tr class="even">
 <td>rejected_pairs</td>
 <td>Arioc</td>
-<td>Number of pairs that were “rejected” during alignment</td>
+<td>(Paired-end only) Number of pairs that were “rejected” during alignment</td>
 </tr>
 <tr class="odd">
 <td>unmapped_pairs</td>
 <td>Arioc</td>
-<td>Number of pairs that didn’t both successfully map</td>
+<td>(Paired-end only) Number of pairs that didn’t both successfully map</td>
 </tr>
 <tr class="even">
 <td>mates_not_in_paired_maps_total</td>
 <td>Arioc</td>
-<td>Value for “mates not in paired mappings” field in “SAM output” section of verbose output from alignment</td>
+<td>(Paired-end only) Value for “mates not in paired mappings” field in “SAM output” section of verbose output from alignment</td>
 </tr>
 <tr class="odd">
 <td>mates_NIPM_with_no_maps</td>
 <td>Arioc</td>
-<td>Number of mates not in paired mappings having no mappings</td>
+<td>(Paired-end only) Number of mates not in paired mappings having no mappings</td>
 </tr>
 <tr class="even">
 <td>mates_NIPM_with_1_map</td>
 <td>Arioc</td>
-<td>Number of mates not in paired mappings having 1 mapping</td>
+<td>(Paired-end only) Number of mates not in paired mappings having 1 mapping</td>
 </tr>
 <tr class="odd">
 <td>mates_NIPM_with_many_maps</td>
 <td>Arioc</td>
-<td>Number of mates not in paired mappings having 2 or more mappings</td>
+<td>(Paired-end only) Number of mates not in paired mappings having 2 or more mappings</td>
 </tr>
 <tr class="even">
 <td>total_mapped_mates</td>
 <td>Arioc</td>
-<td>Total number of mates mapped</td>
+<td>(Paired-end only) Total number of mates mapped</td>
+</tr>
+<tr class="odd">
+<td>maxQlen</td>
+<td>Arioc</td>
+<td>Value for “maximum Q length” field in “SAM output” section of verbose output from alignment</td>
+</tr>
+<tr class="even">
+<td>max_diag_band_width</td>
+<td>Arioc</td>
+<td>(Paired-end only) Value for “maximum diagonal band width” field in “SAM output” section of verbose output from alignment</td>
+</tr>
+<tr class="odd">
+<td>TLEN_mean</td>
+<td>Arioc</td>
+<td>(Paired-end only) Mean fragment length</td>
+</tr>
+<tr class="even">
+<td>TLEN_sd</td>
+<td>Arioc</td>
+<td>(Paired-end only) Standard deviation of fragment length</td>
+</tr>
+<tr class="odd">
+<td>TLEN_skewness</td>
+<td>Arioc</td>
+<td>(Paired-end only) Skewness of fragment length</td>
+</tr>
+<tr class="even">
+<td>reads</td>
+<td>Arioc</td>
+<td>(Single-end only) Total number of reads present in input data</td>
+</tr>
+<tr class="odd">
+<td>mapped_reads_total</td>
+<td>Arioc</td>
+<td>(Single-end only) Number of reads successfully mapped to the reference genome</td>
+</tr>
+<tr class="even">
+<td>mapped_reads_1_map</td>
+<td>Arioc</td>
+<td>(Single-end only) Number of reads mapped to a unique location on the reference genome</td>
+</tr>
+<tr class="odd">
+<td>mapped_reads_many_maps</td>
+<td>Arioc</td>
+<td>(Single-end only) Number of reads mapped to more than 1 location on the reference genome</td>
+</tr>
+<tr class="even">
+<td>unmapped_reads</td>
+<td>Arioc</td>
+<td>(Single-end only) Number of reads that didn’t successfully map to the reference genome</td>
 </tr>
 <tr class="odd">
 <td>duplicate_maps</td>
@@ -465,19 +515,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <td>Value for “duplicate mappings (unreported)” field in “SAM output” section of verbose output from alignment</td>
 </tr>
 <tr class="even">
-<td>maxQlen</td>
+<td>err_rate_primary_maps</td>
 <td>Arioc</td>
-<td>Value for “maximum Q length” field in “SAM output” section of verbose output from alignment</td>
-</tr>
-<tr class="odd">
-<td>max_diag_band_width</td>
-<td>Arioc</td>
-<td>Value for “maximum diagonal band width” field in “SAM output” section of verbose output from alignment</td>
-</tr>
-<tr class="even">
-<td>TLEN mean</td>
-<td>Arioc</td>
-<td>Value for “TLEN mean (stdev, skewness)” field in “SAM output” section of verbose output from alignment</td>
+<td>Observed error rate for reads (single-end) or pairs (paired-end) in primary mappings</td>
 </tr>
 <tr class="odd">
 <td>perc_M_CpG</td>
