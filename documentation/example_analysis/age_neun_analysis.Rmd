@@ -235,7 +235,7 @@ num_overlaps <- countOverlaps(dmr_gr, dmr_gr_wide)
 dmr_gr_overlap <- dmr_gr[match(max(num_overlaps), num_overlaps)]
 
 #   Color plots by cell type
-pal = brewer.pal(3, "Dark2")[1:2]
+pal <- brewer.pal(3, "Dark2")[1:2]
 p_data <- pData(bs_cpg)
 p_data$col <- ifelse(bs_cpg$Cell.Type == "Glia", pal[1], pal[2])
 pData(bs_cpg) <- p_data
