@@ -4,7 +4,7 @@
 
 BiocMAP is a **Bioc**onductor-friendly **M**ethylation **A**nalysis **P**ipeline. It consists of two [nextflow](https://www.nextflow.io/)-based "modules", which together take a set of FASTQ files, described in [a `samples.manifest` file](http://research.libd.org/WGBS-Pipeline/inputs.html#the-samples.manifest-file), and ultimately produce [bsseq](https://www.bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq.html) R objects containing methylation data and an R data frame of alignment and quality metrics.
 
-We provide tips for achieving significant increases in throughput and customization [LINK TO MANUSCRIPT WHEN IT'S OUT], by implementing the earlier processing steps manually in place of the "first module" we provide in this repository. We recommend this manual approach to advanced users who handle large WGBS datasets or are particularly interested in performance. Otherwise, one can run the first module and second module in series for a complete WGBS processing workflow.
+The first BiocMAP module performs speedy alignment to a reference genome by [Arioc](https://github.com/RWilton/Arioc), and requires GPU resources. Methylation extraction and remaining steps are performed in the second module, optionally on a different computing system where GPUs need not be available.
 
 ![Workflow Overview](https://github.com/LieberInstitute/WGBS-Pipeline/blob/master/workflow.png)
 
@@ -13,7 +13,7 @@ We provide tips for achieving significant increases in throughput and customizat
 - GPU-accelerated alignment to a reference genome via [Arioc](https://github.com/RWilton/Arioc)
 - Memory-efficient, HDF5-backed [bsseq](https://www.bioconductor.org/packages/release/bioc/vignettes/bsseq/inst/doc/bsseq.html) output objects immediately ready for analysis with [Bioconductor](https://bioconductor.org/)/R packages of choice
 - Automatic management of [reference files](http://research.libd.org/WGBS-Pipeline/annotation.html), allowing simple configuration of [GENCODE](https://www.gencodegenes.org/) release and [other settings](http://research.libd.org/WGBS-Pipeline/annotation.html#choosing-build), while alternatively [supporting user-provided files](http://research.libd.org/WGBS-Pipeline/annotation.html#custom-annotation)
-- [Support for docker and conda](http://research.libd.org/WGBS-Pipeline/setup-details.html#installation) for flexible and reproducible installation
+- [Support for docker and singularity](http://research.libd.org/WGBS-Pipeline/setup-details.html#installation) for flexible and reproducible installation
 - Automatically merge samples split across multiple FASTQ files, using [the `samples.manifest` input](http://research.libd.org/WGBS-Pipeline/inputs.html#the-samples.manifest-file)
 
 ## Get started
