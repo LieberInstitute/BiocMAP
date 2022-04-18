@@ -4,14 +4,13 @@
 num_reads=100000
 
 module load sratoolkit/2.10.8
+module load conda_R/4.1.x
 
 for pairing in (single paired); do
     for species in (human mouse); do
         if [[ $species == "human" ]] && [[ $pairing == "paired" ]]; then
-            #  For now, the FlowRNA-WGBS data is not available from a public
-            #  location. Ideally we'll update this code to ensure complete
-            #  reproducibility
-            echo "Skipping download of 'human paired' FASTQs..."
+            #   "AgeNeunSortedWGBS" samples are available from synapse
+            Rscript retrieve_fastq_human_paired.R
         else
             #  Prefetch
             cat SRR_Acc_List_${pairing}_${species}.txt | xargs -I{} prefetch {}
