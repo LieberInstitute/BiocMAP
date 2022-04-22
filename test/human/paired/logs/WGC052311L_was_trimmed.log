@@ -1,0 +1,446 @@
+Loading LIBD module for trimgalore/0.6.6
+Loading LIBD module for FastQC/0.11.8
+Multicore support not enabled. Proceeding with single-core trimming.
+Path to Cutadapt set as: 'cutadapt' (default)
+Cutadapt seems to be working fine (tested command 'cutadapt --version')
+Cutadapt version: 3.4
+single-core operation.
+No quality encoding type selected. Assuming that the data provided uses Sanger encoded Phred scores (default)
+
+Using user-specified basename (>>WGC052311L<<) instead of deriving the filename from the input file(s)
+Writing report to 'WGC052311L_1.fastq.gz_trimming_report.txt'
+
+SUMMARISING RUN PARAMETERS
+==========================
+Input filename: WGC052311L_1.fastq.gz
+Trimming mode: paired-end
+Trim Galore version: 0.6.6
+Cutadapt version: 3.4
+Number of cores used for trimming: 1
+Quality Phred score cutoff: 20
+Quality encoding type selected: ASCII+33
+Adapter sequence: 'AGATCGGAAGAGC' (Illumina TruSeq, Sanger iPCR; user defined)
+Maximum trimming error rate: 0.1 (default)
+Minimum required adapter overlap (stringency): 1 bp
+Minimum required sequence length for both reads before a sequence pair gets removed: 20 bp
+Running FastQC on the data once trimming has completed
+Running FastQC with the following extra arguments: '--extract'
+
+Cutadapt seems to be fairly up-to-date (version 3.4). Setting -j 1
+Writing final adapter and quality trimmed output to WGC052311L_1_trimmed.fq
+
+
+  >>> Now performing quality (cutoff '-q 20') and adapter trimming in a single pass for the adapter sequence: 'AGATCGGAAGAGC' from file WGC052311L_1.fastq.gz <<< 
+This is cutadapt 3.4 with Python 3.7.3
+Command line parameters: -j 1 -e 0.1 -q 20 -O 1 -a AGATCGGAAGAGC WGC052311L_1.fastq.gz
+Processing reads on 1 core in single-end mode ...
+Finished in 1.28 s (51 µs/read; 1.17 M reads/minute).
+
+=== Summary ===
+
+Total reads processed:                  25,000
+Reads with adapters:                    16,674 (66.7%)
+Reads written (passing filters):        25,000 (100.0%)
+
+Total basepairs processed:     3,750,000 bp
+Quality-trimmed:                  67,164 bp (1.8%)
+Total written (filtered):      3,225,659 bp (86.0%)
+
+=== Adapter 1 ===
+
+Sequence: AGATCGGAAGAGC; Type: regular 3'; Length: 13; Trimmed: 16674 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-13 bp: 1
+
+Bases preceding removed adapters:
+  A: 25.4%
+  C: 9.4%
+  G: 30.9%
+  T: 34.3%
+  none/other: 0.0%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+1	4053	6250.0	0	4053
+2	1430	1562.5	0	1430
+3	574	390.6	0	574
+4	192	97.7	0	192
+5	134	24.4	0	134
+6	146	6.1	0	146
+7	134	1.5	0	134
+8	136	0.4	0	136
+9	149	0.1	0	148 1
+10	164	0.0	1	158 6
+11	184	0.0	1	168 16
+12	153	0.0	1	136 17
+13	164	0.0	1	147 17
+14	154	0.0	1	137 17
+15	142	0.0	1	127 15
+16	156	0.0	1	131 25
+17	161	0.0	1	140 21
+18	178	0.0	1	167 11
+19	123	0.0	1	119 4
+20	133	0.0	1	121 12
+21	121	0.0	1	112 9
+22	143	0.0	1	129 14
+23	129	0.0	1	122 7
+24	138	0.0	1	127 11
+25	161	0.0	1	145 16
+26	113	0.0	1	108 5
+27	131	0.0	1	124 7
+28	126	0.0	1	111 15
+29	151	0.0	1	140 11
+30	171	0.0	1	156 15
+31	92	0.0	1	85 7
+32	117	0.0	1	110 7
+33	145	0.0	1	135 10
+34	141	0.0	1	125 16
+35	320	0.0	1	296 24
+36	73	0.0	1	66 7
+37	108	0.0	1	103 5
+38	66	0.0	1	58 8
+39	116	0.0	1	108 8
+40	131	0.0	1	124 7
+41	89	0.0	1	84 5
+42	120	0.0	1	109 11
+43	92	0.0	1	84 8
+44	88	0.0	1	81 7
+45	115	0.0	1	108 7
+46	133	0.0	1	123 10
+47	240	0.0	1	207 33
+48	49	0.0	1	42 7
+49	114	0.0	1	102 12
+50	77	0.0	1	69 8
+51	61	0.0	1	55 6
+52	114	0.0	1	107 7
+53	60	0.0	1	58 2
+54	79	0.0	1	72 7
+55	114	0.0	1	102 12
+56	82	0.0	1	73 9
+57	85	0.0	1	79 6
+58	85	0.0	1	75 10
+59	108	0.0	1	96 12
+60	103	0.0	1	93 10
+61	104	0.0	1	93 11
+62	85	0.0	1	77 8
+63	106	0.0	1	100 6
+64	98	0.0	1	91 7
+65	98	0.0	1	92 6
+66	135	0.0	1	121 14
+67	210	0.0	1	187 23
+68	595	0.0	1	561 34
+69	829	0.0	1	770 59
+70	315	0.0	1	299 16
+71	141	0.0	1	130 11
+72	67	0.0	1	64 3
+73	48	0.0	1	46 2
+74	34	0.0	1	33 1
+75	24	0.0	1	23 1
+76	22	0.0	1	18 4
+77	23	0.0	1	20 3
+78	20	0.0	1	17 3
+79	13	0.0	1	12 1
+80	18	0.0	1	13 5
+81	16	0.0	1	15 1
+82	12	0.0	1	11 1
+83	11	0.0	1	10 1
+84	18	0.0	1	15 3
+85	14	0.0	1	10 4
+86	12	0.0	1	12
+87	7	0.0	1	5 2
+88	9	0.0	1	9
+89	10	0.0	1	8 2
+90	12	0.0	1	12
+91	10	0.0	1	8 2
+92	5	0.0	1	5
+93	19	0.0	1	16 3
+94	3	0.0	1	3
+95	18	0.0	1	17 1
+96	10	0.0	1	10
+97	12	0.0	1	10 2
+98	9	0.0	1	9
+99	11	0.0	1	10 1
+100	8	0.0	1	8
+101	7	0.0	1	7
+102	8	0.0	1	8
+103	7	0.0	1	7
+104	6	0.0	1	6
+105	9	0.0	1	8 1
+106	9	0.0	1	9
+107	5	0.0	1	5
+108	8	0.0	1	8
+109	3	0.0	1	3
+110	2	0.0	1	1 1
+111	7	0.0	1	7
+112	3	0.0	1	3
+113	6	0.0	1	6
+114	3	0.0	1	3
+115	4	0.0	1	4
+116	2	0.0	1	2
+117	3	0.0	1	2 1
+118	2	0.0	1	2
+120	1	0.0	1	1
+121	3	0.0	1	2 1
+123	1	0.0	1	1
+124	1	0.0	1	1
+126	1	0.0	1	1
+130	1	0.0	1	1
+
+RUN STATISTICS FOR INPUT FILE: WGC052311L_1.fastq.gz
+=============================================
+25000 sequences processed in total
+The length threshold of paired-end sequences gets evaluated later on (in the validation step)
+
+Writing report to 'WGC052311L_2.fastq.gz_trimming_report.txt'
+
+SUMMARISING RUN PARAMETERS
+==========================
+Input filename: WGC052311L_2.fastq.gz
+Trimming mode: paired-end
+Trim Galore version: 0.6.6
+Cutadapt version: 3.4
+Number of cores used for trimming: 1
+Quality Phred score cutoff: 20
+Quality encoding type selected: ASCII+33
+Adapter sequence: 'AGATCGGAAGAGC' (Illumina TruSeq, Sanger iPCR; user defined)
+Maximum trimming error rate: 0.1 (default)
+Minimum required adapter overlap (stringency): 1 bp
+Minimum required sequence length for both reads before a sequence pair gets removed: 20 bp
+Running FastQC on the data once trimming has completed
+Running FastQC with the following extra arguments: '--extract'
+
+Cutadapt seems to be fairly up-to-date (version 3.4). Setting -j -j 1
+Writing final adapter and quality trimmed output to WGC052311L_2_trimmed.fq
+
+
+  >>> Now performing quality (cutoff '-q 20') and adapter trimming in a single pass for the adapter sequence: 'AGATCGGAAGAGC' from file WGC052311L_2.fastq.gz <<< 
+This is cutadapt 3.4 with Python 3.7.3
+Command line parameters: -j 1 -e 0.1 -q 20 -O 1 -a AGATCGGAAGAGC WGC052311L_2.fastq.gz
+Processing reads on 1 core in single-end mode ...
+Finished in 1.40 s (56 µs/read; 1.07 M reads/minute).
+
+=== Summary ===
+
+Total reads processed:                  25,000
+Reads with adapters:                    17,626 (70.5%)
+Reads written (passing filters):        25,000 (100.0%)
+
+Total basepairs processed:     3,750,000 bp
+Quality-trimmed:                 205,327 bp (5.5%)
+Total written (filtered):      3,152,569 bp (84.1%)
+
+=== Adapter 1 ===
+
+Sequence: AGATCGGAAGAGC; Type: regular 3'; Length: 13; Trimmed: 17626 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-13 bp: 1
+
+Bases preceding removed adapters:
+  A: 43.9%
+  C: 17.6%
+  G: 12.5%
+  T: 26.0%
+  none/other: 0.0%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+1	7801	6250.0	0	7801
+2	396	1562.5	0	396
+3	312	390.6	0	312
+4	77	97.7	0	77
+5	97	24.4	0	97
+6	112	6.1	0	112
+7	153	1.5	0	153
+8	105	0.4	0	105
+9	64	0.1	0	60 4
+10	179	0.0	1	133 46
+11	137	0.0	1	87 50
+12	185	0.0	1	125 60
+13	139	0.0	1	98 41
+14	255	0.0	1	182 73
+15	78	0.0	1	56 22
+16	90	0.0	1	64 26
+17	172	0.0	1	125 47
+18	37	0.0	1	23 14
+19	116	0.0	1	86 30
+20	63	0.0	1	43 20
+21	59	0.0	1	48 11
+22	101	0.0	1	72 29
+23	115	0.0	1	83 32
+24	233	0.0	1	162 71
+25	113	0.0	1	75 38
+26	94	0.0	1	69 25
+27	81	0.0	1	59 22
+28	124	0.0	1	86 38
+29	90	0.0	1	65 25
+30	220	0.0	1	162 58
+31	46	0.0	1	33 13
+32	124	0.0	1	85 39
+33	82	0.0	1	53 29
+34	87	0.0	1	65 22
+35	141	0.0	1	105 36
+36	153	0.0	1	118 35
+37	89	0.0	1	67 22
+38	122	0.0	1	89 33
+39	64	0.0	1	53 11
+40	64	0.0	1	49 15
+41	129	0.0	1	104 25
+42	191	0.0	1	154 37
+43	50	0.0	1	44 6
+44	107	0.0	1	88 19
+45	287	0.0	1	236 51
+46	124	0.0	1	99 25
+47	58	0.0	1	50 8
+48	150	0.0	1	128 22
+49	112	0.0	1	101 11
+50	82	0.0	1	66 16
+51	340	0.0	1	288 52
+52	63	0.0	1	48 15
+53	53	0.0	1	47 6
+54	36	0.0	1	32 4
+55	63	0.0	1	50 13
+56	82	0.0	1	69 13
+57	69	0.0	1	56 13
+58	37	0.0	1	32 5
+59	71	0.0	1	59 12
+60	85	0.0	1	76 9
+61	91	0.0	1	71 20
+62	96	0.0	1	88 8
+63	116	0.0	1	101 15
+64	151	0.0	1	123 28
+65	152	0.0	1	129 23
+66	213	0.0	1	182 31
+67	305	0.0	1	255 50
+68	739	0.0	1	639 100
+69	345	0.0	1	297 48
+70	101	0.0	1	88 13
+71	42	0.0	1	38 4
+72	26	0.0	1	21 5
+73	25	0.0	1	19 6
+74	17	0.0	1	13 4
+75	10	0.0	1	7 3
+76	9	0.0	1	6 3
+77	6	0.0	1	6
+78	10	0.0	1	10
+79	9	0.0	1	8 1
+80	11	0.0	1	7 4
+81	8	0.0	1	8
+82	12	0.0	1	11 1
+83	6	0.0	1	5 1
+84	10	0.0	1	8 2
+85	6	0.0	1	6
+86	13	0.0	1	9 4
+87	8	0.0	1	6 2
+88	6	0.0	1	4 2
+89	6	0.0	1	6
+90	3	0.0	1	3
+91	5	0.0	1	5
+92	3	0.0	1	2 1
+93	9	0.0	1	4 5
+94	7	0.0	1	7
+95	5	0.0	1	5
+96	7	0.0	1	7
+97	3	0.0	1	3
+98	7	0.0	1	6 1
+99	3	0.0	1	3
+100	6	0.0	1	6
+101	1	0.0	1	0 1
+102	6	0.0	1	5 1
+103	7	0.0	1	6 1
+104	3	0.0	1	2 1
+105	2	0.0	1	1 1
+106	4	0.0	1	4
+107	3	0.0	1	2 1
+108	6	0.0	1	5 1
+109	1	0.0	1	1
+110	1	0.0	1	1
+111	3	0.0	1	2 1
+112	3	0.0	1	3
+113	4	0.0	1	4
+114	4	0.0	1	4
+116	2	0.0	1	2
+117	1	0.0	1	1
+118	2	0.0	1	2
+119	2	0.0	1	2
+120	1	0.0	1	1
+123	1	0.0	1	1
+127	1	0.0	1	1
+128	1	0.0	1	1
+129	1	0.0	1	0 1
+
+RUN STATISTICS FOR INPUT FILE: WGC052311L_2.fastq.gz
+=============================================
+25000 sequences processed in total
+The length threshold of paired-end sequences gets evaluated later on (in the validation step)
+
+Validate paired-end files WGC052311L_1_trimmed.fq and WGC052311L_2_trimmed.fq
+Now renaming the output files
+
+ORIGINAL FILE 1: >>WGC052311L_1_trimmed.fq<<	RENAMING TO:>>WGC052311L_R1_trimmed.fq<<
+ORIGINAL FILE 2: >>WGC052311L_2_trimmed.fq<<	RENAMING TO:>>WGC052311L_R2_trimmed.fq<<
+file_1: WGC052311L_R1_trimmed.fq, file_2: WGC052311L_R2_trimmed.fq
+
+
+>>>>> Now validing the length of the 2 paired-end infiles: WGC052311L_R1_trimmed.fq and WGC052311L_R2_trimmed.fq <<<<<
+Renaming the output files (AGAIN).
+Writing validated paired-end Read 1 reads to WGC052311L_val_1.fq
+Writing validated paired-end Read 2 reads to WGC052311L_val_2.fq
+
+Total number of sequences analysed: 25000
+
+Number of sequence pairs removed because at least one read was shorter than the length cutoff (20 bp): 2 (0.01%)
+
+
+  >>> Now running FastQC on the validated data WGC052311L_val_1.fq<<<
+
+Started analysis of WGC052311L_val_1.fq
+Approx 5% complete for WGC052311L_val_1.fq
+Approx 10% complete for WGC052311L_val_1.fq
+Approx 15% complete for WGC052311L_val_1.fq
+Approx 20% complete for WGC052311L_val_1.fq
+Approx 25% complete for WGC052311L_val_1.fq
+Approx 30% complete for WGC052311L_val_1.fq
+Approx 35% complete for WGC052311L_val_1.fq
+Approx 40% complete for WGC052311L_val_1.fq
+Approx 45% complete for WGC052311L_val_1.fq
+Approx 50% complete for WGC052311L_val_1.fq
+Approx 55% complete for WGC052311L_val_1.fq
+Approx 60% complete for WGC052311L_val_1.fq
+Approx 65% complete for WGC052311L_val_1.fq
+Approx 70% complete for WGC052311L_val_1.fq
+Approx 75% complete for WGC052311L_val_1.fq
+Approx 80% complete for WGC052311L_val_1.fq
+Approx 85% complete for WGC052311L_val_1.fq
+Approx 90% complete for WGC052311L_val_1.fq
+Approx 95% complete for WGC052311L_val_1.fq
+Analysis complete for WGC052311L_val_1.fq
+
+  >>> Now running FastQC on the validated data WGC052311L_val_2.fq<<<
+
+Started analysis of WGC052311L_val_2.fq
+Approx 5% complete for WGC052311L_val_2.fq
+Approx 10% complete for WGC052311L_val_2.fq
+Approx 15% complete for WGC052311L_val_2.fq
+Approx 20% complete for WGC052311L_val_2.fq
+Approx 25% complete for WGC052311L_val_2.fq
+Approx 30% complete for WGC052311L_val_2.fq
+Approx 35% complete for WGC052311L_val_2.fq
+Approx 40% complete for WGC052311L_val_2.fq
+Approx 45% complete for WGC052311L_val_2.fq
+Approx 50% complete for WGC052311L_val_2.fq
+Approx 55% complete for WGC052311L_val_2.fq
+Approx 60% complete for WGC052311L_val_2.fq
+Approx 65% complete for WGC052311L_val_2.fq
+Approx 70% complete for WGC052311L_val_2.fq
+Approx 75% complete for WGC052311L_val_2.fq
+Approx 80% complete for WGC052311L_val_2.fq
+Approx 85% complete for WGC052311L_val_2.fq
+Approx 90% complete for WGC052311L_val_2.fq
+Approx 95% complete for WGC052311L_val_2.fq
+Analysis complete for WGC052311L_val_2.fq
+Deleting both intermediate output files WGC052311L_R1_trimmed.fq and WGC052311L_R2_trimmed.fq
+
+====================================================================================================
+

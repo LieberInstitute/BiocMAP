@@ -1,0 +1,11 @@
+PASS	Basic Statistics	WGC052312L_val_2.fq
+WARN	Per base sequence quality	WGC052312L_val_2.fq
+PASS	Per tile sequence quality	WGC052312L_val_2.fq
+WARN	Per sequence quality scores	WGC052312L_val_2.fq
+FAIL	Per base sequence content	WGC052312L_val_2.fq
+WARN	Per sequence GC content	WGC052312L_val_2.fq
+PASS	Per base N content	WGC052312L_val_2.fq
+WARN	Sequence Length Distribution	WGC052312L_val_2.fq
+PASS	Sequence Duplication Levels	WGC052312L_val_2.fq
+PASS	Overrepresented sequences	WGC052312L_val_2.fq
+PASS	Adapter Content	WGC052312L_val_2.fq
