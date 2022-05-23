@@ -26,6 +26,12 @@ if [[ $is_small_test -eq 1 ]]; then
     exit 0
 fi
 
+#   Get the output directory for the run
+out_dir=$(
+    grep -E "^Output dir *: /.*$" $BiocMAP_log |
+    tail -n 1 | cut -d ":" -f 2 | tr -d " "
+)
+
 #   Determine the manifest path, then count the number of samples
 if [[ $half == "first" ]]; then
     man_path=$input_dir/samples.manifest
@@ -53,8 +59,9 @@ else
 fi
 
 #   Tab-separated list:
-#   [work dir] [date] [number of samples] [user] [module ("first" or "second")]
+#   [output dir] [date] [number of samples] [user] [module ("first" or "second")]
 
-log_path=$(mktemp -p $log_dir)
-echo -e "$PWD\t$(date +%Y-%m-%d,%H:%M)\t${num_samples}\t$(whoami)\t$half" >
+log_path=$(mktemp -p $log_dir -t run_XXXXXXX.log)
+echo -e "${out_dir}\t$(date +%Y-%m-%d,%H:%M)\t${num_samples}\t$(whoami)\t$half" >
     $log_path
+chmod 755 $log_path
