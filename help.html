@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>10 Help | BiocMAP</title>
   <meta name="description" content="10 Help | BiocMAP" />
-  <meta name="generator" content="bookdown 0.29 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.32 and GitBook 2.6.7" />
 
   <meta property="og:title" content="10 Help | BiocMAP" />
   <meta property="og:type" content="book" />
@@ -273,12 +273,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p class="caption">How Nextflow may report memory-related errors</p>
 </div>
 <p>Attempt to provide the process more memory in your config. In this case the configuration for FilterAlignments looks like this (for SGE users):</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb26-1"><a href="help.html#cb26-1" aria-hidden="true" tabindex="-1"></a>withName<span class="op">:</span> FilterAlignments <span class="op">{</span></span>
-<span id="cb26-2"><a href="help.html#cb26-2" aria-hidden="true" tabindex="-1"></a>    cpus <span class="op">=</span> <span class="dv">2</span></span>
-<span id="cb26-3"><a href="help.html#cb26-3" aria-hidden="true" tabindex="-1"></a>    penv <span class="op">=</span> <span class="st">&#39;local&#39;</span></span>
-<span id="cb26-4"><a href="help.html#cb26-4" aria-hidden="true" tabindex="-1"></a>    memory <span class="op">=</span> <span class="fl">16.G</span>B</span>
-<span id="cb26-5"><a href="help.html#cb26-5" aria-hidden="true" tabindex="-1"></a>    clusterOptions <span class="op">=</span> <span class="st">&#39;-l h_fsize=800G&#39;</span></span>
-<span id="cb26-6"><a href="help.html#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb27-1"><a href="help.html#cb27-1" aria-hidden="true" tabindex="-1"></a>withName<span class="op">:</span> FilterAlignments <span class="op">{</span></span>
+<span id="cb27-2"><a href="help.html#cb27-2" aria-hidden="true" tabindex="-1"></a>    cpus <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb27-3"><a href="help.html#cb27-3" aria-hidden="true" tabindex="-1"></a>    penv <span class="op">=</span> <span class="st">&#39;local&#39;</span></span>
+<span id="cb27-4"><a href="help.html#cb27-4" aria-hidden="true" tabindex="-1"></a>    memory <span class="op">=</span> <span class="fl">16.G</span>B</span>
+<span id="cb27-5"><a href="help.html#cb27-5" aria-hidden="true" tabindex="-1"></a>    clusterOptions <span class="op">=</span> <span class="st">&#39;-l h_fsize=800G&#39;</span></span>
+<span id="cb27-6"><a href="help.html#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Note that disk space may also be the limitation. See the <a href="configuration.html#configuration">configuration</a> section for more info.</p></li>
 <li><p><strong>The pipeline keeps halting during alignment</strong>: In particular, the output log shows the error message <code>"No GPUs are available."</code>. This can have a few causes– if you are running the pipeline on an SGE/SLURM-based cluster, BiocMAP assumes that when GPUs are fully occupied, pending jobs will be held in queue, and will not be run until those resources become available. When this assumption is not met, some potential workarounds (which also apply to local runs/ without a cluster) are:</p>
 <ol style="list-style-type: decimal">
@@ -286,19 +286,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>Increase the number of CPUs required for the <code>AlignReads</code> process in <a href="quick-start.html#your-config-file">your config file</a> (see <a href="configuration.html#specifying-options-for-your-cluster">“Specifying Options for your Cluster”</a>. In particular, make sure the ratio of total CPUs available to this value exceeds the number of GPUs available. For example, if you are running the pipeline locally, have 2 GPUs and 8 CPU cores, set <code>cpus = 4</code> in the <code>AlignReads</code> process.</li>
 <li>If the above solutions don’t work, a last-case fix could be to lower <code>queueSize</code> in the <code>executor</code> scope of <a href="quick-start.html#your-config-file">your config file</a> for the first module to the number of GPUs available to you. Note that this limits the number of concurrent processes, and can thus greatly slow pipeline execution.</li>
 </ol>
-<div class="sourceCode" id="cb27"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb27-1"><a href="help.html#cb27-1" aria-hidden="true" tabindex="-1"></a>executor <span class="op">{</span></span>
-<span id="cb27-2"><a href="help.html#cb27-2" aria-hidden="true" tabindex="-1"></a>    name <span class="op">=</span> <span class="st">&#39;sge&#39;</span></span>
-<span id="cb27-3"><a href="help.html#cb27-3" aria-hidden="true" tabindex="-1"></a>    queueSize <span class="op">=</span> <span class="dv">8</span>  <span class="co">// By default, this is set to 40</span></span>
-<span id="cb27-4"><a href="help.html#cb27-4" aria-hidden="true" tabindex="-1"></a>    submitRateLimit <span class="op">=</span> <span class="st">&#39;1 sec&#39;</span></span>
-<span id="cb27-5"><a href="help.html#cb27-5" aria-hidden="true" tabindex="-1"></a>    exitReadTimeout <span class="op">=</span> <span class="st">&#39;40 min&#39;</span></span>
-<span id="cb27-6"><a href="help.html#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div></li>
-<li><p><strong>Nextflow has trouble communicating with your cluster</strong>: a less common issue can occur on slower clusters, related to nextflow failing to poll your grid scheduler (like SGE or SLURM) for information it needs about the jobs that are running. This can show up in an error message like: <code>Process</code>FilterAlignments (Prefix: Sample_FE2P1_blood)<code>terminated for an unknown reason -- Likely it has been terminated by the external system</code>. We have found that raising the <code>exitReadTimeout</code> to a large value (such as 40 minutes) solves this issue, but consider raising it further if needed.</p>
 <div class="sourceCode" id="cb28"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb28-1"><a href="help.html#cb28-1" aria-hidden="true" tabindex="-1"></a>executor <span class="op">{</span></span>
 <span id="cb28-2"><a href="help.html#cb28-2" aria-hidden="true" tabindex="-1"></a>    name <span class="op">=</span> <span class="st">&#39;sge&#39;</span></span>
-<span id="cb28-3"><a href="help.html#cb28-3" aria-hidden="true" tabindex="-1"></a>    queueSize <span class="op">=</span> <span class="dv">40</span></span>
+<span id="cb28-3"><a href="help.html#cb28-3" aria-hidden="true" tabindex="-1"></a>    queueSize <span class="op">=</span> <span class="dv">8</span>  <span class="co">// By default, this is set to 40</span></span>
 <span id="cb28-4"><a href="help.html#cb28-4" aria-hidden="true" tabindex="-1"></a>    submitRateLimit <span class="op">=</span> <span class="st">&#39;1 sec&#39;</span></span>
 <span id="cb28-5"><a href="help.html#cb28-5" aria-hidden="true" tabindex="-1"></a>    exitReadTimeout <span class="op">=</span> <span class="st">&#39;40 min&#39;</span></span>
 <span id="cb28-6"><a href="help.html#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div></li>
+<li><p><strong>Nextflow has trouble communicating with your cluster</strong>: a less common issue can occur on slower clusters, related to nextflow failing to poll your grid scheduler (like SGE or SLURM) for information it needs about the jobs that are running. This can show up in an error message like: <code>Process</code>FilterAlignments (Prefix: Sample_FE2P1_blood)<code>terminated for an unknown reason -- Likely it has been terminated by the external system</code>. We have found that raising the <code>exitReadTimeout</code> to a large value (such as 40 minutes) solves this issue, but consider raising it further if needed.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb29-1"><a href="help.html#cb29-1" aria-hidden="true" tabindex="-1"></a>executor <span class="op">{</span></span>
+<span id="cb29-2"><a href="help.html#cb29-2" aria-hidden="true" tabindex="-1"></a>    name <span class="op">=</span> <span class="st">&#39;sge&#39;</span></span>
+<span id="cb29-3"><a href="help.html#cb29-3" aria-hidden="true" tabindex="-1"></a>    queueSize <span class="op">=</span> <span class="dv">40</span></span>
+<span id="cb29-4"><a href="help.html#cb29-4" aria-hidden="true" tabindex="-1"></a>    submitRateLimit <span class="op">=</span> <span class="st">&#39;1 sec&#39;</span></span>
+<span id="cb29-5"><a href="help.html#cb29-5" aria-hidden="true" tabindex="-1"></a>    exitReadTimeout <span class="op">=</span> <span class="st">&#39;40 min&#39;</span></span>
+<span id="cb29-6"><a href="help.html#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div></li>
 </ul>
 </div>
 <div id="resuming" class="section level2 hasAnchor" number="10.2">
@@ -315,17 +315,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ol start="2" style="list-style-type: decimal">
 <li><strong>Create a docker group</strong></li>
 </ol>
-<div class="sourceCode" id="cb29"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb29-1"><a href="help.html#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> addgroup docker</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb30-1"><a href="help.html#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> addgroup docker</span></code></pre></div>
 <ol start="3" style="list-style-type: decimal">
 <li><strong>Add user to docker group</strong></li>
 </ol>
-<div class="sourceCode" id="cb30"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb30-1"><a href="help.html#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> usermod <span class="at">-aG</span> docker <span class="op">&lt;</span>your_user<span class="op">&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb31-1"><a href="help.html#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> usermod <span class="at">-aG</span> docker <span class="op">&lt;</span>your_user<span class="op">&gt;</span></span></code></pre></div>
 <ol start="4" style="list-style-type: decimal">
 <li><strong>Checking installation</strong></li>
 </ol>
 <p>Log out and log back in to ensure your user is running with the correct permissions.</p>
 <p><a href="https://docs.docker.com/get-started/#test-docker-installation">Test Docker installation</a> by running:</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb31-1"><a href="help.html#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run hello-world</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb32-1"><a href="help.html#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run hello-world</span></code></pre></div>
 
 </div>
 </div>

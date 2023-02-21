@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>BiocMAP</title>
   <meta name="description" content="BiocMAP" />
-  <meta name="generator" content="bookdown 0.29 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.32 and GitBook 2.6.7" />
 
   <meta property="og:title" content="BiocMAP" />
   <meta property="og:type" content="book" />
@@ -281,8 +281,16 @@ Lieber Institute for Brain Development, Johns Hopkins Medical CampusCenter for C
 <em>Diagram representing the “conceptual” workflow traversed by BiocMAP. Here some nextflow <a href="https://www.nextflow.io/docs/latest/process.html"><code>processes</code></a> are grouped together for simplicity; the exact processes traversed are enumerated <a href="pipeline-overview.html#pipeline-overview">here</a>. The red box indicates the FASTQ files are inputs to the pipeline; green coloring denotes major output files from the pipeline; the remaining boxes represent computational steps. Yellow-colored steps are optional or not always performed; for example, lambda pseudoalignment is an optional step intended for experiments with spike-ins of the lambda bacteriophage. Finally, blue-colored steps are ordinary processes which occur on every pipeline execution.</em></p>
 <div id="cite-biocmap" class="section level2 unnumbered hasAnchor">
 <h2>Cite <code>BiocMAP</code><a href="index.html#cite-biocmap" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>We hope that <a href="http://research.libd.org/BiocMAP/"><code>BiocMAP</code></a> will be useful for your research. Please use the following information to cite the workflow provided by this software. Thank you!</p>
-<p>[TODO]</p>
+<p>We hope <code>BiocMAP</code> will be a useful tool for your research. Please use the following bibtex information to cite this software. Thank you!</p>
+<pre><code>@article {Eagles2022.04.20.488947,
+    author = {Eagles, Nicholas J and Wilton, Richard and Jaffe, Andrew E. and Collado-Torres, Leonardo},
+    title = {BiocMAP: A Bioconductor-friendly, GPU-Accelerated Pipeline for Bisulfite-Sequencing Data},
+    year = {2022},
+    doi = {10.1101/2022.04.20.488947},
+    publisher = {Cold Spring Harbor Laboratory},
+    URL = {https://doi.org/10.1101/2022.04.20.488947},
+    journal = {bioRxiv}
+}</code></pre>
 <p>This is a project by the <a href="https://lcolladotor.github.io/bioc_team_ds">R/Bioconductor-powered Team Data Science</a> at the <a href="https://www.libd.org/">Lieber Institute for Brain Development</a>.</p>
 <table>
 <colgroup>
@@ -300,63 +308,60 @@ Lieber Institute for Brain Development, Johns Hopkins Medical CampusCenter for C
 <div id="r-session-information" class="section level2 unnumbered hasAnchor">
 <h2>R session information<a href="index.html#r-session-information" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Details on the R version used for making this book. The source code is available at <a href="https://github.com/LieberInstitute/BiocMAP"><code>LieberInstitute/BiocMAP</code></a>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="index.html#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Load the package at the top of your script</span></span>
-<span id="cb1-2"><a href="index.html#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;sessioninfo&quot;</span>)</span>
-<span id="cb1-3"><a href="index.html#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="index.html#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Reproducibility information</span></span>
-<span id="cb1-5"><a href="index.html#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">&#39;Reproducibility information:&#39;</span>)</span>
-<span id="cb1-6"><a href="index.html#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">Sys.time</span>()</span>
-<span id="cb1-7"><a href="index.html#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">proc.time</span>()</span>
-<span id="cb1-8"><a href="index.html#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">width =</span> <span class="dv">120</span>)</span>
-<span id="cb1-9"><a href="index.html#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">session_info</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="index.html#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Load the package at the top of your script</span></span>
+<span id="cb2-2"><a href="index.html#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;sessioninfo&quot;</span>)</span>
+<span id="cb2-3"><a href="index.html#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="index.html#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Reproducibility information</span></span>
+<span id="cb2-5"><a href="index.html#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">&#39;Reproducibility information:&#39;</span>)</span>
+<span id="cb2-6"><a href="index.html#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">Sys.time</span>()</span>
+<span id="cb2-7"><a href="index.html#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">proc.time</span>()</span>
+<span id="cb2-8"><a href="index.html#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">width =</span> <span class="dv">120</span>)</span>
+<span id="cb2-9"><a href="index.html#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">session_info</span>()</span></code></pre></div>
 <pre><code>## [1] &quot;Reproducibility information:&quot;</code></pre>
-<pre><code>## [1] &quot;2022-10-31 18:49:34 UTC&quot;</code></pre>
+<pre><code>## [1] &quot;2023-02-21 19:31:49 UTC&quot;</code></pre>
 <pre><code>##    user  system elapsed 
-##   0.630   0.107   0.710</code></pre>
+##   0.721   0.136   1.204</code></pre>
 <pre><code>## ─ Session info ───────────────────────────────────────────────────────────────────────────────────────────────────────
 ##  setting  value
-##  version  R version 4.2.1 (2022-06-23)
-##  os       Ubuntu 20.04.5 LTS
+##  version  R Under development (unstable) (2023-02-16 r83857)
+##  os       Ubuntu 22.04.1 LTS
 ##  system   x86_64, linux-gnu
 ##  ui       X11
 ##  language (EN)
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       UTC
-##  date     2022-10-31
+##  date     2023-02-21
 ##  pandoc   2.19.2 @ /usr/local/bin/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 ##  package     * version date (UTC) lib source
-##  bookdown      0.29    2022-09-12 [1] RSPM (R 4.2.0)
-##  bslib         0.4.0   2022-07-16 [2] RSPM (R 4.2.0)
-##  cachem        1.0.6   2021-08-19 [2] RSPM (R 4.2.0)
-##  cli           3.4.1   2022-09-23 [2] RSPM (R 4.2.0)
-##  digest        0.6.30  2022-10-18 [2] RSPM (R 4.2.0)
-##  evaluate      0.17    2022-10-07 [2] RSPM (R 4.2.0)
-##  fastmap       1.1.0   2021-01-25 [2] RSPM (R 4.2.0)
-##  htmltools     0.5.3   2022-07-18 [2] RSPM (R 4.2.0)
-##  jquerylib     0.1.4   2021-04-26 [2] RSPM (R 4.2.0)
-##  jsonlite      1.8.2   2022-10-02 [2] RSPM (R 4.2.0)
-##  knitr         1.40    2022-08-24 [2] RSPM (R 4.2.0)
-##  magrittr      2.0.3   2022-03-30 [2] RSPM (R 4.2.0)
-##  R6            2.5.1   2021-08-19 [2] RSPM (R 4.2.0)
-##  rlang         1.0.6   2022-09-24 [2] RSPM (R 4.2.0)
-##  rmarkdown     2.17    2022-10-07 [2] RSPM (R 4.2.0)
-##  rstudioapi    0.14    2022-08-22 [2] RSPM (R 4.2.0)
-##  sass          0.4.2   2022-07-16 [2] RSPM (R 4.2.0)
-##  sessioninfo * 1.2.2   2021-12-06 [2] RSPM (R 4.2.0)
-##  stringi       1.7.8   2022-07-11 [2] RSPM (R 4.2.0)
-##  stringr       1.4.1   2022-08-20 [2] RSPM (R 4.2.0)
-##  xfun          0.34    2022-10-18 [2] RSPM (R 4.2.0)
-##  yaml          2.3.6   2022-10-18 [2] RSPM (R 4.2.0)
+##  bookdown      0.32    2023-01-17 [1] CRAN (R 4.3.0)
+##  bslib         0.4.2   2022-12-16 [2] CRAN (R 4.3.0)
+##  cachem        1.0.6   2021-08-19 [2] CRAN (R 4.3.0)
+##  cli           3.6.0   2023-01-09 [2] CRAN (R 4.3.0)
+##  digest        0.6.31  2022-12-11 [2] CRAN (R 4.3.0)
+##  evaluate      0.20    2023-01-17 [2] CRAN (R 4.3.0)
+##  fastmap       1.1.0   2021-01-25 [2] CRAN (R 4.3.0)
+##  htmltools     0.5.4   2022-12-07 [2] CRAN (R 4.3.0)
+##  jquerylib     0.1.4   2021-04-26 [2] CRAN (R 4.3.0)
+##  jsonlite      1.8.4   2022-12-06 [2] CRAN (R 4.3.0)
+##  knitr         1.42    2023-01-25 [2] CRAN (R 4.3.0)
+##  R6            2.5.1   2021-08-19 [2] CRAN (R 4.3.0)
+##  rlang         1.0.6   2022-09-24 [2] CRAN (R 4.3.0)
+##  rmarkdown     2.20    2023-01-19 [2] CRAN (R 4.3.0)
+##  rstudioapi    0.14    2022-08-22 [2] CRAN (R 4.3.0)
+##  sass          0.4.5   2023-01-24 [2] CRAN (R 4.3.0)
+##  sessioninfo * 1.2.2   2021-12-06 [2] CRAN (R 4.3.0)
+##  xfun          0.37    2023-01-31 [2] CRAN (R 4.3.0)
+##  yaml          2.3.7   2023-01-23 [2] CRAN (R 4.3.0)
 ## 
 ##  [1] /usr/local/lib/R/host-site-library
 ##  [2] /usr/local/lib/R/site-library
 ##  [3] /usr/local/lib/R/library
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</code></pre>
-<p>This book was last updated on 2022-10-31 18:49:34.</p>
+<p>This book was last updated on 2023-02-21 19:31:49.554834.</p>
 
 </div>
 </div>
