@@ -26,6 +26,22 @@ We provide [shell scripts](http://research.libd.org/WGBS-Pipeline/quick-start.ht
 
 [Nick Eagles](https://github.com/Nick-Eagles)
 
+## Cite
+
+We hope `BiocMAP` will be a useful tool for your research. Please use the following bibtex information to cite this software. Thank you!
+
+```
+@article {Eagles2022.04.20.488947,
+	author = {Eagles, Nicholas J and Wilton, Richard and Jaffe, Andrew E. and Collado-Torres, Leonardo},
+	title = {BiocMAP: A Bioconductor-friendly, GPU-Accelerated Pipeline for Bisulfite-Sequencing Data},
+	year = {2022},
+	doi = {10.1101/2022.04.20.488947},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://doi.org/10.1101/2022.04.20.488947},
+	journal = {bioRxiv}
+}
+```
+
 ## Contact
 
 [Leonardo Collado-Torres](http://lcolladotor.github.io/)
