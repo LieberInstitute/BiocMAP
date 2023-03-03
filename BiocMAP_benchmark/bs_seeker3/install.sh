@@ -10,10 +10,14 @@ pip install pysam Matplotlib
 #   Clone main repo
 git clone https://github.com/khuang28jhu/bs3
 
-#   Clone SNAP 1.0.0, a supposed dependency
+#   Install SNAP 1.0.0, a dependency
 wget https://github.com/amplab/snap/archive/refs/tags/v1.0.0.tar.gz
 tar -xzf v1.0.0.tar.gz
 rm v1.0.0.tar.gz
+cd snap-1.0.0
+make
+cd ..
+ln -s $PWD/snap-1.0.0/snap-aligner bs3/snap
 
 #   Test basic functionality
 cd bs3
