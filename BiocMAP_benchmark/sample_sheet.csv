@@ -1,0 +1,5 @@
+sample,fastq_1,fastq_2
+WGC052316L,/dcs04/lieber/lcolladotor/ageNeunSortedWGBS_LIBD001/ageNeunSortedWGBS/raw-data/FASTQ/WGC052316L_combined_R1.fastq.gz,/dcs04/lieber/lcolladotor/ageNeunSortedWGBS_LIBD001/ageNeunSortedWGBS/raw-data/FASTQ/WGC052316L_combined_R2.fastq.gz
+WGC059613L,/dcs04/lieber/lcolladotor/ageNeunSortedWGBS_LIBD001/ageNeunSortedWGBS/raw-data/FASTQ/WGC059613L_combined_R1.fastq.gz,/dcs04/lieber/lcolladotor/ageNeunSortedWGBS_LIBD001/ageNeunSortedWGBS/raw-data/FASTQ/WGC059613L_combined_R2.fastq.gz
+WGC059614L,/dcs04/lieber/lcolladotor/ageNeunSortedWGBS_LIBD001/ageNeunSortedWGBS/raw-data/FASTQ/WGC059614L_combined_R1.fastq.gz,/dcs04/lieber/lcolladotor/ageNeunSortedWGBS_LIBD001/ageNeunSortedWGBS/raw-data/FASTQ/WGC059614L_combined_R2.fastq.gz
+WGC052317L,/dcs04/lieber/lcolladotor/ageNeunSortedWGBS_LIBD001/ageNeunSortedWGBS/raw-data/FASTQ/WGC052317L_combined_R1.fastq.gz,/dcs04/lieber/lcolladotor/ageNeunSortedWGBS_LIBD001/ageNeunSortedWGBS/raw-data/FASTQ/WGC052317L_combined_R2.fastq.gz
