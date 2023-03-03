@@ -18,6 +18,7 @@ echo "Task id: ${SGE_TASK_ID}"
 
 FASTA=$MYSCRATCH/BiocMAP_ref_temp/hg38_gencode_v34_main/assembly_hg38_gencode_v34_main.fa
 MANIFEST=$(git rev-parse --show-toplevel)/BiocMAP_benchmark/samples.manifest
+GENOME_DIR=$(git rev-parse --show-toplevel)/BiocMAP_benchmark/bs_seeker3/bs3/reference_genome
 
 #   Get paths to FASTQs for this sample
 R1=$(awk "NR == ${SGE_TASK_ID}" $MANIFEST | cut -d $'\t' -f 1)
@@ -25,7 +26,7 @@ R2=$(awk "NR == ${SGE_TASK_ID}" $MANIFEST | cut -d $'\t' -f 3)
 
 conda activate $PWD/bs_env
 cd bs3
-./bs3-align -g $FASTA -1 $R1 -2 $R2
+./bs3-align -g $FASTA -1 $R1 -2 $R2 -o test.bam -d $GENOME_DIR
 
 echo "**** Job ends ****"
 date
