@@ -1,4 +1,5 @@
 #$ -cwd
+#$ -N build_reference
 #$ -o logs/build_reference.log
 #$ -e logs/build_reference.log
 #$ -l mem_free=20G,h_vmem=20G,h_fsize=100G
@@ -10,7 +11,6 @@ echo "User: ${USER}"
 echo "Job id: ${JOB_ID}"
 echo "Job name: ${JOB_NAME}"
 echo "Hostname: ${HOSTNAME}"
-echo "Task id: ${SGE_TASK_ID}"
 
 FASTA=$MYSCRATCH/BiocMAP_ref_temp/hg38_gencode_v34_main/assembly_hg38_gencode_v34_main.fa
 
