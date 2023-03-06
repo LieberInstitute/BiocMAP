@@ -1,4 +1,4 @@
-aligner: gembs
+aligner: bwameth
 annotation_allowed_biotypes:
 - protein_coding
 - lncRNA

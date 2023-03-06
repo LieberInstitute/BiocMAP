@@ -23,3 +23,5 @@ wg-blimp create-config \
 # rawsuffixregex:
 #   first: _combined_R1\.(fastq|fq)(\.gz)?
 #   second: _combined_R2\.(fastq|fq)(\.gz)?
+#
+#   Also changed aligner to bwa-meth after gemBS had strange issues
