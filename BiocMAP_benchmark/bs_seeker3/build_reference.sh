@@ -2,7 +2,7 @@
 #$ -N build_reference
 #$ -o logs/build_reference.log
 #$ -e logs/build_reference.log
-#$ -l mem_free=40G,h_vmem=40G,h_fsize=100G
+#$ -l mem_free=80G,h_vmem=80G,h_fsize=100G
 
 echo "**** Job starts ****"
 date
