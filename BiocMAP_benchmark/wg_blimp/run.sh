@@ -14,10 +14,15 @@ echo "Hostname: ${HOSTNAME}"
 
 conda activate ./wg-blimp-env
 wg-blimp run-snakemake-from-config \
-    --cores 10 \
-    --nodes 1 \
-    --cluster "qsub -pe local 10 -l mem_free=8G,h_vmem=8G,h_fsize=100G" \
+    --cores 2 \
+    --nodes 10 \
+    --cluster "qsub -pe local 2 -l mem_free=20G,h_vmem=20G,h_fsize=100G" \
     wg-blimp-config.yaml
 
 echo "**** Job ends ****"
 date
+
+#   Tried but got strange errors:
+# --cores 2 \
+# --nodes 10 \
+# --cluster "qsub -pe local 2 -l mem_free=20G,h_vmem=20G,h_fsize=100G" \
