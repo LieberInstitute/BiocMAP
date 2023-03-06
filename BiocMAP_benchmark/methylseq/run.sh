@@ -1,7 +1,8 @@
 #$ -cwd
 #$ -o logs/run.log
 #$ -e logs/run.log
-#$ -l mem_free=20G,h_vmem=20G,h_fsize=100G
+#$ -pe local 20
+#$ -l mem_free=15G,h_vmem=15G,h_fsize=100G
 
 echo "**** Job starts ****"
 date
@@ -12,7 +13,7 @@ echo "Job name: ${JOB_NAME}"
 echo "Hostname: ${HOSTNAME}"
 
 module load nextflow/22.10.7
-module load singularity/3.7.0
+module load singularity/3.6.0
 
 base_dir=$MYSCRATCH/BiocMAP_benchmarking/methylseq
 mkdir -p $base_dir
