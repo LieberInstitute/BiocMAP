@@ -9,5 +9,6 @@ methylseq/null
 methylseq/work
 
 wg_blimp/wg-blimp-env
+wg_blimp/.snakemake
 
 */logs
