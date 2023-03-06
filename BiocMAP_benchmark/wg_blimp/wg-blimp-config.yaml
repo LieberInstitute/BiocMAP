@@ -1,0 +1,50 @@
+aligner: gembs
+annotation_allowed_biotypes:
+- protein_coding
+- lncRNA
+- miRNA
+annotation_min_mapq: 10
+bsseq_local_correct: false
+cgi_annotation_file: /users/neagles/LIBD_WGBS_testing/BiocMAP_benchmark/wg_blimp/wg-blimp-env/lib/python3.9/site-packages/snakemake_wrapper/annotation/cgi-locations-hg38.csv.gz
+computing_threads: 4
+dmr_tools:
+- bsseq
+- metilene
+group1:
+- WGC052316L
+- WGC059613L
+group2:
+- WGC059614L
+- WGC052317L
+gtf_annotation_file: /users/neagles/LIBD_WGBS_testing/BiocMAP_benchmark/wg_blimp/wg-blimp-env/lib/python3.9/site-packages/snakemake_wrapper/annotation/genes.hg38.gtf.gz
+io_threads: 4
+java_memory_gb: 32
+methylation_rate_on_chromosomes: []
+methylseekr_fdr_cutoff: 5
+methylseekr_methylation_cutoff: 0.5
+methylseekr_pmd_chromosome: chr22
+min_cov: 3
+min_cpg: 5
+min_diff: 0.3
+output_dir: /fastscratch/myscratch/neagles/BiocMAP_benchmarking/wg-blimp/out
+promoter_tss_distances:
+- -1000
+- 1000
+rawdir: /dcs04/lieber/lcolladotor/ageNeunSortedWGBS_LIBD001/ageNeunSortedWGBS/raw-data/FASTQ
+rawsuffixregex:
+  first: _combined_R1\.(fastq|fq)(\.gz)?
+  second: _combined_R2\.(fastq|fq)(\.gz)?
+ref: /fastscratch/myscratch/neagles/BiocMAP_ref_temp/hg38_gencode_v34_main/assembly_hg38_gencode_v34_main.fa
+repeat_masker_annotation_file: /users/neagles/LIBD_WGBS_testing/BiocMAP_benchmark/wg_blimp/wg-blimp-env/lib/python3.9/site-packages/snakemake_wrapper/annotation/repeat-masker-hg38.csv.gz
+sample_fastq_csv: null
+samples:
+- WGC052316L
+- WGC059613L
+- WGC059614L
+- WGC052317L
+target_files:
+- dmr/annotated-dmrs.csv
+- qc/multiqc_report.html
+- qc/methylation_metrics.csv
+- segmentation/umr-lmr-all.csv
+temp_dir: /tmp/
