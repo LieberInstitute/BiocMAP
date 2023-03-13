@@ -26,7 +26,7 @@ methylseekr_pmd_chromosome: chr22
 min_cov: 3
 min_cpg: 5
 min_diff: 0.3
-output_dir: /fastscratch/myscratch/neagles/BiocMAP_benchmarking/wg-blimp/out
+output_dir: /dcs04/lieber/lcolladotor/BiocMAP_benchmark_LIBD001/wg-blimp/out
 promoter_tss_distances:
 - -1000
 - 1000
@@ -34,7 +34,7 @@ rawdir: /dcs04/lieber/lcolladotor/ageNeunSortedWGBS_LIBD001/ageNeunSortedWGBS/ra
 rawsuffixregex:
   first: _combined_R1\.(fastq|fq)(\.gz)?
   second: _combined_R2\.(fastq|fq)(\.gz)?
-ref: /fastscratch/myscratch/neagles/BiocMAP_ref_temp/hg38_gencode_v34_main/assembly_hg38_gencode_v34_main.fa
+ref: /dcs04/lieber/lcolladotor/BiocMAP_benchmark_LIBD001/BiocMAP_ref_temp/hg38_gencode_v34_main/assembly_hg38_gencode_v34_main.fa
 repeat_masker_annotation_file: /users/neagles/LIBD_WGBS_testing/BiocMAP_benchmark/wg_blimp/wg-blimp-env/lib/python3.9/site-packages/snakemake_wrapper/annotation/repeat-masker-hg38.csv.gz
 sample_fastq_csv: null
 samples:

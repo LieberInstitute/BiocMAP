@@ -1,6 +1,6 @@
 FASTQ_DIR=/dcs04/lieber/lcolladotor/ageNeunSortedWGBS_LIBD001/ageNeunSortedWGBS/raw-data/FASTQ
-FASTA=$MYSCRATCH/BiocMAP_ref_temp/hg38_gencode_v34_main/assembly_hg38_gencode_v34_main.fa
-OUT_DIR=$MYSCRATCH/BiocMAP_benchmarking/wg-blimp/out
+FASTA=/dcs04/lieber/lcolladotor/BiocMAP_benchmark_LIBD001/BiocMAP_ref_temp/hg38_gencode_v34_main/assembly_hg38_gencode_v34_main.fa
+OUT_DIR=/dcs04/lieber/lcolladotor/BiocMAP_benchmark_LIBD001/wg-blimp/out
 
 mkdir -p $OUT_DIR
 
