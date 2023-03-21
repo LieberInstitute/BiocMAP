@@ -10,6 +10,8 @@ troubleshooting
 cuda-runtime-is-not-installed
 g-compilation-errors
 using-lmod-modules-with-arioc
+singularity-issues
+java-issues
 run-the-pipeline
 run-in-a-slurm-environment-cluster
 run-on-a-sun-grid-engines-sge-cluster
