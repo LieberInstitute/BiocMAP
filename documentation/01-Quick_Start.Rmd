@@ -1,6 +1,6 @@
 # Quick Start {#quick-start}
 
-A brief guide to setting up BiocMAP. A more detailed and thorough guide is [here](#setup-details).
+A brief guide to setting up BiocMAP. A more detailed and thorough guide is [here](#setup-details). For troubleshooting advice, see [our guide](#troubleshooting).
 
 ## Setup
 

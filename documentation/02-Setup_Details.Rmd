@@ -97,6 +97,32 @@ withName: EncodeReference {
 
 To load two modules, such as `gcc/5.5.0` and `cuda/10.0`, the syntax looks like: `module = 'gcc/5.5.0:cuda/10.0'`.
 
+#### Singularity Issues
+
+When installing BiocMAP with Singularity (i.e. `bash install_software.sh singularity`), quite a bit of memory is sometimes required to build the Singularity images from their Docker counterparts, hosted on Docker Hub. Memory-related error messages can widely vary, but an example looks like this:
+
+```{bash, eval = FALSE}
+INFO:	Creating SIF file...
+FATAL:   While making image from oci registry: while building SIF from layers: While running mksquashfs: exit status 1: FATAL ERROR:Failed to create thread
+```
+
+Requesting more memory and reinstalling will solve such issues.
+
+#### Java Issues
+
+With any installation method, the process may fail if Java is not installed or is sufficiently outdated (e.g. < 11). In this case, installing a recent version of Java (Nextflow recommends between 11 and 18) will solve the issue.
+
+Here are some potential pieces of BiocMAP error messages that suggest Java is too outdated or improperly installed:
+
+```{bash, eval = FALSE}
+NOTE: Nextflow is not tested with Java 1.8.0_262 -- It's recommended the use of version 11 up to 18
+```
+
+```{bash, eval = FALSE}
+Error: A JNI error has occurred, please check your installation and try again
+Exception in thread "main" java.lang.UnsupportedClassVersionError: org/eclipse/jgit/api/errors/GitAPIException has been compiled by a more recent version of the Java Runtime (class file version 55.0), this version of the Java Runtime only recognizes class file versions up to 52.0
+```
+
 ## Run the Pipeline
 
 The "main" script used to run the pipeline depends on the environment you will run it on.
