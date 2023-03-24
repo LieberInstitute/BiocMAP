@@ -23,7 +23,7 @@ REPO_NAME="BiocMAP"
 
 if [ "$(basename $(pwd))" == "$REPO_NAME" ]; then
 
-    echo "Making sure the repository is clean and ready for installation..."
+    echo "[BiocMAP] Making sure the repository is clean and ready for installation..."
     
     #rm -r Software
     rm -f test/*/*/samples.manifest
@@ -34,7 +34,7 @@ if [ "$(basename $(pwd))" == "$REPO_NAME" ]; then
     
 else
 
-    echo "Please only invoke the script from directly inside the '$REPO_NAME' directory!"
+    echo "[BiocMAP] Please only invoke the script from directly inside the '$REPO_NAME' directory!"
     exit 1
     
 fi
@@ -60,14 +60,12 @@ if [[ "$1" == "docker" || "$1" == "singularity" ]]; then
     cd $BASE_DIR/Software/bin
     
     #  Install nextflow (latest)
-    echo "Installing nextflow..."
+    echo "[BiocMAP] Installing nextflow..."
     wget -qO- https://get.nextflow.io | bash
         
     ###########################################################################
     #  Create the 'samples.manifest' and 'rules.txt' files for test samples
     ###########################################################################
-    
-    echo "Setting up test files..."
     
     if [[ "$1" == "docker" ]]; then
         if [[ "$2" == "sudo" ]]; then
@@ -76,6 +74,8 @@ if [[ "$1" == "docker" || "$1" == "singularity" ]]; then
             command="docker run"
         fi
         
+        echo "[BiocMAP] Setting up test files..."
+
         $command \
             -it \
             -u $(id -u):$(id -g) \
@@ -84,6 +84,7 @@ if [[ "$1" == "docker" || "$1" == "singularity" ]]; then
             $R_container \
             Rscript /usr/local/src/scripts/prepare_test_files.R -d $BASE_DIR
     else # using singularity
+        echo "[BiocMAP] Pulling docker images and converting to singularity images..."
         cd $BASE_DIR
         
         #  Pull images in advance, since it seems to use very large amounts of
@@ -93,9 +94,13 @@ if [[ "$1" == "docker" || "$1" == "singularity" ]]; then
         mkdir -p docker/singularity_cache
         images=$(grep 'container = ' conf/*_half_singularity.config | tr -d " |'" | cut -d '=' -f 2 | sort -u)
         for image in $images; do
+            echo "[BiocMAP] Pulling and converting ${image}..."
+
             image_name=$(echo $image | sed 's/[:\/]/-/g').sif
             singularity pull docker/singularity_cache/$image_name docker://$image
         done
+
+        echo "[BiocMAP] Setting up test files..."
         
         singularity exec \
             -B $BASE_DIR/scripts:/usr/local/src/scripts/ \
@@ -109,21 +114,21 @@ if [[ "$1" == "docker" || "$1" == "singularity" ]]; then
         sed -i "s|module load nextflow|module load nextflow\nmodule load singularity/3.6.0|" run_*_half_jhpce.sh
     fi
         
-    echo "Done."
+    echo "[BiocMAP] Done."
     
 elif [ "$1" == "jhpce" ]; then
 
-    echo "User selected set-up at JHPCE. Installing any missing R packages..."
+    echo "[BiocMAP] User selected set-up at JHPCE. Installing any missing R packages..."
     module load conda_R/4.1
     Rscript scripts/install_r_packages_jhpce.R
     
-    echo "Setting up test files..."
+    echo "[BiocMAP] Setting up test files..."
     Rscript scripts/prepare_test_files.R -d $(pwd)
     
     sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_first_half_jhpce.sh
     sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_second_half_jhpce.sh
     
-    echo "Done."
+    echo "[BiocMAP] Done."
     
 elif [ "$1" == "conda" ]; then
     
@@ -132,13 +137,13 @@ elif [ "$1" == "conda" ]; then
     cd $BASE_DIR/Software/bin
     
     #  Install nextflow (latest)
-    echo "Installing nextflow..."
+    echo "[BiocMAP] Installing nextflow..."
     wget -qO- https://get.nextflow.io | bash
     
     cd $BASE_DIR
 
     #  Create an initial small conda environment, just containing mamba
-    echo "Creating a conda environment containing required software..."
+    echo "[BiocMAP] Creating a conda environment containing required software..."
     source $(conda info --base)/etc/profile.d/conda.sh
     conda env create -p $PWD/conda/pipeline_env -f conda/mamba.yml
     conda activate $PWD/conda/pipeline_env
@@ -155,7 +160,7 @@ elif [ "$1" == "conda" ]; then
     #  Signal to load ordinary R packages with 'checkpoint' in each R script
     sed -i "1i #  Added during installation\nlibrary('checkpoint')\ncheckpoint('2021-09-01',\n    project_dir = '$BASE_DIR/scripts/r_packages',\n    checkpoint_location = '$BASE_DIR/Software'\n)\n" scripts/*.R
     
-    echo "Installing Arioc, which isn't available as a conda package..."
+    echo "[BiocMAP] Installing Arioc, which isn't available as a conda package..."
     cd $BASE_DIR/Software/
     mkdir arioc
     cd arioc
@@ -172,11 +177,11 @@ elif [ "$1" == "conda" ]; then
     cd $BASE_DIR
     cp Software/arioc/bin/* conda/pipeline_env/bin/
     
-    echo "Setting up test files..."
+    echo "[BiocMAP] Setting up test files..."
     Rscript scripts/prepare_test_files.R -d $(pwd)
     conda deactivate
     
-    echo "Configuring main and config files..."
+    echo "[BiocMAP] Configuring main and config files..."
     
     #  Point to original repo's main script to facilitate pipeline sharing
     sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_*_half_*.sh
@@ -186,12 +191,12 @@ elif [ "$1" == "conda" ]; then
     sed -i "s|cache = 'lenient'|cache = 'lenient'\n    conda = '$PWD/conda/pipeline_env'|" conf/*_half_*.config
     sed -i "/module = '.*\/.*'/d" conf/*_half_jhpce.config
     
-    echo "Done."
+    echo "[BiocMAP] Done."
     
 elif [ "$1" == "local" ]; then
     #  Verify java can be executed, since this is a pre-requisite
     if [ -x "$(command -v java)" ]; then
-        echo "Found a java runtime. Proceeding with the setup..."
+        echo "[BiocMAP] Found a java runtime. Proceeding with the setup..."
         
         #  Point to original repo's main script to facilitate pipeline sharing
         sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_*_half_*.sh
@@ -286,13 +291,13 @@ elif [ "$1" == "local" ]; then
         cd $INSTALL_DIR
           
         #  Install packages and set up test files
-        echo "Installing R packages..."
+        echo "[BiocMAP] Installing R packages..."
         Rscript ../scripts/install_r_packages_local.R
         
         #  Signal to load ordinary R packages with 'checkpoint' in each R script
         sed -i "1i #  Added during installation\nlibrary('checkpoint')\ncheckpoint('2021-09-01',\n    project_dir = '$BASE_DIR/scripts/r_packages',\n    checkpoint_location = '$BASE_DIR/Software'\n)\n" ../scripts/*.R
         
-        echo "Setting up test files..."
+        echo "[BiocMAP] Setting up test files..."
         Rscript ../scripts/prepare_test_files.R -d $BASE_DIR
         
         #  samblaster (v.0.1.26) ----------------------------------------------
@@ -330,13 +335,13 @@ elif [ "$1" == "local" ]; then
         chmod 775 -R $INSTALL_DIR
         
     else #  Java could not be found on the system
-        echo "A java runtime could not be found or accessed. Is it installed and on the PATH? You can install it by running 'apt install default-jre', which requires sudo/ root privileges."
-        echo "After installing Java, rerun this script to finish the installation procedure."
+        echo "[BiocMAP] A java runtime could not be found or accessed. Is it installed and on the PATH? You can install it by running 'apt install default-jre', which requires sudo/ root privileges."
+        echo "[BiocMAP] After installing Java, rerun this script to finish the installation procedure."
     fi
 else # neither "docker", "local", "conda", "jhpce", nor "singularity" were chosen
     
-    echo 'Error: please specify "docker", "local", "conda", "jhpce", or "singularity" and rerun this script.'
-    echo '    eg. bash install_software.sh "local"'
+    echo '[BiocMAP] Error: please specify "docker", "local", "conda", "jhpce", or "singularity" and rerun this script.'
+    echo '[BiocMAP]     eg. bash install_software.sh "local"'
     exit 1
     
 fi
