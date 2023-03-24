@@ -268,7 +268,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>BiocMAP is designed for execution on Linux, and requires the following:</p>
 <ul>
 <li>Java 8 or later</li>
-<li>Access to NVIDIA GPU(s), locally or via a computing cluster, with recent stable NVIDIA video drivers and CUDA runtime</li>
+<li>Access to NVIDIA GPU(s) during installation, locally or via a computing cluster, with recent stable NVIDIA video drivers and CUDA runtime. BiocMAP may also be installed without these, but only the second module will function in this case</li>
 <li>(recommended) docker, singularity, or <a href="https://www.anaconda.com/products/individual">Anaconda</a>/ <a href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a></li>
 </ul>
 <p>If installing the pipeline locally (see <a href="setup-details.html#installation">installation</a>), the following are also required:</p>
@@ -277,7 +277,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>R (tested with R 3.6-4.1)</li>
 <li>GNU make</li>
 </ul>
-<p>If installing the pipeline for use with docker (see <a href="setup-details.html#installation">installation</a>), the <a href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker">NVIDIA container toolkit</a> is also required. A CUDA runtime &gt;= 10.1 is required for docker/singularity users.</p>
+<p>If installing the pipeline for use with docker (see <a href="setup-details.html#installation">installation</a>), the <a href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker">NVIDIA container toolkit</a> is also required for use of the first module. A CUDA runtime &gt;= 10.1 is required for docker/singularity users.</p>
 <p>Additionally, installation via the “local” or “conda” modes (see below) require a C compiler, such as GCC. An up-to-date version of <code>gcc</code> is often required to ensure R packages get properly installed.</p>
 </div>
 <div id="installation" class="section level2 hasAnchor" number="2.2">
