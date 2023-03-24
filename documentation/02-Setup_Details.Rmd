@@ -5,7 +5,7 @@
 BiocMAP is designed for execution on Linux, and requires the following:
 
 - Java 8 or later
-- Access to NVIDIA GPU(s), locally or via a computing cluster, with recent stable NVIDIA video drivers and CUDA runtime
+- Access to NVIDIA GPU(s) during installation, locally or via a computing cluster, with recent stable NVIDIA video drivers and CUDA runtime. BiocMAP may also be installed without these, but only the second module will function in this case
 - (recommended) docker, singularity, or [Anaconda](https://www.anaconda.com/products/individual)/ [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
 
 If installing the pipeline locally (see [installation](#installation)), the following are also required:
@@ -14,7 +14,7 @@ If installing the pipeline locally (see [installation](#installation)), the foll
 - R (tested with R 3.6-4.1)
 - GNU make
 
-If installing the pipeline for use with docker (see [installation](#installation)), the [NVIDIA container toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker) is also required. A CUDA runtime >= 10.1 is required for docker/singularity users.
+If installing the pipeline for use with docker (see [installation](#installation)), the [NVIDIA container toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker) is also required for use of the first module. A CUDA runtime >= 10.1 is required for docker/singularity users.
 
 Additionally, installation via the "local" or "conda" modes (see below) require a C compiler, such as GCC. An up-to-date version of `gcc` is often required to ensure R packages get properly installed.
 
