@@ -160,22 +160,28 @@ elif [ "$1" == "conda" ]; then
     #  Signal to load ordinary R packages with 'checkpoint' in each R script
     sed -i "1i #  Added during installation\nlibrary('checkpoint')\ncheckpoint('2021-09-01',\n    project_dir = '$BASE_DIR/scripts/r_packages',\n    checkpoint_location = '$BASE_DIR/Software'\n)\n" scripts/*.R
     
-    echo "[BiocMAP] Installing Arioc, which isn't available as a conda package..."
-    cd $BASE_DIR/Software/
-    mkdir arioc
-    cd arioc
+    #   If an NVIDIA GPU is available (if 'nvidia-smi' works as a command), install Arioc
+    if nvidia-smi ; then
+        echo "[BiocMAP] Installing Arioc, which isn't available as a conda package..."
+
+        cd $BASE_DIR/Software/
+        mkdir arioc
+        cd arioc
+            
+        wget https://github.com/RWilton/Arioc/releases/download/v1.43/Arioc.x.143.zip
+        unzip Arioc.x.143.zip
         
-    wget https://github.com/RWilton/Arioc/releases/download/v1.43/Arioc.x.143.zip
-    unzip Arioc.x.143.zip
-    
-    cd src
-    make clean
-    make AriocE
-    make AriocU
-    make AriocP
-    
-    cd $BASE_DIR
-    cp Software/arioc/bin/* conda/pipeline_env/bin/
+        cd src
+        make clean
+        make AriocE
+        make AriocU
+        make AriocP
+        
+        cd $BASE_DIR
+        cp Software/arioc/bin/* conda/pipeline_env/bin/
+    else
+        echo "[BiocMAP] Warning: skipping Arioc installation, as no NVIDIA GPU was detected."
+    fi
     
     echo "[BiocMAP] Setting up test files..."
     Rscript scripts/prepare_test_files.R -d $(pwd)
@@ -215,20 +221,25 @@ elif [ "$1" == "local" ]; then
         
         #  Arioc (1.43) -------------------------------------------------------
         
-        mkdir arioc
-        cd arioc
-        
-        wget https://github.com/RWilton/Arioc/releases/download/v1.43/Arioc.x.143.zip
-        unzip Arioc.x.143.zip
-        
-        cd src
-        make clean
-        make AriocE
-        make AriocU
-        make AriocP
-        
-        cd $INSTALL_DIR
-        cp arioc/bin/* bin/
+        #   If an NVIDIA GPU is available (if 'nvidia-smi' works as a command), install Arioc
+        if nvidia-smi ; then
+            mkdir arioc
+            cd arioc
+            
+            wget https://github.com/RWilton/Arioc/releases/download/v1.43/Arioc.x.143.zip
+            unzip Arioc.x.143.zip
+            
+            cd src
+            make clean
+            make AriocE
+            make AriocU
+            make AriocP
+            
+            cd $INSTALL_DIR
+            cp arioc/bin/* bin/
+        else
+            echo "[BiocMAP] Warning: skipping Arioc installation, as no NVIDIA GPU was detected."
+        fi
         
         #  Bismark (0.23.0) ---------------------------------------------------
         
