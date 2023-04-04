@@ -15,7 +15,7 @@ echo "Hostname: ${HOSTNAME}"
 module load nextflow/22.10.7
 module load singularity/3.6.0
 
-base_dir=$MYSCRATCH/BiocMAP_benchmarking/methylseq
+base_dir=/dcs04/lieber/lcolladotor/BiocMAP_benchmark_LIBD001/methylseq
 mkdir -p $base_dir
 
 nextflow run nf-core/methylseq \
@@ -23,7 +23,9 @@ nextflow run nf-core/methylseq \
     --outdir $base_dir/out \
     -w $base_dir/work \
     -profile singularity \
-    --genome GRCh38
+    --genome GRCh38 \
+    -with-report "logs/exec_report.html" \
+    -resume
 
 echo "**** Job ends ****"
 date
