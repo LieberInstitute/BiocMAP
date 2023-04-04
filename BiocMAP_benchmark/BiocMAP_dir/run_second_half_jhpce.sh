@@ -17,7 +17,7 @@ nextflow $REPO_DIR/BiocMAP_benchmark/BiocMAP_dir/BiocMAP/second_half.nf \
     --annotation "$ANN_DIR" \
     --sample "paired" \
     --reference "hg38" \
-    --input "$REPO_DIR/BiocMAP_benchmark" \
+    --input "$BASE_WORK_DIR/out" \
     -w "$BASE_WORK_DIR/work" \
     --output "$BASE_WORK_DIR/out" \
     -with-report "logs/second_half_exec_report.html" \
