@@ -1,7 +1,7 @@
 #$ -cwd
 #$ -o logs/run.log
 #$ -e logs/run.log
-#$ -pe local 20
+# $ -pe local 20
 #$ -l mem_free=15G,h_vmem=15G,h_fsize=100G
 
 echo "**** Job starts ****"
@@ -24,8 +24,7 @@ nextflow run nf-core/methylseq \
     -w $base_dir/work \
     -profile singularity \
     --genome GRCh38 \
-    -with-report "logs/exec_report.html" \
-    -resume
+    -with-report "logs/exec_report.html"
 
 echo "**** Job ends ****"
 date
