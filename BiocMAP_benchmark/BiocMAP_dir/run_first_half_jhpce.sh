@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -l mem_free=25G,h_vmem=25G,h_fsize=800G
+#$ -l bluejay,mem_free=25G,h_vmem=25G,h_fsize=800G
 #$ -o logs/run_first_half_jhpce_2.log
 #$ -e logs/run_first_half_jhpce_2.log
 #$ -cwd

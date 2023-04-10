@@ -1,7 +1,7 @@
 #!/bin/bash
-#$ -l mem_free=25G,h_vmem=25G,h_fsize=800G
-#$ -o logs/run_second_half_jhpce.log
-#$ -e logs/run_second_half_jhpce.log
+#$ -l bluejay,mem_free=25G,h_vmem=25G,h_fsize=800G
+#$ -o logs/run_second_half_jhpce_2.log
+#$ -e logs/run_second_half_jhpce_2.log
 #$ -cwd
 
 REPO_DIR=$(git rev-parse --show-toplevel)
@@ -20,5 +20,5 @@ nextflow $REPO_DIR/BiocMAP_benchmark/BiocMAP_dir/BiocMAP/second_half.nf \
     --input "$BASE_WORK_DIR/out" \
     -w "$BASE_WORK_DIR/work" \
     --output "$BASE_WORK_DIR/out" \
-    -with-report "logs/second_half_exec_report.html" \
+    -with-report "logs/second_half_exec_report_2.html" \
     -profile second_half_jhpce
