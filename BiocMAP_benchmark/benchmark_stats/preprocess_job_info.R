@@ -89,12 +89,25 @@ job_df |>
     select(all_of(c('job_id', 'software'))) |>
     print()
 
-#   Take only jobs that finished successfully; fix a data type; remove duplicate
-#   columns
 job_df = job_df |>
+    #   Take only jobs that finished successfully
     filter(exit_status == "0") |>
-    mutate(software = as.factor(software)) |>
-    select(!all_of(c('input_id', 'jobnumber')))
+    mutate(
+        software = as.factor(software),
+        #   Get requested mem_free and h_vmem. Note this code assumes these two
+        #   things are always requested, and that the amount is always in GB!
+        requested_h_vmem = category |>
+            str_extract('h_vmem=[0-9]+G') |>
+            str_remove_all('h_vmem=|G') |>
+            as.numeric() * 1e9,
+        requested_mem_free = category |>
+            str_extract('mem_free=[0-9]+G') |>
+            str_remove_all('mem_free=|G') |>
+            as.numeric() * 1e9
+    ) |>
+    #   Remove duplicate columns
+    select(!all_of(c('input_id', 'jobnumber', 'category')))
+
 
 
 write.csv(job_df, out_path, row.names = FALSE, quote = FALSE)
