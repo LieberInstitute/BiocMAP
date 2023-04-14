@@ -2,7 +2,7 @@
 #$ -o logs/run.log
 #$ -e logs/run.log
 #$ -N run_wg_blimp
-#$ -l mem_free=10G,h_vmem=10G,h_fsize=100G
+#$ -l mem_free=10G,h_vmem=10G,h_fsize=500G
 
 echo "**** Job starts ****"
 date
@@ -16,7 +16,7 @@ conda activate ./wg-blimp-env
 wg-blimp run-snakemake-from-config \
     --cores 2 \
     --nodes 10 \
-    --cluster "qsub -pe local 2 -l bluejay,mem_free=30G,h_vmem=30G,h_fsize=100G" \
+    --cluster "qsub -pe local 2 -l bluejay,mem_free=30G,h_vmem=30G,h_fsize=500G" \
     wg-blimp-config.yaml
 
 echo "**** Job ends ****"
