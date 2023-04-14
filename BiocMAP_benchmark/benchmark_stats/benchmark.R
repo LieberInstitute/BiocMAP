@@ -15,42 +15,6 @@ job_df = read.csv(job_df_path) |>
     )
 
 ################################################################################
-#   Adjust times for BiocMAP: stitch together first and second halves, since we
-#   aren't counting the in-between time when BiocMAP isn't running
-################################################################################
-
-#   Find end of first half and start of second half
-
-first_end = job_df |>
-    filter(
-        software == "BiocMAP", grepl('FilterAlignments|MakeRules', jobname)
-    ) |>
-    summarize(pipeline_end = max(end_time)) |>
-    pull(pipeline_end)
-
-second_start = job_df |>
-    filter(software == "BiocMAP", grepl('PreprocessInputs', jobname)) |>
-    summarize(pipeline_start = max(start_time)) |>
-    pull(pipeline_start)
-
-#   Move the BiocMAP second-half processes back so the first one starts when the
-#   latest first-half process ends. Effectively, this makes the two BiocMAP
-#   halves a single seamless workflow
-job_df = job_df |>
-    mutate(
-        start_time = case_when(
-            (software == "BiocMAP") & (start_time >= second_start) ~ 
-                start_time - (second_start - first_end),
-            TRUE ~ start_time
-        ),
-        end_time = case_when(
-            (software == "BiocMAP") & (end_time > second_start) ~ 
-                end_time - (second_start - first_end),
-            TRUE ~ end_time
-        )
-    )
-
-################################################################################
 #   Stats and visualizations
 ################################################################################
 
