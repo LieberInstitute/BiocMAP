@@ -3,10 +3,10 @@ library('chron')
 library('tidyverse')
 
 #   Given an SGE job ID 'job_id', search accounting files dated at most
-#   [month_limit] months back and return a character vector effectively
-#   containing the lines of output from running 'qacct -j [job_id]'
+#   [month_limit] months back and return the absolute path to the text file
+#   containing the info 
 
-get_job_info = function(job_id, month_limit = 3, fail_on_error = TRUE) {
+get_job_file = function(job_id, month_limit = 3, fail_on_error = TRUE) {
     acct_dir = '/cm/shared/apps/sge/sge-8.1.9/default/common'
     
     user = system('whoami', intern=TRUE)
@@ -51,38 +51,15 @@ get_job_info = function(job_id, month_limit = 3, fail_on_error = TRUE) {
         num_lines = system(cmd, intern=TRUE)
         
         if (num_lines > 0) {
-            cmd = paste0('qacct -j ', job_id, ' -f ', acct_file, ' -u ', user)
-            job_info = system(cmd, intern=TRUE)
+            return(acct_file)
         }
         
         i = i + 1
     }
     
-    if (length(job_info) == 0) {
-        if (fail_on_error) {
-            stop("No job found in this time period for this ID.")
-        } else {
-            return(NA)
-        }
+    if (fail_on_error) {
+        stop("No job found in this time period for this ID.")
+    } else {
+        return(NA)
     }
-    
-    return(job_info)
-}
-
-#   Given a character vector of just the date/time segments of 'qacct' outputs
-#   (rows starting with 'qsub_time', 'start_time', or 'end_time'), return a
-#   vector of 'chron' objects. 'time_vec' should have elements looking like:
-#   'Wed Mar 15 15:41:24 2023'.
-to_chron = function(time_vec) {
-    dates = time_vec |>
-        str_replace_all(' +', ' ') |>
-        strsplit(' ') |>
-        sapply(function(x) paste(x[2], x[3], x[5], sep = "/"))
-    
-    times = time_vec |>
-        str_replace_all(' +', ' ') |>
-        strsplit(' ') |>
-        sapply(function(x) x[4])
-    
-    return(chron(dates = dates, times = times, format = c('mon/d/y', 'h:m:s')))
 }
