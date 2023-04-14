@@ -47,7 +47,7 @@ wallclock_df = job_df |>
     #   pipeline software
     group_by(software) |>
     summarize(
-        wallclock_days = as.numeric(
+        active_wallclock_days = as.numeric(
             sum(end_time - start_time), units = "days"
         )
     ) |>
@@ -59,7 +59,8 @@ stats_df = job_df |>
     summarize(
         total_mem_TB_hours = sum(mem) / 1e12 / 3600,
         vmem_frac_used = sum(maxvmem) / sum(requested_h_vmem),
-        cpu_hours = sum(as.numeric(cpu |> str_remove('s'))) / 3600
+        cpu_hours = sum(as.numeric(cpu |> str_remove('s'))) / 3600,
+        practical_wallclock_days = max(end_time) - min(start_time)
     ) |>
     left_join(wallclock_df)
 
