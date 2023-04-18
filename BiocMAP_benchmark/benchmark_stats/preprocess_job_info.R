@@ -7,11 +7,6 @@ library('sgejobs')
 
 source(here('BiocMAP_benchmark', 'benchmark_stats', 'sge_job_info.R'))
 
-var_names = c(
-    'maxvmem', 'ru_maxrss', 'exit_status', 'cpu', 'start_time', 'end_time',
-    'slots'
-)
-
 log_path_wg = here('BiocMAP_benchmark', 'wg_blimp', 'logs', 'run.log')
 log_path_bio_first = here('BiocMAP_benchmark', 'BiocMAP_dir', '.nextflow.log.1')
 log_path_bio_second = here('BiocMAP_benchmark', 'BiocMAP_dir', '.nextflow.log')

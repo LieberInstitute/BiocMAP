@@ -26,7 +26,6 @@ job_df = read.csv(job_df_path) |>
 #
 #   Next, sum up the wallclock time for these disjoint intervals to determine
 #   the total wallclock time for each pipeline software.
-print('Total wallclock times:')
 wallclock_df = job_df |>
     mutate(end_time = end_time + 180) |>
     arrange(software, qsub_time, end_time) |>
@@ -53,6 +52,24 @@ wallclock_df = job_df |>
     ) |>
     ungroup()
 
+#   Compute the total GPU hours used by BiocMAP
+biocmap_gpu_hours = job_df |>
+    filter(software == "BiocMAP", grepl('AlignReads', jobname)) |>
+    #   BiocMAP is configured to use 3 GPUs per process
+    summarize(
+        gpu_hours = as.numeric(
+            sum(end_time - start_time) * 3, units = "hours"
+        )
+    ) |>
+    pull(gpu_hours)
+
+#   Form a tibble giving total GPU hours for all pipelines, noting that
+#   non-BiocMAP pipelines don't use GPUs
+gpu_hours = tibble(
+    software = c('BiocMAP', 'wg-blimp', 'MethylSeq'),
+    gpu_hours = c(biocmap_gpu_hours, 0, 0)
+)
+
 #   Compute other statistics
 stats_df = job_df |>
     group_by(software) |>
@@ -60,9 +77,12 @@ stats_df = job_df |>
         total_mem_TB_hours = sum(mem) / 1e12 / 3600,
         vmem_frac_used = sum(maxvmem) / sum(requested_h_vmem),
         cpu_hours = sum(as.numeric(cpu |> str_remove('s'))) / 3600,
-        practical_wallclock_days = max(end_time) - min(start_time)
+        practical_wallclock_days = as.numeric(
+            max(end_time) - min(start_time), units = "days"
+        )
     ) |>
-    left_join(wallclock_df)
+    left_join(wallclock_df) |>
+    left_join(gpu_hours)
 
 print('Stats:')
 print(stats_df)
