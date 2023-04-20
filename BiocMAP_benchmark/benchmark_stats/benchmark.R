@@ -1,10 +1,71 @@
 #   Read in table of SGE job info for all tested pipelines and perform stats/
 #   visualizations
-
+library('tidyverse')
+library('here')
 
 job_df_path = here(
     'BiocMAP_benchmark', 'benchmark_stats', 'combined_job_info.csv'
 )
+
+stats_df_path = here(
+    'BiocMAP_benchmark', 'benchmark_stats', 'benchmark_stats.csv'
+)
+
+bin_size_s = 30
+
+################################################################################
+#   Functions
+################################################################################
+
+#   Given job_df, time bins of [[bins_size_s]] seconds, a column name in job_df
+#   to sum ('resource_name'), and one of the values in job_df$software
+#   ('software_name'), compute the maximal concurrent usage of the given
+#   resource and return.
+get_max_concurrent_resource = function(
+        software_name, job_df, bin_size_s, resource_name
+) {
+    #   Infer an integer number of time bins given the bin size
+    bins = job_df |>
+        filter(software == software_name) |>
+        summarize(
+            bins = as.integer(
+                as.numeric(
+                    max(end_time) - min(start_time), units = "hours"
+                ) * 3600 / bin_size_s
+            )
+        ) |>
+        pull(bins)
+    
+    #   The time of the start of the first job for this software
+    pipeline_start = job_df |>
+        filter(software == software_name) |>
+        summarize(a = min(start_time)) |>
+        pull(a)
+    
+    current_max = 0
+    
+    for (i in 1:bins) {
+        bin_start = pipeline_start + (i - 1) * bin_size_s
+        bin_end = bin_start + bin_size_s
+        
+        this_total = job_df |>
+            #   A given job is counted only if it it running throughout the full
+            #   bin
+            filter(start_time <= bin_start, end_time > bin_end) |>
+            summarize(total = sum(get({{ resource_name }}))) |>
+            pull(total)
+        
+        if (this_total > current_max) {
+            current_max = this_total
+        }
+    }
+    
+    return(current_max)
+}
+
+################################################################################
+#   Compute statistics
+################################################################################
 
 job_df = read.csv(job_df_path) |>
     as_tibble() |>
@@ -13,10 +74,6 @@ job_df = read.csv(job_df_path) |>
         end_time = strptime(end_time, format = "%Y-%m-%d %H:%M:%S"),
         qsub_time = strptime(qsub_time, format = "%Y-%m-%d %H:%M:%S")
     )
-
-################################################################################
-#   Stats and visualizations
-################################################################################
 
 #   Based on https://stackoverflow.com/a/28938694. First, merge overlapping
 #   jobs to form the minimal set of disjoint time periods, allowing for 3-minute
@@ -63,11 +120,19 @@ biocmap_gpu_hours = job_df |>
     ) |>
     pull(gpu_hours)
 
-#   Form a tibble giving total GPU hours for all pipelines, noting that
-#   non-BiocMAP pipelines don't use GPUs
-gpu_hours = tibble(
+#   Add GPU hours and maximum concurrent CPU and vmem usage for each pipeline
+stats_df = tibble(
     software = c('BiocMAP', 'wg-blimp', 'MethylSeq'),
-    gpu_hours = c(biocmap_gpu_hours, 0, 0)
+    #   non-BiocMAP pipelines don't use GPUs
+    gpu_hours = c(biocmap_gpu_hours, 0, 0),
+    max_concurrent_cpus = sapply(
+        c('BiocMAP', 'wg-blimp', 'MethylSeq'),
+        get_max_concurrent_resource, job_df, bin_size_s, 'slots'
+    ),
+    max_concurrent_vmem = sapply(
+        c('BiocMAP', 'wg-blimp', 'MethylSeq'),
+        get_max_concurrent_resource, job_df, bin_size_s, 'maxvmem'
+    )
 )
 
 #   Compute other statistics
@@ -82,28 +147,16 @@ stats_df = job_df |>
         )
     ) |>
     left_join(wallclock_df) |>
-    left_join(gpu_hours)
+    left_join(stats_df)
 
 print('Stats:')
 print(stats_df)
 
-#   Compute max number of concurrent CPUs used at any time point
-bins = 10000
-bin_size_time = (max(job_df$end_time) - min(job_df$start_time)) / bins
-bin_size = as.numeric(bin_size_time)
+write.csv(stats_df, stats_df_path, quote = FALSE, row.names = FALSE)
 
-print(paste('Using bin size of', bin_size_time))
+################################################################################
+#   Visualizations
+################################################################################
 
-total_cpus = rep.int(0, bins)
-for (i in 1:bins) {
-    bin_start = min(job_df$start_time) + (i - 1) * bin_size
-    bin_end = bin_start + bin_size
-    
-    total_cpus[i] = job_df |>
-        #   A given job is counted only if it it running throughout the full bin
-        filter(start_time <= bin_start, end_time > bin_end) |>
-        summarize(total_cpus = sum(slots)) |>
-        pull(total_cpus)
-}
-
-ggplot(job_df, aes(x = start_time)) + geom_histogram(aes(weight = slots))
+ggplot(job_df, aes(x = as.numeric(start_time))) +
+    geom_histogram(aes(weight = slots), bins = 200)
