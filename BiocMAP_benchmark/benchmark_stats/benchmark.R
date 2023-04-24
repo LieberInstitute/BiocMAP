@@ -180,38 +180,3 @@ ggplot(vis_df) +
     geom_col(aes(x = software, y = value, fill = software)) +
     facet_wrap(~name, scales = "free_y", nrow = 2) +
     labs(x = NULL, y = NULL, fill = "Software")
-
-vis_df = stats_df |>
-    pivot_longer(cols = -software) |>
-    pivot_wider(names_from = software, values_from = value)
-
-#   Manually scale down a row, which silently fails (due to being too large) in
-#   the later code otherwise
-vis_df_temp = vis_df
-vis_df_temp[vis_df_temp$name == 'max_concurrent_vmem',2:3] = vis_df_temp[
-        vis_df_temp$name == 'max_concurrent_vmem',2:3
-    ] / max(vis_df_temp[vis_df_temp$name == 'max_concurrent_vmem', 2:3])
-
-vis_df_temp = vis_df_temp |>
-    filter(
-        name %in% c(
-            'total_mem_TB_hours', 'cpu_hours', 'active_wallclock_days',
-            'max_concurrent_cpus', 'max_concurrent_vmem'
-        )
-    ) |>
-    rowwise() |>
-    mutate(
-        BiocMAP = BiocMAP / max(BiocMAP, MethylSeq),
-        MethylSeq = MethylSeq / max(BiocMAP, MethylSeq)
-    ) |>
-    pivot_longer(cols = c(BiocMAP, MethylSeq), names_to = 'software')
-
-ggplot(vis_df_temp) +
-    geom_col(aes(x = software, y = value, fill = software)) +
-    facet_wrap(~name)
-
-ggplot(vis_df_temp, aes(x = MethylSeq, y = BiocMAP)) +
-    geom_point(aes(color = name))
-
-ggplot(job_df, aes(x = as.numeric(start_time))) +
-    geom_histogram(aes(weight = slots), bins = 200)
