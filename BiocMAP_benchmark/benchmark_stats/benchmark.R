@@ -73,7 +73,8 @@ job_df = read.csv(job_df_path) |>
         start_time = strptime(start_time, format = "%Y-%m-%d %H:%M:%S"),
         end_time = strptime(end_time, format = "%Y-%m-%d %H:%M:%S"),
         qsub_time = strptime(qsub_time, format = "%Y-%m-%d %H:%M:%S")
-    )
+    ) |>
+    filter(software %in% c('BiocMAP', 'MethylSeq'))
 
 #   Based on https://stackoverflow.com/a/28938694. First, merge overlapping
 #   jobs to form the minimal set of disjoint time periods, allowing for 3-minute
@@ -122,15 +123,15 @@ biocmap_gpu_hours = job_df |>
 
 #   Add GPU hours and maximum concurrent CPU and vmem usage for each pipeline
 stats_df = tibble(
-    software = c('BiocMAP', 'wg-blimp', 'MethylSeq'),
+    software = c('BiocMAP', 'MethylSeq'),
     #   non-BiocMAP pipelines don't use GPUs
-    gpu_hours = c(biocmap_gpu_hours, 0, 0),
+    gpu_hours = c(biocmap_gpu_hours, 0),
     max_concurrent_cpus = sapply(
-        c('BiocMAP', 'wg-blimp', 'MethylSeq'),
+        c('BiocMAP', 'MethylSeq'),
         get_max_concurrent_resource, job_df, bin_size_s, 'slots'
     ),
     max_concurrent_vmem = sapply(
-        c('BiocMAP', 'wg-blimp', 'MethylSeq'),
+        c('BiocMAP', 'MethylSeq'),
         get_max_concurrent_resource, job_df, bin_size_s, 'maxvmem'
     )
 )
