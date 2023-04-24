@@ -13,6 +13,14 @@ stats_df_path = here(
 
 bin_size_s = 30
 
+metrics = c(
+    'Wallclock Duration (Days)' = 'active_wallclock_days',
+    'CPU Hours' = 'cpu_hours',
+    'Peak Total CPUs' = 'max_concurrent_cpus',
+    'TB Hours' = 'total_mem_TB_hours',
+    'Peak Total Memory (GB)' = 'max_concurrent_vmem'
+)
+
 ################################################################################
 #   Functions
 ################################################################################
@@ -163,20 +171,21 @@ vis_df = stats_df |>
     select(
         - all_of(c('vmem_frac_used', 'practical_wallclock_days', 'gpu_hours'))
     ) |>
+    #   Convert max concurrent vmem to GB
     mutate(max_concurrent_vmem = max_concurrent_vmem / 1e9) |>
     pivot_longer(cols = -software) |>
+    #   Re-order metrics and use human-readable names
     mutate(
-        name = case_when(
-            name == 'total_mem_TB_hours' ~ 'TB Hours',
-            name == 'cpu_hours' ~ 'CPU Hours',
-            name == 'active_wallclock_days' ~ 'Wallclock Duration (Days)',
-            name == 'max_concurrent_cpus' ~ 'Peak Total CPUs',
-            name == 'max_concurrent_vmem' ~ 'Peak Total Memory (GB)',
-            TRUE ~ name
+        name = factor(
+            names(metrics)[match(name, metrics)],
+            levels = names(metrics),
+            ordered = TRUE
         )
     )
 
+#   Bar chart of various key metrics
 ggplot(vis_df) +
     geom_col(aes(x = software, y = value, fill = software)) +
     facet_wrap(~name, scales = "free_y", nrow = 2) +
-    labs(x = NULL, y = NULL, fill = "Software")
+    labs(x = NULL, y = NULL, fill = "Software") +
+    theme_bw()
