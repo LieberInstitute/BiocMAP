@@ -184,8 +184,13 @@ vis_df = stats_df |>
     )
 
 #   Bar chart of various key metrics
-ggplot(vis_df) +
+p = ggplot(vis_df) +
     geom_col(aes(x = software, y = value, fill = software)) +
     facet_wrap(~name, scales = "free_y", nrow = 2) +
     labs(x = NULL, y = NULL, fill = "Software") +
-    theme_bw()
+    theme_bw(base_size = 11) +
+    theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+pdf('bar_plots.pdf')
+print(p)
+dev.off()
