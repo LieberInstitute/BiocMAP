@@ -4,7 +4,7 @@ vim: syntax=groovy
 -*- mode: groovy;-*-
 
 --------------------------------------------------------------------
-    WGBS pipeline- Second Half
+    BiocMAP- Second Half
 --------------------------------------------------------------------
 
 input: SAM files, whose paths are specified in rules.txt
@@ -18,9 +18,9 @@ processes:
 
 def helpMessage() {
     log.info"""
-    =================================
-        WGBS pipeline- Second Half
-    =================================
+    ================================================================================
+        BiocMAP- Second Half
+    ================================================================================
     
     Usage:
         nextflow second_half.nf [options]
@@ -173,24 +173,41 @@ def get_rules_glob(row) {
     }
 }
 
-//  Write run info to output
-log.info "=================================="
-log.info " WGBS Pipeline- Second Half"
-log.info "=================================="
-def summary = [:]
-summary['Sample']	= params.sample
-summary['Reference'] = params.reference
-summary['Annotation dir'] = params.annotation
-summary['Annotation release'] = params.anno_version
-summary['Annotation build'] = params.anno_build
-summary['Input dir'] = params.input
-summary['Output dir'] = params.output
-summary['Working dir'] = workflow.workDir
-summary['Use BME'] = params.use_bme
-summary['Has lambda spike-ins'] = params.with_lambda
-summary['Current user']		= "$USER"
-log.info summary.collect { k,v -> "${k.padRight(20)}: $v" }.join("\n")
-log.info "==========================================="
+// This gets the SHA commit ID of the repository where BiocMAP is installed.
+// This associates the pipeline run with a precise "version" of BiocMAP. Note
+// that nextflow provides the "workflow.commitId" variable with this intended
+// function- during testing this variable appears to be null.
+params.commitId = "git --git-dir=${workflow.projectDir}/.git rev-parse HEAD".execute().text.trim()
+
+def summary_main = [:]
+summary_main['BiocMAP version'] = params.commitId
+summary_main['Config profile'] = workflow.profile
+summary_main['Annotation dir'] = params.annotation
+summary_main['Annotation release'] = params.anno_version
+summary_main['Annotation build'] = params.anno_build
+summary_main['Custom anno label'] = params.custom_anno
+summary_main['Input dir'] = params.input
+summary_main['Output dir'] = params.output
+summary_main['Reference'] = params.reference
+summary_main['Sample']	= params.sample
+summary_main['Use BME'] = params.use_bme
+summary_main['Has lambda spike-ins'] = params.with_lambda
+summary_main['Working dir'] = workflow.workDir
+summary_main['Current user']		= "$USER"
+
+def summary_args = [:]
+summary_args['Using containers'] = params.using_containers
+summary_args['Single-end Kallisto args'] = params.kallisto_single_args
+
+//  Write run info to log
+log.info "================================================================================"
+log.info "    BiocMAP- Second Module"
+log.info "================================================================================"
+log.info "---- Main options:"
+log.info summary_main.collect { k,v -> "${k.padRight(20)}: $v" }.join("\n")
+log.info "---- Software arguments:"
+log.info summary_args.collect { k,v -> "${k.padRight(25)}: $v" }.join("\n")
+log.info "================================================================================"
 
 
 // ######################################################

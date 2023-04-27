@@ -4,7 +4,7 @@ vim: syntax=groovy
 -*- mode: groovy;-*-
 
 --------------------------------------------------------------------
-    WGBS pipeline- First Half
+    BiocMAP- First Module
 --------------------------------------------------------------------
 
 input:  "samples.manifest", pointing to fastq or fastq.gz files
@@ -25,9 +25,9 @@ processes:
 
 def helpMessage() {
     log.info"""
-    =================================
-        WGBS pipeline- First Half
-    =================================
+    ================================================================================
+        BiocMAP- First Module
+    ================================================================================
     
     Usage:
         nextflow first_half.nf [options]
@@ -186,23 +186,48 @@ def get_fastq_names(row) {
 //  Print all parameters to log
 // ------------------------------------------------------------
 
-log.info "=================================="
-log.info " WGBS Pipeline- First Half"
-log.info "=================================="
-def summary = [:]
-summary['All alignments'] = params.all_alignments
-summary['Annotation dir'] = params.annotation
-summary['Annotation release'] = params.anno_version
-summary['Annotation build'] = params.anno_build
-summary['Input dir'] = params.input
-summary['Output dir'] = params.output
-summary['Reference'] = params.reference
-summary['Sample']	= params.sample
-summary['Trim mode'] = params.trim_mode
-summary['Working dir'] = workflow.workDir
-summary['Current user']		= "$USER"
-log.info summary.collect { k,v -> "${k.padRight(20)}: $v" }.join("\n")
-log.info "==========================================="
+
+// This gets the SHA commit ID of the repository where BiocMAP is installed.
+// This associates the pipeline run with a precise "version" of BiocMAP. Note
+// that nextflow provides the "workflow.commitId" variable with this intended
+// function- during testing this variable appears to be null.
+params.commitId = "git --git-dir=${workflow.projectDir}/.git rev-parse HEAD".execute().text.trim()
+
+def summary_main = [:]
+summary_main['BiocMAP version'] = params.commitId
+summary_main['Config profile'] = workflow.profile
+summary_main['All alignments'] = params.all_alignments
+summary_main['Annotation dir'] = params.annotation
+summary_main['Annotation release'] = params.anno_version
+summary_main['Annotation build'] = params.anno_build
+summary_main['Custom anno label'] = params.custom_anno
+summary_main['Input dir'] = params.input
+summary_main['Output dir'] = params.output
+summary_main['Reference'] = params.reference
+summary_main['Sample']	= params.sample
+summary_main['Trim mode'] = params.trim_mode
+summary_main['Working dir'] = workflow.workDir
+summary_main['Current user']		= "$USER"
+
+def summary_args = [:]
+summary_args['Arioc GPU batch size'] = params.batch_size
+summary_args['Arioc gapped seed'] = params.gapped_seed
+summary_args['Arioc non-gapped seed'] = params.nongapped_seed
+summary_args['Arioc gapped args'] = params.gapped_args
+summary_args['Arioc non-gapped args'] = params.nongapped_args
+summary_args['Arioc X args'] = params.x_args
+summary_args['Arioc max GPUs'] = params.max_gpus
+summary_args['Manually set GPU'] = params.manually_set_gpu
+summary_args['GPU usage cutoff'] = params.gpu_perc_usage_cutoff
+
+log.info "================================================================================"
+log.info "    BiocMAP- First Module"
+log.info "================================================================================"
+log.info "---- Main options:"
+log.info summary_main.collect { k,v -> "${k.padRight(20)}: $v" }.join("\n")
+log.info "---- Software arguments:"
+log.info summary_args.collect { k,v -> "${k.padRight(25)}: $v" }.join("\n")
+log.info "================================================================================"
 
 // ######################################################
 //    Pre-processing steps 
