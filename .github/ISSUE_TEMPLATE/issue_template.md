@@ -6,7 +6,7 @@ labels: ''
 assignees: ''
 ---
 
-Please briefly describe your problem and what output you expect. If you have a question, please don't use this form. Instead, ask on <https://support.bioconductor.org/> using the appropriate tag(s) including one for this package.
+Please briefly describe your problem and what output/behavior you expect.
 
 ## Context
 
@@ -29,28 +29,51 @@ stop('hola')
 traceback()
 ```
 
-## Small reproducible example
+## Error message
 
-If you copy the lines of code that lead to your error, you can then run [`reprex::reprex()`](https://reprex.tidyverse.org/reference/reprex.html) which will create a small website with code you can then easily copy-paste here in a way that will be easy to work with later on.
+When reporting a bug or error, please include the full error message reported in the main output log (e.g. for SLURM users and the first module, `run_first_half_slurm.log`). This may be short, but should (usually) include the process name where the error occurred, and a follow-up explanation:
 
-```R
-## prompt an error
-stop('hola')
-#> Error in eval(expr, envir, enclos): hola
+```
+Error executing process > 'EncodeReference'
 
-## check the error trace
-traceback()
-#> No traceback available
+Caused by:
+  Cannot get property 'annotation' on null object
 ```
 
 
-## R session information
+## BiocMAP run information
 
-Remember to include your full R session information.
+For errors or issues during BiocMAP runs, please copy and paste the header printed in the main output log (e.g. for SLURM users and the first module, `run_first_half_slurm.log`). The header will look similar to this:
 
-```R
-options(width = 120)
-sessioninfo::session_info()
+```
+================================================================================
+    BiocMAP- First Module
+================================================================================
+---- Main options:
+BiocMAP version    = 60766c92528f1f302fca1350179131ad0742a741
+Config profile     = first_half_slurm
+All alignments     = false
+Annotation dir     = /path/to/annotation
+Annotation release = 34
+Annotation build   = main
+Custom anno label  = 
+Input dir          = /input/dir
+Output dir         = /output/dir
+Reference          = hg38
+Sample	           = paired
+Trim mode          = force
+Working dir        = /work/dir
+Current user	   = nickeagles
+---- Software arguments:
+Arioc GPU batch size  = 32k
+Arioc gapped seed     = hsi25_0_30_CT
+Arioc non-gapped seed = ssi84_2_30_CT
+Arioc gapped args     = Wmxgs="2,6,5,3" Vt="L,0,1" maxJ="20" seedDepth="4"
+Arioc non-gapped args = maxJ="200" maxMismatches="5"
+Arioc X args          = watchdogInterval="60" cgaReserved="24M" useHinGmem="0" useJinGmem="0" useHJinGPmem="0" serialLUTinit="1"
+Arioc max GPUs        = 1
+Manually set GPU      = false
+GPU usage cutoff      = 10
+================================================================================
 ```
 
-The output of `sessioninfo::session_info()` includes relevant GitHub installation information and other details that are missed by `sessionInfo()`.
