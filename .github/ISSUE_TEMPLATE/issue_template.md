@@ -6,30 +6,27 @@ labels: ''
 assignees: ''
 ---
 
-Please briefly describe your problem and what output/behavior you expect.
+## Feature requests
 
-## Context
+For feature requests, please describe the desired functionality and how it differs from what's currently implemented. If the benefits for the suggested feature aren't obvious, please provide a brief explanation motivating the change.
 
-Provide some context for your bug report or feature request. This could be the:
+The following example is based off of [issue 14](https://github.com/LieberInstitute/BiocMAP/issues/14):
 
-* link to raw code, example: https://github.com/lcolladotor/osca_LIIGH_UNAM_2020/blob/master/00-template.Rmd#L24-L28
-* link to a commit, example: https://github.com/lcolladotor/osca_LIIGH_UNAM_2020/commit/6aa30b22eda614d932c12997ba611ba582c435d7
-* link to a line of code inside a commit, example: https://github.com/lcolladotor/osca_LIIGH_UNAM_2020/commit/6aa30b22eda614d932c12997ba611ba582c435d7#diff-e265269fe4f17929940e81341b92b116R17
-* link to code from an R package, example: https://github.com/LieberInstitute/spatialLIBD/blob/master/R/run_app.R#L51-L55
+### Current functionality
 
-## Code
+The `Trimming` subdirectory in the output directory contains uncompressed FASTQ files, even for samples that aren't trimmed.
 
-Include the code you ran and comments
+### Desired functionality
 
-```R
-## prompt an error
-stop('hola')
+Only samples that undergo trimming should produce trimmed FASTQ files that are published to the output directory. Untrimmed FASTQ files should never be published as outputs.
 
-## check the error trace
-traceback()
-```
+### Motivation for change
 
-## Error message
+Untrimmed FASTQs are duplicate data, and are confusing to include in the "Trimming" directory. The FASTQs are also uncompressed, meaning a great portion of disk space is unnecessarily taken for these temporary files.
+
+## Bugs/ error reports
+
+### Error message
 
 When reporting a bug or error, please include the full error message reported in the main output log (e.g. for SLURM users and the first module, `run_first_half_slurm.log`). This may be short, but should (usually) include the process name where the error occurred, and a follow-up explanation:
 
@@ -41,9 +38,9 @@ Caused by:
 ```
 
 
-## BiocMAP run information
+### BiocMAP run information
 
-For errors or issues during BiocMAP runs, please copy and paste the header printed in the main output log (e.g. for SLURM users and the first module, `run_first_half_slurm.log`). The header will look similar to this:
+Please copy and paste the header printed in the main output log (e.g. for SLURM users and the first module, `run_first_half_slurm.log`). The header will look similar to this:
 
 ```
 ================================================================================
@@ -77,3 +74,4 @@ GPU usage cutoff      = 10
 ================================================================================
 ```
 
+Other helpful details include the installation method originally used to set up BiocMAP (e.g. `singularity`) and the approximate number of samples in your dataset.
