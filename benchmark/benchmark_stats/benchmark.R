@@ -4,11 +4,11 @@ library('tidyverse')
 library('here')
 
 job_df_path = here(
-    'BiocMAP_benchmark', 'benchmark_stats', 'combined_job_info.csv'
+    'benchmark', 'benchmark_stats', 'combined_job_info.csv'
 )
 
 stats_df_path = here(
-    'BiocMAP_benchmark', 'benchmark_stats', 'benchmark_stats.csv'
+    'benchmark', 'benchmark_stats', 'benchmark_stats.csv'
 )
 
 bin_size_s = 30

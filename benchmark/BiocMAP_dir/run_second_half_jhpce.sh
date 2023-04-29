@@ -13,7 +13,7 @@ mkdir -p $BASE_WORK_DIR
 module load nextflow/20.01.0
 export _JAVA_OPTIONS="-Xms8g -Xmx10g"
 
-nextflow $REPO_DIR/BiocMAP_benchmark/BiocMAP_dir/BiocMAP/second_half.nf \
+nextflow $REPO_DIR/benchmark/BiocMAP_dir/BiocMAP/second_half.nf \
     --annotation "$ANN_DIR" \
     --sample "paired" \
     --reference "hg38" \

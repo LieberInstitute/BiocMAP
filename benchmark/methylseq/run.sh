@@ -18,7 +18,7 @@ base_dir=/dcs04/lieber/lcolladotor/BiocMAP_benchmark_LIBD001/methylseq
 mkdir -p $base_dir
 
 nextflow run nf-core/methylseq \
-    --input $(git rev-parse --show-toplevel)/BiocMAP_benchmark/sample_sheet.csv \
+    --input $(git rev-parse --show-toplevel)/benchmark/sample_sheet.csv \
     --outdir $base_dir/out \
     -w $base_dir/work \
     -profile singularity \

@@ -5,14 +5,14 @@
 library('here')
 library('sgejobs')
 
-source(here('BiocMAP_benchmark', 'benchmark_stats', 'sge_job_info.R'))
+source(here('benchmark', 'benchmark_stats', 'sge_job_info.R'))
 
-log_path_wg = here('BiocMAP_benchmark', 'wg_blimp', 'logs', 'run.log')
-log_path_bio_first = here('BiocMAP_benchmark', 'BiocMAP_dir', '.nextflow.log.1')
-log_path_bio_second = here('BiocMAP_benchmark', 'BiocMAP_dir', '.nextflow.log')
-log_path_methyl = here('BiocMAP_benchmark', 'methylseq', '.nextflow.log')
+log_path_wg = here('benchmark', 'wg_blimp', 'logs', 'run.log')
+log_path_bio_first = here('benchmark', 'BiocMAP_dir', '.nextflow.log.1')
+log_path_bio_second = here('benchmark', 'BiocMAP_dir', '.nextflow.log')
+log_path_methyl = here('benchmark', 'methylseq', '.nextflow.log')
 
-out_path = here('BiocMAP_benchmark', 'benchmark_stats', 'combined_job_info.csv')
+out_path = here('benchmark', 'benchmark_stats', 'combined_job_info.csv')
 
 ################################################################################
 #   Read in job info for wg-blimp
