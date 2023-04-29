@@ -3,13 +3,13 @@
 library('tidyverse')
 library('here')
 
-job_df_path = here(
-    'benchmark', 'benchmark_stats', 'combined_job_info.csv'
-)
+job_df_path = here('benchmark', 'benchmark_stats', 'combined_job_info.csv')
 
 stats_df_path = here(
     'benchmark', 'benchmark_stats', 'benchmark_stats.csv'
 )
+
+plot_path = here('benchmark', 'benchmark_stats', 'bar_plots.pdf')
 
 bin_size_s = 30
 
@@ -191,6 +191,6 @@ p = ggplot(vis_df) +
     theme_bw(base_size = 11) +
     theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
-pdf('bar_plots.pdf')
+pdf(plot_path)
 print(p)
 dev.off()
