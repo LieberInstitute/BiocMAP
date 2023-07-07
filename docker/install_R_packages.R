@@ -1,5 +1,5 @@
 #  While the main version of this script is in the 'scripts' directory, a
-#  specific copy used while producing the 'bioc_kallisto:3.11' docker image is
+#  specific copy used while producing the 'bioc_kallisto:3.17' docker image is
 #  kept here for reproducibility. In addition, packages not strictly required
 #  by this pipeline are installed into the image so that the image can also be
 #  used by SPEAQeasy (https://github.com/LieberInstitute/SPEAQeasy).
