@@ -17,7 +17,7 @@ for (seed in c(opt$gap_seed, opt$nongap_seed)) {
     #  '[future_work_dir]' is written and will be replaced with the working
     #  directory used in the EncodeReference process
     config_lines = c('<?xml version="1.0" encoding="utf-8"?>',
-                     paste0('<AriocE seed="', seed, '" maxJ="200">'),
+                     paste0('<AriocE seed="', seed, '" gpuMask="0x00000001" maxJ="200">'),
                      paste0('  <dataIn sequenceType="R" srcId="0" filePath="[future_work_dir]">'))
     
     #  The sequences to encode
