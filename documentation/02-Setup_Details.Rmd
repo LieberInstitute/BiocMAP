@@ -11,7 +11,7 @@ BiocMAP is designed for execution on Linux, and requires the following:
 If installing the pipeline locally (see [installation](#installation)), the following are also required:
 
 - Python 3 (tested with 3.7.3), with pip
-- R (tested with R 3.6-4.1)
+- R (tested with R 3.6-4.3)
 - GNU make
 
 If installing the pipeline for use with docker (see [installation](#installation)), the [NVIDIA container toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker) is also required for use of the first module. A CUDA runtime >= 10.1 is required for docker/singularity users.

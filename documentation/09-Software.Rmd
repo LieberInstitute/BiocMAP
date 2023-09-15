@@ -30,7 +30,7 @@ The following image versions are used in this pipeline, when it is [installed](#
 | Image | Tag | Software |
 | ----- | ---- | ------- |
 | libddocker/arioc | 1.43 | Arioc |
-| libddocker/bioc_kallisto | 3.11 | R 4.1.0, Bioconductor 3.11, Kallisto 0.46.1 |
+| libddocker/bioc_kallisto | 3.17 | R 4.3.0, Bioconductor 3.17, Kallisto 0.46.1 |
 | libddocker/bismark | 0.23.0 | Bismark |
 | libddocker/filter_alignments | 1.0 | samtools 1.10, samblaster v.0.1.26 |
 | libddocker/kallisto | 0.46.1 | Kallisto |

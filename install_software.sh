@@ -43,7 +43,7 @@ if [[ "$1" == "docker" || "$1" == "singularity" ]]; then
 
     #  This is the docker image to be used for execution of R via docker/
     #  singularity
-    R_container="libddocker/bioc_kallisto:3.13"
+    R_container="libddocker/bioc_kallisto:3.17"
     
     #  Point to original repo's main script to facilitate pipeline sharing
     sed -i "s|ORIG_DIR=.*|ORIG_DIR=$(pwd)|" run_*_half_*.sh
@@ -119,7 +119,7 @@ if [[ "$1" == "docker" || "$1" == "singularity" ]]; then
 elif [ "$1" == "jhpce" ]; then
 
     echo "[BiocMAP] User selected set-up at JHPCE. Installing any missing R packages..."
-    module load conda_R/4.1
+    module load conda_R/4.3
     Rscript scripts/install_r_packages.R
     
     echo "[BiocMAP] Setting up test files..."
@@ -149,10 +149,10 @@ elif [ "$1" == "conda" ]; then
     conda activate $PWD/conda/pipeline_env
     
     #  Install software using mamba rather than conda
-    mamba install -y -c bioconda -c conda-forge r-essentials=4.1.0 r-base=4.1.0 bismark=0.23.0 fastqc=0.11.8 kallisto=0.46.1 methyldackel=0.6.0 samblaster=0.1.26 samtools=1.12 trim-galore=0.6.6
+    mamba install -y -c bioconda -c conda-forge r-essentials=4.3.1 r-base=4.3.1 bismark=0.23.0 fastqc=0.11.8 kallisto=0.46.1 methyldackel=0.6.0 samblaster=0.1.26 samtools=1.12 trim-galore=0.6.6
     
     #  Install Bioc R packages using mamba
-    mamba install -y -c bioconda -c conda-forge bioconductor-bsseq=1.28.0 bioconductor-genomicranges=1.44.0 bioconductor-hdf5array=1.20.0 bioconductor-biocparallel=1.26.0
+    mamba install -y -c bioconda -c conda-forge bioconductor-bsseq=1.36.0 bioconductor-genomicranges=1.52.0 bioconductor-hdf5array=1.28.1 bioconductor-biocparallel=1.34.2
     
     #  Install remaining non-Bioc packages
     Rscript scripts/install_r_packages.R
