@@ -19,11 +19,16 @@ opt <- getopt(spec)
 print("Writing configs for AriocP/AriocU...")
 
 if (opt$paired == "paired") {
-  exec_name = 'AriocP'
-  id = strsplit(list.files(pattern=".*_val_1\\.fq"), "_val_1.fq", fixed=TRUE)[[1]]
+    exec_name = 'AriocP'
+
+    #   Note here Arioc needs the filenames without the extension
+    r1 = strsplit(list.files(pattern=".*_val_1\\.fq$"), "\\.fq")[[1]]
+    r2 = strsplit(list.files(pattern=".*_val_2\\.fq$"), "\\.fq")[[1]]
 } else {
-  exec_name = 'AriocU'
-  id = strsplit(list.files(pattern='.*_trimmed\\.fq'), "_trimmed.fq", fixed=TRUE)[[1]]
+    exec_name = 'AriocU'
+
+    #   Note here Arioc needs the filenames without the extension
+    r1 = strsplit(list.files(pattern='.*\\.fq$'), "\\.fq")[[1]]
 }
 
 #  The processed manifest outputted from the "Merging" process will be in
@@ -31,8 +36,7 @@ if (opt$paired == "paired") {
 #  the first sample in the manifest (thus the assumption is made: the manifest
 #  paths all match the input directory, params.input)
 man = read.table('arioc_samples.manifest', sep = ' ', header = FALSE, stringsAsFactors = FALSE)
-idRowNum = match(opt$prefix, man[,ncol(man)])
-idNum = as.integer(idRowNum / 2) + 1
+idNum = as.integer(match(opt$prefix, man[,ncol(man)]) / 2) + 1
 
 if (opt$allAlign) {
     if (opt$paired == "paired") {
@@ -80,8 +84,8 @@ config_lines = c(
 if (opt$paired == "paired") {
     config_lines = c(config_lines,
                      paste0('    <paired subId="', idNum, '">'),
-                     paste0('      <file>', man[idRowNum, 5], '_val_1</file>'),
-                     paste0('      <file>', man[idRowNum, 5], '_val_2</file>'),
+                     paste0('      <file>', r1, '</file>'),
+                     paste0('      <file>', r2, '</file>'),
                      '    </paired>',
                      '  </Q>',
                      '',
@@ -89,7 +93,7 @@ if (opt$paired == "paired") {
 } else {    
     config_lines = c(config_lines,
                      paste0('    <unpaired subId="', idNum, '">'),
-                     paste0('      <file>', man[idRowNum, 3], '_trimmed</file>'),
+                     paste0('      <file>', r1, '</file>'),
                      '    </unpaired>',
                      '  </Q>',
                      '',

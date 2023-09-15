@@ -475,7 +475,7 @@ if (params.sample == "single") {
 process Trimming {
 
     tag "Prefix: $fq_prefix"
-    publishDir "${params.output}/Trimming", mode:'copy', pattern:"${fq_prefix}*{.fq,_trimmed.log}"
+    publishDir "${params.output}/Trimming", mode:'copy', pattern:"${fq_prefix}_[!u]*{.fq,_trimmed.log}"
     publishDir "${params.output}/FastQC/Trimmed", mode:'copy', pattern:"${fq_prefix}*_fastqc"
 
     input:
@@ -539,10 +539,10 @@ process Trimming {
             #  nextflow to output these files) and decompress as necessary
             if [ !{file_ext} == '.fastq.gz' ]; then
                 if [ "!{params.sample}" == "single" ]; then
-                    gunzip -c !{fq_prefix}!{file_ext} > !{fq_prefix}_trimmed.fq
+                    gunzip -c !{fq_prefix}!{file_ext} > !{fq_prefix}_untrimmed.fq
                 else
-                    gunzip -c !{fq_prefix}_1!{file_ext} > !{fq_prefix}_val_1.fq
-                    gunzip -c !{fq_prefix}_2!{file_ext} > !{fq_prefix}_val_2.fq
+                    gunzip -c !{fq_prefix}_1!{file_ext} > !{fq_prefix}_untrimmed_val_1.fq
+                    gunzip -c !{fq_prefix}_2!{file_ext} > !{fq_prefix}_untrimmed_val_2.fq
                 fi
             else
                 if [ "!{params.sample}" == "single" ]; then

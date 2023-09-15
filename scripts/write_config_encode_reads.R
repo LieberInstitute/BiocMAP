@@ -8,7 +8,8 @@ opt <- getopt(spec)
 print("Writing AriocE configs...")
 
 if (opt$paired == "paired") {
-    id = strsplit(list.files(pattern=".*_val_1\\.fq"), "_val_1.fq", fixed=TRUE)[[1]]
+    r1 = list.files(pattern=".*(_untrimmed)?_val_1\\.fq$")
+    r2 = list.files(pattern=".*(_untrimmed)?_val_2\\.fq$")
     
     ###################################################################################
     #  Downstream utilities like Bismark and samblaster are incapable of recognizing
@@ -18,8 +19,8 @@ if (opt$paired == "paired") {
     #  FASTQ sequence to AriocE.
     ###################################################################################
     
-    id1 = system(paste0('grep "@" ', id, '_val_1.fq | head -n 1'), intern=TRUE)
-    id2 = system(paste0('grep "@" ', id, '_val_2.fq | head -n 1'), intern=TRUE)
+    id1 = system(paste('grep "@"', r1, '| head -n 1'), intern=TRUE)
+    id2 = system(paste('grep "@"', r2, '| head -n 1'), intern=TRUE)
     
     #----------------------------------------------------------------------------------
     #  Tries to recognize the read-ID style (checks "old illumina", "illumina casava",
@@ -121,7 +122,8 @@ if (opt$paired == "paired") {
     }
     
 } else {
-    id = strsplit(list.files(pattern='.*_trimmed\\.fq'), "_trimmed.fq", fixed=TRUE)[[1]]
+    r1 = list.files(pattern='.*_(un)?trimmed\\.fq$')
+
     qname_field = ''
     rg_line = ''
     qbias_field = ''
@@ -130,8 +132,7 @@ if (opt$paired == "paired") {
 #  The processed manifest outputted from the "Manifest" process will be in
 #  the working directory. Use this to assign this particular sample an integer ID
 man = read.table('arioc_samples.manifest', sep = ' ', header = FALSE, stringsAsFactors = FALSE)
-idRowNum = match(opt$prefix, man[,ncol(man)])
-idNum = as.integer(idRowNum / 2) + 1
+idNum = as.integer(match(opt$prefix, man[,ncol(man)]) / 2) + 1
 
 #############################################################
 #    Gather lines into a vector for writing
@@ -146,11 +147,11 @@ config_lines = c('<?xml version="1.0" encoding="utf-8"?>', '',
 #  Lines related to the particular reads used for this alignment
 if (opt$paired == "paired") {
     config_lines = c(config_lines,
-                     paste0('    <file subId="', idNum, '" mate="1">', man[idRowNum, 5], '_val_1.fq</file>'),
-                     paste0('    <file subId="', idNum, '" mate="2">', man[idRowNum, 5], '_val_2.fq</file>'))
+                     paste0('    <file subId="', idNum, '" mate="1">', r1, '</file>'),
+                     paste0('    <file subId="', idNum, '" mate="2">', r2, '</file>'))
 } else {
     config_lines = c(config_lines,
-                     paste0('    <file subId="', idNum, '">', man[idRowNum, 3], '_trimmed.fq</file>'))
+                     paste0('    <file subId="', idNum, '">', r1, '</file>'))
 }
 config_lines = c(config_lines, '  </dataIn>')
 
