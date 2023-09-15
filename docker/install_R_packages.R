@@ -20,18 +20,19 @@ bioc_packages = c(
 #  Ordinary R packages
 for (p in ordinary_packages) {
     if (!requireNamespace(p, quietly=TRUE)) {
-        install.packages(p)
+        install.packages(p, repos='http://cran.us.r-project.org')
     }
 }
 
 #  Bioconductor packages
 for (p in bioc_packages) {
     if (!requireNamespace(p, quietly=TRUE)) {
-        BiocManager::install(p)
+        BiocManager::install(p, update = FALSE)
     }
 }
 
-#  GitHub packages
-if (!requireNamespace('jaffelab', quietly=TRUE)) {
-    remotes::install_github('LieberInstitute/jaffelab')
-}
+#  GitHub packages: the version of GenomeInfoDb that comes with Bioc 3.17
+#  has this issue: https://github.com/Bioconductor/GenomeInfoDb/issues/86,
+#  motivating the explicit reinstall of a fixed version here
+remotes::install_github('LieberInstitute/jaffelab')
+remotes::install_github('Bioconductor/GenomeInfoDb@284ef2a')
