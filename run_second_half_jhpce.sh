@@ -1,8 +1,10 @@
 #!/bin/bash
-#$ -l bluejay,mem_free=25G,h_vmem=25G,h_fsize=800G
-#$ -o ./run_second_half_jhpce.log
-#$ -e ./run_second_half_jhpce.log
-#$ -cwd
+
+#SBATCH -p shared
+#SBATCH --mem=25G
+#SBATCH --job-name=BiocMAP_second_module
+#SBATCH -o ./run_second_half_jhpce.log
+#SBATCH -e ./run_second_half_jhpce.log
 
 #  After running 'install_software.sh', this should point to the directory
 #  where BiocMAP was installed, and not say "$PWD"

@@ -38,13 +38,7 @@ BiocMAP makes use of a number of different additional software tools. The user i
     
   Please note that this installation method is experimental, and can be more error-prone than installation via the "docker", "singularity", or "conda" modes. Finally, if using BiocMAP on a cluster, set the `arioc_queue` [Arioc setting](#arioc-settings) in [your config file](#your-config-file) for the first module.
     
-**Note:** users at the JHPCE cluster do not need to worry about managing software via the above methods (required software is automatically available through modules). Simply run `bash install_software.sh "jhpce"` to install any missing R packages and set up some test files. Next, make sure you have the following lines added to your `~/.bashrc` file:
-
-```{bash, eval=FALSE}
-if [[ $HOSTNAME == compute-* ]]; then
-    module use /jhpce/shared/jhpce/modulefiles/libd
-fi
-```
+**Note:** users at the JHPCE cluster do not need to worry about managing software via the above methods (required software is automatically available through modules). Simply run `bash install_software.sh "jhpce"` to install any missing R packages and set up some test files.
 
 ### Troubleshooting
 
@@ -149,13 +143,13 @@ See [here](https://www.nextflow.io/docs/latest/executor.html#sge) for additional
 ### Run on the [JHPCE](https://jhpce.jhu.edu/) cluster
 
 - (Optional) **Adjust configuration**: default configuration with thoroughly testing hardware resource specification is described within `conf/first_half_jhpce.config` and `conf/second_half_jhpce.config`.
-- **Modify the main script and run**: the "main" scripts are `run_first_half_jhpce.sh` and `run_second_half_jhpce.sh`. Each script may be submitted to the cluster as a job (e.g. `qsub run_first_half_jhpce.sh`). See the [full list of command-line options](#command-opts) for other details about modifying the script for your use-case. To run the complete workflow, it is recommended to first submit `run_first_half_jhpce.sh`, then monitor the output log `run_first_half_jhpce.log` so that `run_second_half_jhpce.sh` may be submitted when the log indicates the first half has completed.
+- **Modify the main script and run**: the "main" scripts are `run_first_half_jhpce.sh` and `run_second_half_jhpce.sh`. Each script may be submitted to the cluster as a job (e.g. `sbatch run_first_half_jhpce.sh`). See the [full list of command-line options](#command-opts) for other details about modifying the script for your use-case. To run the complete workflow, it is recommended to first submit `run_first_half_jhpce.sh`, then monitor the output log `run_first_half_jhpce.log` so that `run_second_half_jhpce.sh` may be submitted when the log indicates the first half has completed.
 
 ### Example main script
 
 Below is a full example of a typical main script for the first module, modified from the `run_first_half_jhpce.sh` script. At the top are some cluster-specific options, recognized by SGE, the grid scheduler at the JHPCE cluster. These are optional, and you may consider adding appropriate options similarly, if you plan to use BiocMAP on a computing cluster.
 
-After the main command, `nextflow first_half.nf`, each command option can be described line by line:
+After the main command, `nextflow $ORIG_DIR/first_half.nf`, each command option can be described line by line:
 
 - `--sample "paired"`: input samples are paired-end
 - `--reference "hg38"`: these are human samples, to be aligned to the hg38 reference genome
@@ -168,15 +162,21 @@ After the main command, `nextflow first_half.nf`, each command option can be des
 
 ```{bash, eval=FALSE}
 #!/bin/bash
-#$ -l bluejay,mem_free=25G,h_vmem=25G,h_fsize=800G
-#$ -o ./run_first_half_jhpce.log
-#$ -e ./run_first_half_jhpce.log
-#$ -cwd
 
-module load nextflow
+#SBATCH -q shared
+#SBATCH --mem=25G
+#SBATCH --job-name=BiocMAP
+#SBATCH -o ./run_first_half_jhpce.log
+#SBATCH -e ./run_first_half_jhpce.log
+
+#  After running 'install_software.sh', this should point to the directory
+#  where BiocMAP was installed, and not say "$PWD"
+ORIG_DIR=$PWD
+
+module load nextflow/20.01.0
 export _JAVA_OPTIONS="-Xms8g -Xmx10g"
 
-nextflow first_half.nf \
+nextflow $ORIG_DIR/first_half.nf \
     --sample "paired" \
     --reference "hg38" \
     --input "/users/neagles/wgbs_test" \
