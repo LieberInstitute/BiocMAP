@@ -31,14 +31,14 @@ We provide [shell scripts](http://research.libd.org/BiocMAP/quick-start.html#you
 We hope `BiocMAP` will be a useful tool for your research. Please use the following bibtex information to cite this software. Thank you!
 
 ```
-@article {Eagles2022.04.20.488947,
+@article {Eagles2023,
 	author = {Eagles, Nicholas J and Wilton, Richard and Jaffe, Andrew E. and Collado-Torres, Leonardo},
-	title = {BiocMAP: A Bioconductor-friendly, GPU-Accelerated Pipeline for Bisulfite-Sequencing Data},
-	year = {2022},
-	doi = {10.1101/2022.04.20.488947},
-	publisher = {Cold Spring Harbor Laboratory},
-	URL = {https://doi.org/10.1101/2022.04.20.488947},
-	journal = {bioRxiv}
+	title = {BiocMAP: A Bioconductor-friendly, GPU-accelerated pipeline for bisulfite-sequencing data},
+	year = {2023},
+	doi = {10.1186/s12859-023-05461-3},
+	publisher = {Springer Science and Business Media LLC},
+	URL = {https://doi.org/10.1186/s12859-023-05461-3},
+	journal = {BMC Bioinformatics}
 }
 ```
 
