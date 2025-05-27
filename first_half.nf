@@ -89,6 +89,11 @@ if (params.reference == "mm10") {
     params.input = "${workflow.projectDir}/test/human/${params.sample}"
 }
 
+// Ensure we have absolute paths without "." or "..". See
+// https://github.com/LieberInstitute/BiocMAP/issues/31
+params.input_clean = java.nio.file.Paths.get(params.input).toAbsolutePath().normalize().toString()
+params.output_clean = java.nio.file.Paths.get(params.output).toAbsolutePath().normalize().toString()
+
 // -------------------------------------
 //   Validate Inputs
 // -------------------------------------
@@ -201,8 +206,8 @@ summary_main['Annotation dir'] = params.annotation
 summary_main['Annotation release'] = params.anno_version
 summary_main['Annotation build'] = params.anno_build
 summary_main['Custom anno label'] = params.custom_anno
-summary_main['Input dir'] = params.input
-summary_main['Output dir'] = params.output
+summary_main['Input dir'] = params.input_clean
+summary_main['Output dir'] = params.output_clean
 summary_main['Reference'] = params.reference
 summary_main['Sample']	= params.sample
 summary_main['Trim mode'] = params.trim_mode
@@ -367,7 +372,7 @@ process EncodeReference {
 // Extract FASTQ file paths from the manifest and place in a channel to pass to
 // PreprocessInputs
 Channel
-    .fromPath("${params.input}/samples.manifest")
+    .fromPath("${params.input_clean}/samples.manifest")
     .splitText()
     .map{ row -> get_fastq_names(row) }
     .flatten()
@@ -376,10 +381,10 @@ Channel
 
 process PreprocessInputs {
 
-    publishDir "${params.output}/preprocessing", mode:'copy', pattern:'*.log'
+    publishDir "${params.output_clean}/preprocessing", mode:'copy', pattern:'*.log'
 
     input:
-        file original_manifest from file("${params.input}/samples.manifest")
+        file original_manifest from file("${params.input_clean}/samples.manifest")
         file preprocess_script from file("${workflow.projectDir}/scripts/preprocess_inputs_first.R")
         file raw_fastqs
         
@@ -424,7 +429,7 @@ if (params.sample == "single") {
 
 process FastQC_Untrimmed {
     tag "$prefix"
-    publishDir "${params.output}/FastQC/Untrimmed", mode:'copy', pattern:"${prefix}*_fastqc"
+    publishDir "${params.output_clean}/FastQC/Untrimmed", mode:'copy', pattern:"${prefix}*_fastqc"
 
     input:
         set val(prefix), file(fq_file) from fastqc_untrimmed_inputs 
@@ -475,8 +480,8 @@ if (params.sample == "single") {
 process Trimming {
 
     tag "Prefix: $fq_prefix"
-    publishDir "${params.output}/Trimming", mode:'copy', pattern:"${fq_prefix}_[!u]*{.fq,_trimmed.log}"
-    publishDir "${params.output}/FastQC/Trimmed", mode:'copy', pattern:"${fq_prefix}*_fastqc"
+    publishDir "${params.output_clean}/Trimming", mode:'copy', pattern:"${fq_prefix}_[!u]*{.fq,_trimmed.log}"
+    publishDir "${params.output_clean}/FastQC/Trimmed", mode:'copy', pattern:"${fq_prefix}*_fastqc"
 
     input:
         set val(fq_prefix), file(fq_summary), file(fq_file) from trimming_inputs
@@ -585,7 +590,7 @@ if (params.sample == "single") {
 //  uses R (possibly not available on a GPU node, where encoding/alignment is done)
 process WriteAriocConfigs {
 
-    publishDir "${params.output}/Arioc/configs/",mode:'copy'
+    publishDir "${params.output_clean}/Arioc/configs/",mode:'copy'
     tag "$fq_prefix"
     
     input:
@@ -645,7 +650,7 @@ encode_reads_cfgs
 //  FASTQs must be encoded with AriocE, before the alignment step
 process EncodeReads {
 
-    publishDir "${params.output}/Arioc/logs/", mode:'copy', pattern:'*.log'
+    publishDir "${params.output_clean}/Arioc/logs/", mode:'copy', pattern:'*.log'
     tag "$fq_prefix"
     
     input:
@@ -684,8 +689,8 @@ encoded_reads
 
 process AlignReads {   
     
-    publishDir "${params.output}/Arioc/sams/", mode:'copy', pattern:'*.sam'
-    publishDir "${params.output}/Arioc/logs/", mode:'copy', pattern:'*.log'
+    publishDir "${params.output_clean}/Arioc/sams/", mode:'copy', pattern:'*.sam'
+    publishDir "${params.output_clean}/Arioc/logs/", mode:'copy', pattern:'*.log'
     tag "$prefix"
     
     input:
@@ -769,8 +774,8 @@ concordant_sams_out
 //  Arioc, filters by mapping quality, and removes duplicate mappings.
 process FilterAlignments {
 
-    publishDir "${params.output}/FilteredAlignments/logs/", mode:'copy', pattern:'*.log'
-    publishDir "${params.output}/FilteredAlignments/bams/", mode:'copy', pattern:'*.bam*'
+    publishDir "${params.output_clean}/FilteredAlignments/logs/", mode:'copy', pattern:'*.log'
+    publishDir "${params.output_clean}/FilteredAlignments/bams/", mode:'copy', pattern:'*.bam*'
     tag "$prefix"
     
     input:
@@ -816,7 +821,7 @@ fastq_summaries_untrimmed2
 //  Generate a 'rules.txt' file automatically, for use as input to the second
 //  module
 process MakeRules {
-    publishDir "${params.output}", mode:'copy'
+    publishDir "${params.output_clean}", mode:'copy'
     
     input:
         file fastq_summaries_all
@@ -835,10 +840,10 @@ process MakeRules {
         }
         
         txt = "# Automatically generated input to the second module/half\n" + \
-              "manifest = ${params.input}/samples.manifest\n" + \
-              "sam = ${params.output}/FilteredAlignments/bams/[id].${bam_type}.bam*\n" + \
-              "arioc_log = ${params.output}/Arioc/logs/[id]_alignment.log\n" + \
-              "trim_report = ${params.output}/Trimming/[id]_was_trimmed.log"
+              "manifest = ${params.input_clean}/samples.manifest\n" + \
+              "sam = ${params.output_clean}/FilteredAlignments/bams/[id].${bam_type}.bam*\n" + \
+              "arioc_log = ${params.output_clean}/Arioc/logs/[id]_alignment.log\n" + \
+              "trim_report = ${params.output_clean}/Trimming/[id]_was_trimmed.log"
         
         '''
         echo -e '!{txt}' > rules.txt
@@ -850,13 +855,13 @@ process MakeRules {
             #  If there are as many trimmed as untrimmed reports, all samples
             #  were trimmed. Otherwise only some were
             if [ $(ls -1 *_trimmed_summary.txt | wc -l) -eq $(ls -1 *_untrimmed_summary.txt | wc -l) ]; then
-                echo 'fastqc_log_last = !{params.output}/FastQC/Trimmed/!{fastqc_dir}/summary.txt' >> rules.txt
+                echo 'fastqc_log_last = !{params.output_clean}/FastQC/Trimmed/!{fastqc_dir}/summary.txt' >> rules.txt
             else
-                echo 'fastqc_log_last = !{params.output}/FastQC/Trimmed/!{fastqc_dir}/summary.txt' >> rules.txt
-                echo 'fastqc_log_first = !{params.output}/FastQC/Untrimmed/!{fastqc_dir}/summary.txt' >> rules.txt
+                echo 'fastqc_log_last = !{params.output_clean}/FastQC/Trimmed/!{fastqc_dir}/summary.txt' >> rules.txt
+                echo 'fastqc_log_first = !{params.output_clean}/FastQC/Untrimmed/!{fastqc_dir}/summary.txt' >> rules.txt
             fi
         else
-            echo 'fastqc_log_last = !{params.output}/FastQC/Untrimmed/!{fastqc_dir}/summary.txt' >> rules.txt
+            echo 'fastqc_log_last = !{params.output_clean}/FastQC/Untrimmed/!{fastqc_dir}/summary.txt' >> rules.txt
         fi
         '''
 }
