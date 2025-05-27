@@ -72,6 +72,10 @@ if (params.reference == "mm10") {
     params.input = "${workflow.projectDir}/test/human/${params.sample}"
 }
 
+// Ensure output directory is absolute, without '.' or '..'. See
+// https://github.com/LieberInstitute/BiocMAP/issues/31#issuecomment-2912688552
+params.output_clean = java.nio.file.Paths.get(params.output).toAbsolutePath().normalize().toString()
+
 // -------------------------------------
 //   Validate Inputs
 // -------------------------------------
@@ -187,7 +191,7 @@ summary_main['Annotation release'] = params.anno_version
 summary_main['Annotation build'] = params.anno_build
 summary_main['Custom anno label'] = params.custom_anno
 summary_main['Input dir'] = params.input
-summary_main['Output dir'] = params.output
+summary_main['Output dir'] = params.output_clean
 summary_main['Reference'] = params.reference
 summary_main['Sample']	= params.sample
 summary_main['Use BME'] = params.use_bme
@@ -374,7 +378,7 @@ Channel
 //  Place SAMs and any reports/logs into channels for use in the pipeline
 process PreprocessInputs {
     
-    publishDir "${params.output}/preprocessing/", mode:'copy', pattern:'preprocess_inputs_second_half.log'
+    publishDir "${params.output_clean}/preprocessing/", mode:'copy', pattern:'preprocess_inputs_second_half.log'
     
     input:
         //  Stage files with unique names, since we are not guaranteed the
@@ -427,7 +431,7 @@ if (params.with_lambda) {
     process LambdaPseudo {
         
         tag "$prefix"
-        publishDir "${params.output}/lambda", mode:'copy'
+        publishDir "${params.output_clean}/lambda", mode:'copy'
         
         input:
             file lambda_indices_in from lambda_indices_out.collect()
@@ -483,7 +487,7 @@ if (params.use_bme) {
     //  Bismark Methylation Extractor on the quality-filtered, deduplicated sams
     process BME {
     
-        publishDir "${params.output}/BME/", mode:'copy'
+        publishDir "${params.output_clean}/BME/", mode:'copy'
         tag "$prefix"
         
         input:
@@ -536,7 +540,7 @@ if (params.use_bme) {
     //  wasted resources, the 3 utilities should be separated.
     process Bismark2Bedgraph {
     
-        publishDir "${params.output}/Reports/$prefix", mode:'copy'
+        publishDir "${params.output_clean}/Reports/$prefix", mode:'copy'
         tag "$prefix"
         
         input:
@@ -564,7 +568,7 @@ if (params.use_bme) {
     
     process Coverage2Cytosine {
     
-        publishDir "${params.output}/Reports/$prefix", mode:'copy'
+        publishDir "${params.output_clean}/Reports/$prefix", mode:'copy'
         tag "$prefix"
         
         input:
@@ -594,7 +598,7 @@ if (params.use_bme) {
 
 } else {        
     process MethylationExtraction {
-        publishDir "${params.output}/Reports/$prefix", mode:'copy'
+        publishDir "${params.output_clean}/Reports/$prefix", mode:'copy'
         tag "$prefix"
         
         input:
@@ -645,7 +649,7 @@ cytosine_reports
 //  QC-related stats into a data frame.
 process ParseReports {
 
-    publishDir "${params.output}/metrics", mode:'copy'
+    publishDir "${params.output_clean}/metrics", mode:'copy'
     
     input:
         file misc_reports_in from misc_reports_out.collect()
@@ -669,14 +673,14 @@ process ParseReports {
 
 process FormBsseqObjects {
 
-    publishDir "${params.output}/BSobjects/logs", mode:'copy', pattern:'*.log'
+    publishDir "${params.output_clean}/BSobjects/logs", mode:'copy', pattern:'*.log'
     
     // When using docker, publish the bsseq objects to the output folder
     // normally. Otherwise, use a shortcut where we directly write objects to
     // the output folder during creation. The shortcut saves a significant
     // amount of disk space as well as some I/O strain and time
-    publishDir "${params.output}/BSobjects/objects/$chr/CpG", mode:'copy', pattern: '*_CpG.{h5,rds}', saveAs: { filename -> filename.replaceAll("_${chr}_CpG", "") }, enabled: params.using_containers
-    publishDir "${params.output}/BSobjects/objects/$chr/CpH", mode:'copy', pattern: '*_CpH.{h5,rds}', saveAs: { filename -> filename.replaceAll("_${chr}_CpH", "") }, enabled: params.using_containers
+    publishDir "${params.output_clean}/BSobjects/objects/$chr/CpG", mode:'copy', pattern: '*_CpG.{h5,rds}', saveAs: { filename -> filename.replaceAll("_${chr}_CpG", "") }, enabled: params.using_containers
+    publishDir "${params.output_clean}/BSobjects/objects/$chr/CpH", mode:'copy', pattern: '*_CpH.{h5,rds}', saveAs: { filename -> filename.replaceAll("_${chr}_CpH", "") }, enabled: params.using_containers
     
     tag "$chr"
         
@@ -693,7 +697,7 @@ process FormBsseqObjects {
         if [[ !{params.using_containers} == "true" ]]; then
             out_dir=$(pwd)
         else
-            out_dir=!{params.output}/BSobjects/objects
+            out_dir=!{params.output_clean}/BSobjects/objects
             mkdir -p ${out_dir}
         fi
         
@@ -732,13 +736,13 @@ bsseq_objects_out
 //  summarized experiments (directories)- one for each cytosine context
 process MergeBsseqObjects {
 
-    publishDir "${params.output}/BSobjects/logs", pattern: "merge_objects_${context}.log", mode:'copy'
+    publishDir "${params.output_clean}/BSobjects/logs", pattern: "merge_objects_${context}.log", mode:'copy'
     
     // When using docker, publish the bsseq objects to the output folder
     // normally. Otherwise, use a shortcut where we directly write objects to
     // the output folder during creation. The shortcut saves a significant
     // amount of disk space as well as some I/O strain and time
-    publishDir "${params.output}/BSobjects/objects/combined", pattern: '*.{rds,h5}', mode:'move', enabled: params.using_containers
+    publishDir "${params.output_clean}/BSobjects/objects/combined", pattern: '*.{rds,h5}', mode:'move', enabled: params.using_containers
     
     input:
         set val(context), file(bsobj) from bsseq_objects_in
@@ -765,8 +769,8 @@ process MergeBsseqObjects {
             out_dir=$(pwd)
         else
             #  Write files directly to output dir
-            in_dir=!{params.output}/BSobjects/objects
-            out_dir=!{params.output}/BSobjects/objects/combined
+            in_dir=!{params.output_clean}/BSobjects/objects
+            out_dir=!{params.output_clean}/BSobjects/objects/combined
         fi
         
         mkdir -p $out_dir
