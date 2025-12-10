@@ -11,6 +11,12 @@ RUN wget https://github.com/pachterlab/kallisto/releases/download/v0.46.1/kallis
     tar xzvf kallisto_linux-v0.46.1.tar.gz && \
     chmod -R 755 kallisto && \
     cp kallisto/kallisto /usr/local/bin/
+
+#   Some installations of Singularity expect mounted directories to already
+#   exist. These directories are needed in the following code:
+#   https://github.com/LieberInstitute/BiocMAP/blob/bf80cf61eb60a6fc28b249561c5d58cf29f2cc73/install_software.sh#L108-L109
+RUN mkdir -p /opt/app/scripts /opt/app/test && \
+    chmod 755 -R /opt/app
    
 #  Make sure the 'here' R package works as expected inside the container 
 RUN touch .here
