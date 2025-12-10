@@ -79,10 +79,11 @@ if [[ "$1" == "docker" || "$1" == "singularity" ]]; then
         $command \
             -it \
             -u $(id -u):$(id -g) \
-            -v $BASE_DIR/scripts:/usr/local/src/scripts/ \
-            -v $BASE_DIR/test:/usr/local/src/test \
+            -w /opt/app \
+            -v $BASE_DIR/scripts:/opt/app/scripts/ \
+            -v $BASE_DIR/test:/opt/app/test \
             $R_container \
-            Rscript /usr/local/src/scripts/prepare_test_files.R -d $BASE_DIR
+            Rscript /opt/app/scripts/prepare_test_files.R -d $BASE_DIR
     else # using singularity
         echo "[BiocMAP] Pulling docker images and converting to singularity images..."
         cd $BASE_DIR
@@ -103,15 +104,16 @@ if [[ "$1" == "docker" || "$1" == "singularity" ]]; then
         echo "[BiocMAP] Setting up test files..."
         
         singularity exec \
-            -B $BASE_DIR/scripts:/usr/local/src/scripts/ \
-            -B $BASE_DIR/test:/usr/local/src/test \
+            --pwd /opt/app \
+            -B $BASE_DIR/scripts:/opt/app/scripts/ \
+            -B $BASE_DIR/test:/opt/app/test \
             docker://$R_container \
-            Rscript /usr/local/src/scripts/prepare_test_files.R -d $BASE_DIR
+            Rscript /opt/app/scripts/prepare_test_files.R -d $BASE_DIR
         
         #  Set modules used correctly for JHPCE users
         sed -i "/module = '.*\/.*'/d" conf/*_half_jhpce.config
-        sed -i "s|cache = 'lenient'|cache = 'lenient'\n    module = 'singularity/3.6.0'|" conf/*_half_jhpce.config
-        sed -i "s|module load nextflow|module load nextflow\nmodule load singularity/3.6.0|" run_*_half_jhpce.sh
+        sed -i "s|cache = 'lenient'|cache = 'lenient'\n    module = 'singularity/3.11.4'|" conf/*_half_jhpce.config
+        sed -i "s|module load nextflow/\(.*\)|module load nextflow\1\nmodule load singularity/3.11.4|" run_*_half_jhpce.sh
     fi
         
     echo "[BiocMAP] Done."
